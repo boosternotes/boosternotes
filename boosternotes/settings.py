@@ -115,11 +115,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+# Static files (CSS, JavaScript, Images)
 
-# Media files (uploaded files)
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR/ 'media'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DROPBOX_APP_KEY = "wgg2fsw5pf16x8q"
 DROPBOX_APP_SECRET = "38dg9gi6djz3zuu"
