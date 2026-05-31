@@ -1,0 +1,381 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<div class="category-page">
+  <div class="category-container">
+    <div class="category-header">
+      <h1>Categories</h1>
+      <p>Create and manage product categories</p>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+
+    <div class="category-card">
+      <div class="category-card-head">
+        <h2>Create New Category</h2>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" novalidate class="category-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="category-alert category-alert-error">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="category-group">
+          <label for="{{ form.name.id_for_label }}">Category Name</label>
+          {{ form.name }}
+          <div class="category-error">{{ form.name.errors }}</div>
+        </div>
+
+        <div class="category-group">
+          <label for="{{ form.image.id_for_label }}">Category Image</label>
+          {{ form.image }}
+          <div class="category-error">{{ form.image.errors }}</div>
+          <small class="category-hint">Recommended size: 300x300px. Formats: JPG, PNG, GIF</small>
+        </div>
+
+        <div class="category-group">
+          <label for="{{ form.description.id_for_label }}">Description</label>
+          {{ form.description }}
+          <div class="category-error">{{ form.description.errors }}</div>
+        </div>
+
+        <div class="category-group">
+          <div class="checkbox-row">
+            {{ form.is_active }}
+            <label for="{{ form.is_active.id_for_label }}">Active Category</label>
+          </div>
+          <div class="category-error">{{ form.is_active.errors }}</div>
+        </div>
+
+        <button type="submit" class="category-btn btn btn-primary">📁 Create Category</button>
+      </form>
+    </div>
+
+    <div class="category-card">
+      <div class="category-card-head">
+        <h2>All Categories</h2>
+      </div>
+
+      <div class="category-table-wrap">
+        <table class="data-table category-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for category in categories %}
+            <tr>
+              <td>
+                {% if category.image %}
+                  <img src="{{ category.image.url }}" alt="{{ category.name }}" class="category-thumb">
+                {% else %}
+                  <div class="category-thumb-empty">📁</div>
+                {% endif %}
+              </td>
+              <td><strong>{{ category.name }}</strong></td>
+              <td>{{ category.description|truncatewords:8|default:"—" }}</td>
+              <td>
+                {% if category.is_active %}
+                  <span class="badge badge-success">Active</span>
+                {% else %}
+                  <span class="badge badge-danger">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="action-btns">
+                  <a href="{% url 'category_toggle_active' category.pk %}" class="action-btn" title="Toggle Status">
+                    {% if category.is_active %}🔴{% else %}🟢{% endif %}
+                  </a>
+                  <a href="{% url 'category_delete' category.pk %}" class="action-btn" title="Delete">🗑️</a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="category-empty">No categories found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.category-page {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.category-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.category-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.category-header p {
+  font-size: 0.88rem;
+  color: #888;
+  margin: 0.3rem 0 0 0;
+}
+
+.category-card {
+  background: #fff;
+  border: 1px solid #e7ebf5;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+}
+
+.category-card-head {
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f2f8;
+}
+
+.category-card-head h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.category-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category-group label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.category-group input,
+.category-group textarea,
+.category-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #dde2ee;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color .2s, background .2s;
+  background: #fff;
+}
+
+.category-group input:focus,
+.category-group textarea:focus,
+.category-group select:focus {
+  outline: none;
+  border-color: #1a3a8f;
+  background: #f8f9ff;
+}
+
+.category-group small.category-hint {
+  font-size: 0.78rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-row label {
+  font-size: 0.88rem;
+  color: #333;
+  cursor: pointer;
+  margin: 0;
+  font-weight: 500;
+}
+
+.category-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #1a3a8f;
+  margin: 0;
+  cursor: pointer;
+}
+
+.category-error {
+  color: #e84444;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+.category-alert {
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.category-alert-error {
+  background: #ffe8e8;
+  border: 1px solid #ffd8d8;
+  color: #e84444;
+}
+
+.category-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all .2s;
+  cursor: pointer;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1a3a8f, #0d2060);
+  color: #fff;
+  margin-top: 0.5rem;
+}
+
+.category-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(26,58,143,0.2);
+}
+
+.category-table-wrap {
+  overflow-x: auto;
+}
+
+.category-table {
+  width: 100%;
+  font-size: 0.88rem;
+}
+
+.category-table th {
+  font-weight: 600;
+  color: #1a3a8f;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.category-table td {
+  color: #333;
+  vertical-align: middle;
+}
+
+.category-thumb {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e7ebf5;
+}
+
+.category-thumb-empty {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9ff;
+  border-radius: 8px;
+  border: 1px solid #e7ebf5;
+  font-size: 1.5rem;
+}
+
+.category-empty {
+  text-align: center;
+  color: #888;
+  padding: 2rem !important;
+}
+
+.action-btns {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+  border: 1px solid #e0e4ee;
+  background: #fff;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background: #f0f4ff;
+  border-color: #1a3a8f;
+}
+
+@media (max-width: 768px) {
+  .category-page {
+    padding: 1rem;
+  }
+  
+  .category-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .category-card {
+    padding: 1rem;
+  }
+  
+  .category-btn {
+    width: 100%;
+  }
+  
+  .category-thumb {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .category-thumb-empty {
+    width: 40px;
+    height: 40px;
+  }
+}
+</style>
+{% endblock content1 %}

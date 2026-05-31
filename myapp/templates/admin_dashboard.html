@@ -1,0 +1,801 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - BoosterNotes</title>
+  <link rel="stylesheet" href=" {% static "css/admin_dashboard.css" %} ">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  {% block content1 %}
+    {% include "msg.html" %}
+  <!-- Nav Bar -->
+  <nav>
+    <a href="#" class="logo-wrap">
+      <div class="logo-circle">🚀</div>
+      <div class="logo-text-block">
+        <div class="brand">BoosterNotes</div>
+        <div class="sub">Admin Panel</div>
+      </div>
+    </a>
+
+    <button class="ham-btn" onclick="toggleSidebar()" type="button">☰</button>
+  </nav>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a href=" {% url "dashboard" %} " class="sidebar-link active" onclick="showSection('dashboard')">
+            <span class="sidebar-icon">📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#users" class="sidebar-link" onclick="showSection('users')">
+            <span class="sidebar-icon">👥</span>
+            <span>User Signups</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#payments" class="sidebar-link" onclick="showSection('payments')">
+            <span class="sidebar-icon">💳</span>
+            <span>Payments</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href=" {% url "elibrary_dashboard" %} " class="sidebar-link" onclick="showSection('elibrary')">
+            <span class="sidebar-icon">📚</span>
+            <span>E-Library Courses</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#books" class="sidebar-link" onclick="showSection('books')">
+            <span class="sidebar-icon">📦</span>
+            <span>Hard Copy Books</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href=" {% url "notifications_section" %} " class="sidebar-link" onclick="showSection('notifications')">
+            <span class="sidebar-icon">🔔</span>
+            <span>Notifications</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href=" {% url "coupon_list" %} " class="sidebar-link" onclick="showSection('coupons')">
+            <span class="sidebar-icon">🎟️</span>
+            <span>Coupons</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href=" {% url "category_list" %} " class="sidebar-link" onclick="showSection('categories')">
+            <span class="sidebar-icon">🎯</span>
+            <span>Categories</span>
+          </a>
+        </li>
+        
+        <!-- Customization Dropdown -->
+        <li class="sidebar-item sidebar-dropdown" id="customizationDropdown">
+          <div class="sidebar-link" onclick="toggleDropdown()">
+            <span class="sidebar-icon">🎨</span>
+            <span class="sidebar-dropdown-toggle">
+              <span>Customization</span>
+              <span class="dropdown-arrow">▼</span>
+            </span>
+          </div>
+          <ul class="sidebar-submenu">
+            <li>
+              <a href=" {% url "navbar_custom" %} " class="sidebar-sublink" onclick="showSection('navbar-custom')">
+                <span class="sublink-icon">🔝</span>
+                <span>Navbar</span>
+              </a>
+            </li>
+            <li>
+              <a href=" {% url "banner_custom" %} " class="sidebar-sublink" onclick="showSection('banner-custom')">
+                <span class="sublink-icon">🖼️</span>
+                <span>Banner</span>
+              </a>
+            </li>
+            <li>
+              <a href=" {% url "stats_custom" %} " class="sidebar-sublink" onclick="showSection('stats-custom')">
+                <span class="sublink-icon">📈</span>
+                <span>Stats Section</span>
+              </a>
+            </li>
+            <li>
+              <a href=" {% url "about_custom" %} " class="sidebar-sublink" onclick="showSection('about-custom')">
+                <span class="sublink-icon">ℹ️</span>
+                <span>About Section</span>
+              </a>
+            </li>
+            <li>
+              <a href=" {% url "footer_custom" %} " class="sidebar-sublink" onclick="showSection('footer-custom')">
+                <span class="sublink-icon">🔻</span>
+                <span>Footer</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </aside>
+{% block content %}
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard Section -->
+      <div id="dashboard-section" class="content-section">
+        <div class="page-header">
+          <h1 class="page-title">Dashboard Overview</h1>
+          <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-info">
+              <h3>2,456</h3>
+              <p>Total Users</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info">
+              <h3>₹1,24,580</h3>
+              <p>Total Revenue</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">📚</div>
+            <div class="stat-info">
+              <h3>343</h3>
+              <p>E-Library Courses</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">📦</div>
+            <div class="stat-info">
+              <h3>500+</h3>
+              <p>Physical Books</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Orders</h2>
+            <button class="btn btn-secondary">View All</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>User</th>
+                  <th>Product</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#ORD-1234</td>
+                  <td>Rahul Sharma</td>
+                  <td>NEET Biology PDF</td>
+                  <td>₹149</td>
+                  <td><span class="badge badge-success">Completed</span></td>
+                  <td>2024-01-15</td>
+                </tr>
+                <tr>
+                  <td>#ORD-1235</td>
+                  <td>Priya Patel</td>
+                  <td>JEE Math Formula</td>
+                  <td>₹99</td>
+                  <td><span class="badge badge-warning">Pending</span></td>
+                  <td>2024-01-15</td>
+                </tr>
+                <tr>
+                  <td>#ORD-1236</td>
+                  <td>Amit Kumar</td>
+                  <td>UPSC Current Affairs</td>
+                  <td>₹179</td>
+                  <td><span class="badge badge-success">Completed</span></td>
+                  <td>2024-01-14</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+<!-- Users Section -->
+<div id="users-section" class="content-section" style="display:none;">
+  <div class="page-header">
+    <h1 class="page-title">User Signups</h1>
+    <p class="page-subtitle">Manage registered users</p>
+  </div>
+
+  <div class="content-card">
+    <div class="card-header">
+      <h2 class="card-title">All Users</h2>
+      <a href="{% url 'add_user' %}" class="btn btn-primary">➕ Add User</a>
+    </div>
+    
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.get_full_name|default:user.username }}</td>
+            <td>{{ user.email|default:"N/A" }}</td>
+            <td>{{ user.phone|default:"N/A" }}</td>
+            <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+            <td>
+              {% if user.is_active %}
+              <span class="badge badge-success">Active</span>
+              {% else %}
+              <span class="badge badge-danger">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-btns">
+                <a href="{% url 'edit_user' user.id %}" class="action-btn" title="Edit">✏️</a>
+                <form method="post" action="{% url 'delete_user' user.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete {{ user.username }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="action-btn" title="Delete">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="text-align:center;">No users found. Add your first user!</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+      <!-- Payments Section -->
+      <div id="payments-section" class="content-section" style="display:none;">
+        <div class="page-header">
+          <h1 class="page-title">Payment Dashboard</h1>
+          <p class="page-subtitle">Track all transactions</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info">
+              <h3>₹1,24,580</h3>
+              <p>Total Revenue</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">✅</div>
+            <div class="stat-info">
+              <h3>842</h3>
+              <p>Completed</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">⏳</div>
+            <div class="stat-info">
+              <h3>23</h3>
+              <p>Pending</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">❌</div>
+            <div class="stat-info">
+              <h3>12</h3>
+              <p>Failed</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Transactions</h2>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>User</th>
+                  <th>Product</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#TXN-9876</td>
+                  <td>Rahul Sharma</td>
+                  <td>NEET Biology PDF</td>
+                  <td>₹149</td>
+                  <td>UPI</td>
+                  <td><span class="badge badge-success">Success</span></td>
+                  <td>2024-01-15 14:30</td>
+                </tr>
+                <tr>
+                  <td>#TXN-9877</td>
+                  <td>Priya Patel</td>
+                  <td>JEE Math Book</td>
+                  <td>₹599</td>
+                  <td>Card</td>
+                  <td><span class="badge badge-warning">Pending</span></td>
+                  <td>2024-01-15 15:20</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- E-Library Section -->
+      <div id="elibrary-section" class="content-section" style="display:none;">
+        <div class="page-header">
+          <h1 class="page-title">E-Library Courses</h1>
+          <p class="page-subtitle">Manage PDF courses</p>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">All PDF Courses</h2>
+            <button class="btn btn-primary" onclick="showAddCourseForm()">➕ Add Course</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Course Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Pages</th>
+                  <th>Downloads</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>001</td>
+                  <td>NEET Biology Full Revision</td>
+                  <td>NEET</td>
+                  <td>₹149</td>
+                  <td>180</td>
+                  <td>245</td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="Edit">✏️</button>
+                      <button class="action-btn" title="View">👁️</button>
+                      <button class="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>002</td>
+                  <td>JEE Mathematics Formula Sheet</td>
+                  <td>JEE</td>
+                  <td>₹99</td>
+                  <td>90</td>
+                  <td>189</td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="Edit">✏️</button>
+                      <button class="action-btn" title="View">👁️</button>
+                      <button class="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Books Section -->
+      <div id="books-section" class="content-section" style="display:none;">
+        <div class="page-header">
+          <h1 class="page-title">Hard Copy Books</h1>
+          <p class="page-subtitle">Manage physical books inventory</p>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">All Books</h2>
+            <button class="btn btn-primary" onclick="showAddBookForm()">➕ Add Book</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Book Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Sold</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>B001</td>
+                  <td>Complete Biology Set for NEET</td>
+                  <td>NEET</td>
+                  <td>₹499</td>
+                  <td>45</td>
+                  <td>156</td>
+                  <td><span class="badge badge-success">In Stock</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="Edit">✏️</button>
+                      <button class="action-btn" title="View">👁️</button>
+                      <button class="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>B002</td>
+                  <td>JEE Advanced Practice Book</td>
+                  <td>JEE</td>
+                  <td>₹599</td>
+                  <td>12</td>
+                  <td>98</td>
+                  <td><span class="badge badge-warning">Low Stock</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="Edit">✏️</button>
+                      <button class="action-btn" title="View">👁️</button>
+                      <button class="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Section -->
+      <div id="categories-section" class="content-section" style="display:none;">
+        <div class="page-header">
+          <h1 class="page-title">Category Management</h1>
+          <p class="page-subtitle">Manage exam categories</p>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">Add New Category</h2>
+          </div>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Category Name</label>
+              <input type="text" class="form-input" placeholder="e.g., NEET / Medical">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Icon (Emoji)</label>
+              <input type="text" class="form-input" placeholder="e.g., 🩺">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" placeholder="Category description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">➕ Add Category</button>
+          </form>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">All Categories</h2>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Icon</th>
+                  <th>Category Name</th>
+                  <th>Total PDFs</th>
+                  <th>Total Books</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-size:1.4rem;">🩺</td>
+                  <td>NEET / Medical</td>
+                  <td>48</td>
+                  <td>23</td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="Edit">✏️</button>
+                      <button class="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-size:1.4rem;">⚗️</td>
+                  <td>JEE / IIT-JEE</td>
+                  <td>36</td>
+                  <td>18</td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="Edit">✏️</button>
+                      <button class="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-size:1.4rem;">🏛️</td>
+                  <td>UPSC / CSE</td>
+                  <td>52</td>
+                  <td>31</td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="action-btn" title="Edit">✏️</button>
+                      <button class="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+  
+      <!-- Stats Customization Section -->
+      <div id="stats-custom-section" class="content-section" style="display:none;">
+        <div class="page-header">
+          <h1 class="page-title">📈 Stats Section Customization</h1>
+          <p class="page-subtitle">Update statistics displayed on homepage</p>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">Stat Card 1</h2>
+          </div>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Icon (Emoji)</label>
+              <input type="text" class="form-input" value="📚" placeholder="Enter emoji">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Value</label>
+              <input type="text" class="form-input" value="343" placeholder="Enter value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-input" value="E-Library Courses" placeholder="Enter title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <input type="text" class="form-input" value="Exam-ready PDFs and revision packs" placeholder="Enter description">
+            </div>
+          </form>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">Stat Card 2</h2>
+          </div>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Icon (Emoji)</label>
+              <input type="text" class="form-input" value="📦" placeholder="Enter emoji">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Value</label>
+              <input type="text" class="form-input" value="500+" placeholder="Enter value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-input" value="Physical Books" placeholder="Enter title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <input type="text" class="form-input" value="Printed material delivered to students" placeholder="Enter description">
+            </div>
+          </form>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">Stat Card 3</h2>
+          </div>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Icon (Emoji)</label>
+              <input type="text" class="form-input" value="👥" placeholder="Enter emoji">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Value</label>
+              <input type="text" class="form-input" value="2456+" placeholder="Enter value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-input" value="Active Users" placeholder="Enter title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <input type="text" class="form-input" value="Trusted by learners across India" placeholder="Enter description">
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Save Stats</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- About Customization Section -->
+      <div id="about-custom-section" class="content-section" style="display:none;">
+        <div class="page-header">
+          <h1 class="page-title">ℹ️ About Section Customization</h1>
+          <p class="page-subtitle">Edit about section content</p>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">About Content</h2>
+          </div>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Heading</label>
+              <input type="text" class="form-input" value="About BoosterNotes" placeholder="Enter heading">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description Paragraph 1</label>
+              <textarea class="form-textarea" placeholder="Enter first paragraph">BoosterNotes provides exam-focused PDFs, revision notes, and physical books for students preparing for competitive exams across India.</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description Paragraph 2</label>
+              <textarea class="form-textarea" placeholder="Enter second paragraph">Our material is organized by category, updated regularly, and designed for quick revision and better results.</textarea>
+            </div>
+          </form>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">Features</h2>
+          </div>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Feature 1 Title</label>
+              <input type="text" class="form-input" value="Fast Download" placeholder="Feature title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Feature 1 Description</label>
+              <input type="text" class="form-input" value="Get instant access to PDF study material after purchase." placeholder="Feature description">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Feature 2 Title</label>
+              <input type="text" class="form-input" value="Exam Targeted" placeholder="Feature title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Feature 2 Description</label>
+              <input type="text" class="form-input" value="Curated content for NEET, JEE, UPSC, SSC, and more." placeholder="Feature description">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Feature 3 Title</label>
+              <input type="text" class="form-input" value="Support" placeholder="Feature title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Feature 3 Description</label>
+              <input type="text" class="form-input" value="Support available on WhatsApp during working hours." placeholder="Feature description">
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Save About Section</button>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+  {% endblock content %}
+
+  <script>
+    function showSection(sectionName) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show selected section
+      document.getElementById(sectionName + '-section').style.display = 'block';
+      
+      // Update active sidebar link
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      document.querySelectorAll('.sidebar-sublink').forEach(link => {
+        link.classList.remove('active');
+      });
+      
+      // Add active class to clicked link
+      if (event && event.target) {
+        const clickedLink = event.target.closest('.sidebar-link') || event.target.closest('.sidebar-sublink');
+        if (clickedLink) {
+          clickedLink.classList.add('active');
+        }
+      }
+      
+      // Close sidebar on mobile
+      if (window.innerWidth <= 820) {
+        document.getElementById('sidebar').classList.remove('open');
+      }
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function toggleDropdown() {
+      event.stopPropagation();
+      document.getElementById('customizationDropdown').classList.toggle('open');
+    }
+
+    function showAddUserForm() {
+      alert('Add User form will open here');
+    }
+
+    function showAddCourseForm() {
+      alert('Add Course form will open here');
+    }
+
+    function showAddBookForm() {
+      alert('Add Book form will open here');
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+      const sidebar = document.getElementById('sidebar');
+      const hamBtn = document.querySelector('.ham-btn');
+      
+      if (window.innerWidth <= 820 && 
+          !sidebar.contains(event.target) && 
+          !hamBtn.contains(event.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+  </script>
+{% endblock content1 %}
+</body>
+</html>

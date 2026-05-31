@@ -1,0 +1,184 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+{% include "msg.html" %}
+<div class="custom-form-page">
+  <div class="custom-form-container">
+
+    <!-- Header -->
+    <div class="custom-header">
+      <div>
+        <h1>🖼️ Banner Customization</h1>
+        <p>Upload and manage desktop &amp; mobile banners</p>
+      </div>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <!-- ── Upload Card ─────────────────────────────────────────────── -->
+    <div class="custom-card">
+      <h2 class="section-title">📤 Upload New Banner</h2>
+      <form method="post" enctype="multipart/form-data" class="custom-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="upload">
+
+        {% if upload_form.non_field_errors %}
+        <div class="custom-alert custom-alert-error">{{ upload_form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="custom-group">
+          <label>Banner Type</label>
+          {{ upload_form.banner_type }}
+          <div class="custom-error">{{ upload_form.banner_type.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>Select Image</label>
+          {{ upload_form.image }}
+          <div class="custom-error">{{ upload_form.image.errors }}</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">📤 Upload Banner</button>
+      </form>
+    </div>
+
+    <!-- ── Desktop Banners ─────────────────────────────────────────── -->
+    <div class="custom-card">
+      <h2 class="section-title">🖥️ Desktop Banners</h2>
+
+      {% if desktop_banners %}
+      <div class="banner-grid">
+        {% for banner in desktop_banners %}
+        <div class="banner-card {% if not banner.is_active %}inactive{% endif %}">
+          <div class="banner-img-wrap">
+            {% if banner.image %}
+            <img src="{{ banner.image.url }}" alt="Desktop Banner #{{ banner.pk }}">
+            {% else %}
+            <div class="no-image">No Image</div>
+            {% endif %}
+            <span class="badge {% if banner.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+              {% if banner.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </div>
+          <div class="banner-actions">
+            <form method="post" style="display:inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="banner_id" value="{{ banner.pk }}">
+              <button type="submit" class="btn btn-sm {% if banner.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                {% if banner.is_active %}⏸ Deactivate{% else %}▶ Activate{% endif %}
+              </button>
+            </form>
+            <form method="post" style="display:inline"
+                  onsubmit="return confirm('Delete this banner?')">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="banner_id" value="{{ banner.pk }}">
+              <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-msg">No desktop banners uploaded yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- ── Mobile Banners ──────────────────────────────────────────── -->
+    <div class="custom-card">
+      <h2 class="section-title">📱 Mobile Banners</h2>
+
+      {% if mobile_banners %}
+      <div class="banner-grid">
+        {% for banner in mobile_banners %}
+        <div class="banner-card {% if not banner.is_active %}inactive{% endif %}">
+          <div class="banner-img-wrap">
+            {% if banner.image %}
+            <img src="{{ banner.image.url }}" alt="Mobile Banner #{{ banner.pk }}">
+            {% else %}
+            <div class="no-image">No Image</div>
+            {% endif %}
+            <span class="badge {% if banner.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+              {% if banner.is_active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </div>
+          <div class="banner-actions">
+            <form method="post" style="display:inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="banner_id" value="{{ banner.pk }}">
+              <button type="submit" class="btn btn-sm {% if banner.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                {% if banner.is_active %}⏸ Deactivate{% else %}▶ Activate{% endif %}
+              </button>
+            </form>
+            <form method="post" style="display:inline"
+                  onsubmit="return confirm('Delete this banner?')">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="banner_id" value="{{ banner.pk }}">
+              <button type="submit" class="btn btn-sm btn-danger">🗑 Delete</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-msg">No mobile banners uploaded yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<style>
+.custom-form-page { padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+.custom-form-container { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.custom-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.custom-header h1 { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.custom-header p  { font-size: 0.88rem; color: #888; margin: 0.3rem 0 0; }
+
+.custom-card { background: #fff; border: 1px solid #e7ebf5; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(26,58,143,.04); }
+.section-title { font-size: 1rem; font-weight: 700; color: #1a3a8f; margin: 0 0 1.2rem; }
+
+.custom-form { display: flex; flex-direction: column; gap: 1rem; }
+.custom-group { display: flex; flex-direction: column; gap: 6px; }
+.custom-group label { font-size: 0.86rem; font-weight: 600; color: #333; }
+.custom-group input[type="file"],
+.custom-group select { width: 100%; padding: 10px 14px; border: 1.5px solid #dde2ee; border-radius: 8px; font-size: 0.88rem; font-family: 'Poppins', sans-serif; background: #fff; }
+.custom-group select:focus { outline: none; border-color: #1a3a8f; background: #f8f9ff; }
+.custom-error { color: #e84444; font-size: 0.8rem; min-height: 14px; }
+.custom-alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; }
+.custom-alert-error { background: #ffe8e8; border: 1px solid #ffd8d8; color: #e84444; }
+
+/* Banner grid */
+.banner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.banner-card { border: 1.5px solid #e7ebf5; border-radius: 12px; overflow: hidden; transition: box-shadow .2s; }
+.banner-card:hover { box-shadow: 0 6px 18px rgba(26,58,143,.1); }
+.banner-card.inactive { opacity: .55; }
+.banner-img-wrap { position: relative; }
+.banner-img-wrap img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.no-image { width: 100%; height: 130px; background: #f0f2f8; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 0.8rem; }
+.badge { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+.badge-active   { background: #d4f8e8; color: #1a7a4a; }
+.badge-inactive { background: #ffe8e8; color: #e84444; }
+.banner-actions { display: flex; gap: 6px; padding: 10px; flex-wrap: wrap; }
+
+.empty-msg { color: #aaa; font-size: 0.88rem; text-align: center; padding: 2rem 0; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; transition: all .2s; cursor: pointer; border: none; font-family: 'Poppins', sans-serif; text-decoration: none; }
+.btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; }
+.btn-primary  { background: linear-gradient(135deg,#1a3a8f,#0d2060); color: #fff; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(26,58,143,.2); }
+.btn-secondary { background: #f5f7fa; color: #555; border: 1.5px solid #dde2ee; }
+.btn-warning  { background: #fff4e0; color: #b07a00; border: 1.5px solid #ffe0a0; }
+.btn-success  { background: #d4f8e8; color: #1a7a4a; border: 1.5px solid #a0e8c8; }
+.btn-danger   { background: #ffe8e8; color: #e84444; border: 1.5px solid #ffd8d8; }
+
+@media (max-width: 768px) {
+  .custom-form-page { padding: 1rem; }
+  .btn:not(.btn-sm) { width: 100%; }
+  .banner-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+</style>
+{% endblock content1 %}

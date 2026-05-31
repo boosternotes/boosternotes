@@ -1,0 +1,110 @@
+{% if messages %}
+<div class="messages-wrap" id="messagesWrap">
+  {% for message in messages %}
+    <div class="flash-message {{ message.tags }}">
+      <div class="flash-icon">
+        {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}⚠️{% elif message.tags == 'warning' %}⚡{% else %}ℹ️{% endif %}
+      </div>
+      <div class="flash-text">{{ message }}</div>
+      <button type="button" class="flash-close" onclick="this.parentElement.remove()">×</button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<style>
+  .messages-wrap{
+    position:fixed;
+    top:78px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:9999;
+    width:min(92vw, 420px);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .flash-message{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    background:#fff;
+    border:1px solid #e7ebf5;
+    border-left:5px solid #1a3a8f;
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:0 12px 35px rgba(0,0,0,0.10);
+    animation:msgIn .22s ease-out;
+  }
+
+  .flash-message.success{border-left-color:#1d9e75}
+  .flash-message.error{border-left-color:#e84444}
+  .flash-message.warning{border-left-color:#e8b400}
+  .flash-message.info{border-left-color:#1a3a8f}
+
+  .flash-icon{
+    flex-shrink:0;
+    font-size:1rem;
+    margin-top:1px;
+  }
+
+  .flash-text{
+    flex:1;
+    font-size:0.88rem;
+    color:#1f2937;
+    line-height:1.45;
+    font-weight:500;
+  }
+
+  .flash-close{
+    border:none;
+    background:none;
+    color:#888;
+    font-size:1.1rem;
+    line-height:1;
+    cursor:pointer;
+    padding:0 2px;
+    flex-shrink:0;
+  }
+
+  .flash-close:hover{color:#111}
+
+  .flash-message.hiding{
+    opacity:0;
+    transform:translateY(-8px);
+    transition:all .35s ease;
+  }
+
+  @keyframes msgIn{
+    from{opacity:0;transform:translateY(-10px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  @media (max-width: 640px){
+    .messages-wrap{
+      top:70px;
+      width:min(94vw, 420px);
+    }
+    .flash-message{
+      padding:11px 12px;
+      border-radius:12px;
+    }
+    .flash-text{font-size:0.84rem}
+  }
+</style>
+
+<script>
+  (function () {
+    const wrap = document.getElementById('messagesWrap');
+    if (!wrap) return;
+
+    const items = wrap.querySelectorAll('.flash-message');
+    items.forEach((item, index) => {
+      setTimeout(() => {
+        item.classList.add('hiding');
+        setTimeout(() => item.remove(), 350);
+      }, 3000 + (index * 250));
+    });
+  })();
+</script>

@@ -1,0 +1,117 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<div class="custom-form-page">
+  <div class="custom-form-container">
+    <div class="custom-header">
+      <h1>🔝 Navbar Customization</h1>
+      <p>Edit navbar settings</p>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div class="custom-card">
+      <form method="post" enctype="multipart/form-data" class="custom-form">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="custom-alert custom-alert-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="custom-group">
+          <label>Brand Name</label>
+          {{ form.brand_name }}
+          <div class="custom-error">{{ form.brand_name.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>Tagline</label>
+          {{ form.tagline }}
+          <div class="custom-error">{{ form.tagline.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>Logo Image</label>
+          {{ form.logo }}
+          {% if object.logo %}
+          <img src="{{ object.logo.url }}" alt="Current Logo" style="max-width:150px;margin-top:8px;border-radius:8px;">
+          {% endif %}
+          <div class="custom-error">{{ form.logo.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>Favicon (16x16 or 32x32 PNG)</label>
+          {{ form.favicon }}
+          {% if object.favicon %}
+          <img src="{{ object.favicon.url }}" alt="Current Favicon" style="max-width:50px;margin-top:8px;border:1px solid #ddd;border-radius:4px;">
+          <p style="font-size:0.78rem;color:#888;margin-top:4px;">Current: {{ object.favicon.url }}</p>
+          {% endif %}
+          <div class="custom-error">{{ form.favicon.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>Search Placeholder</label>
+          {{ form.search_placeholder }}
+          <div class="custom-error">{{ form.search_placeholder.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>WhatsApp Number</label>
+          {{ form.whatsapp_number }}
+          <div class="custom-error">{{ form.whatsapp_number.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>WhatsApp Hours</label>
+          {{ form.whatsapp_hours }}
+          <div class="custom-error">{{ form.whatsapp_hours.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <label>Coupon Button Text</label>
+          {{ form.coupon_text }}
+          <div class="custom-error">{{ form.coupon_text.errors }}</div>
+        </div>
+
+        <div class="custom-group">
+          <div class="checkbox-row">
+            {{ form.is_active }}
+            <label>Active</label>
+          </div>
+          <div class="custom-error">{{ form.is_active.errors }}</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">💾 Save Navbar Settings</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+.custom-form-page { padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+.custom-form-container { display: flex; flex-direction: column; gap: 1.5rem; }
+.custom-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.custom-header h1 { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.custom-header p { font-size: 0.88rem; color: #888; margin: 0.3rem 0 0 0; }
+.custom-card { background: #fff; border: 1px solid #e7ebf5; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(26,58,143,0.04); }
+.custom-form { display: flex; flex-direction: column; gap: 1rem; }
+.custom-group { display: flex; flex-direction: column; gap: 6px; }
+.custom-group label { font-size: 0.86rem; font-weight: 600; color: #333; }
+.custom-group input[type="text"],
+.custom-group input[type="number"],
+.custom-group textarea,
+.custom-group select { width: 100%; padding: 10px 14px; border: 1.5px solid #dde2ee; border-radius: 8px; font-size: 0.88rem; font-family: 'Poppins', sans-serif; transition: border-color .2s, background .2s; background: #fff; }
+.custom-group input:focus,
+.custom-group textarea:focus,
+.custom-group select:focus { outline: none; border-color: #1a3a8f; background: #f8f9ff; }
+.custom-error { color: #e84444; font-size: 0.8rem; margin-top: 4px; min-height: 14px; }
+.custom-alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; }
+.custom-alert-error { background: #ffe8e8; border: 1px solid #ffd8d8; color: #e84444; }
+.checkbox-row { display: flex; align-items: center; gap: 10px; }
+.checkbox-row label { font-size: 0.88rem; color: #333; cursor: pointer; margin: 0; font-weight: 500; }
+.checkbox-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #1a3a8f; margin: 0; cursor: pointer; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; transition: all .2s; cursor: pointer; border: none; font-family: 'Poppins', sans-serif; }
+.btn-primary { background: linear-gradient(135deg, #1a3a8f, #0d2060); color: #fff; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(26,58,143,0.2); }
+.btn-secondary { background: #f5f7fa; color: #555; border: 1.5px solid #dde2ee; text-decoration: none; }
+@media (max-width: 768px) { .custom-form-page { padding: 1rem; } .btn { width: 100%; } }
+</style>
+{% endblock content1 %}

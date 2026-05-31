@@ -1,0 +1,279 @@
+<style>
+/* Edit User Form Exclusive Styles */
+.edit-user-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 2rem 1rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.edit-user-container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.edit-user-header {
+  margin-bottom: 1.5rem;
+}
+
+.edit-user-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.3rem;
+}
+
+.edit-user-header p {
+  font-size: 0.88rem;
+  color: #888;
+}
+
+.edit-user-card {
+  background: #fff;
+  border: 1px solid #e7ebf5;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(26, 58, 143, 0.06);
+}
+
+.edit-user-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e7ebf5;
+}
+
+.edit-user-card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.edit-user-form {
+  display: block;
+}
+
+.edit-user-form .form-group {
+  margin-bottom: 1.3rem;
+}
+
+.edit-user-form .form-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.edit-user-form .form-label .required {
+  color: #e84444;
+  margin-left: 3px;
+}
+
+.edit-user-form input[type="text"],
+.edit-user-form input[type="email"],
+.edit-user-form input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #dde2ee;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.edit-user-form input:focus {
+  outline: none;
+  border-color: #1a3a8f;
+  box-shadow: 0 0 0 3px rgba(26, 58, 143, 0.1);
+  background: #f8f9ff;
+}
+
+.edit-user-form .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 0;
+}
+
+.edit-user-form .checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  cursor: pointer;
+  margin: 0;
+  font-weight: 500;
+}
+
+.edit-user-form input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #1a3a8f;
+  margin: 0;
+  cursor: pointer;
+}
+
+.edit-user-form .form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 1.8rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #e7ebf5;
+}
+
+.edit-user-form .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  min-width: 140px;
+}
+
+.edit-user-form .btn-primary {
+  background: linear-gradient(135deg, #1a3a8f, #0d2060);
+  color: #fff;
+}
+
+.edit-user-form .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(26, 58, 143, 0.2);
+}
+
+.edit-user-form .btn-secondary {
+  background: #f5f7fa;
+  color: #555;
+  border: 1.5px solid #dde2ee;
+}
+
+.edit-user-form .btn-secondary:hover {
+  background: #e8eaf0;
+  border-color: #cdd2de;
+}
+
+.edit-user-form .form-alert {
+  background: #fff4e8;
+  border: 1px solid #ffd8a8;
+  color: #b26a00;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 1.3rem;
+  font-size: 0.85rem;
+}
+
+.edit-user-form .error-message {
+  color: #e84444;
+  font-size: 0.8rem;
+  margin-top: 6px;
+  min-height: 14px;
+}
+
+@media (max-width: 768px) {
+  .edit-user-page {
+    padding: 1rem 0.75rem;
+  }
+  
+  .edit-user-card {
+    padding: 1.2rem;
+  }
+  
+  .edit-user-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .edit-user-form .form-actions {
+    flex-direction: column;
+  }
+  
+  .edit-user-form .btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+</style>
+<div class="edit-user-page">
+  <div class="edit-user-container">
+    <div class="edit-user-header">
+      <h1>{{ title }}</h1>
+      <p>{{ subtitle }}</p>
+    </div>
+
+    <div class="edit-user-card">
+      <div class="edit-user-card-header">
+        <h2 class="edit-user-card-title">{{ title }}</h2>
+        <a href="{% url 'dashboard' %}#users" class="btn btn-secondary">← Back to Users</a>
+      </div>
+
+      <form method="post" novalidate class="edit-user-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-alert">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.username.id_for_label }}">
+            Username <span class="required">*</span>
+          </label>
+          {{ form.username }}
+          <div class="error-message">{{ form.username.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+          {{ form.email }}
+          <div class="error-message">{{ form.email.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+          {{ form.first_name }}
+          <div class="error-message">{{ form.first_name.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+          {{ form.last_name }}
+          <div class="error-message">{{ form.last_name.errors }}</div>
+        </div>
+
+        <div class="form-group checkbox-row">
+          <label>{{ form.is_active }} Is Active</label>
+        </div>
+
+        <div class="form-group checkbox-row">
+          <label>{{ form.is_staff }} Is Staff</label>
+        </div>
+
+        <div class="form-group checkbox-row">
+          <label>{{ form.is_superuser }} Is Superuser</label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+          <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

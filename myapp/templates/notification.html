@@ -1,0 +1,286 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<div class="notif-page">
+  <div class="notif-container">
+    <div class="notif-header">
+      <h1>Notifications</h1>
+      <p>Send and manage notifications</p>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+
+    <div class="notif-card">
+      <div class="notif-card-head">
+        <h2>Send New Notification</h2>
+      </div>
+
+      <form method="post" novalidate class="notif-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="notif-alert notif-alert-error">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="notif-group">
+          <label for="{{ form.title.id_for_label }}">Title</label>
+          {{ form.title }}
+          <div class="notif-error">{{ form.title.errors }}</div>
+        </div>
+
+        <div class="notif-group">
+          <label for="{{ form.message.id_for_label }}">Message</label>
+          {{ form.message }}
+          <div class="notif-error">{{ form.message.errors }}</div>
+        </div>
+
+        <div class="notif-group">
+          <label for="{{ form.link.id_for_label }}">Link</label>
+          {{ form.link }}
+          <div class="notif-error">{{ form.link.errors }}</div>
+        </div>
+
+        <button type="submit" class="notif-btn btn btn-primary">📤 Send Notification</button>
+      </form>
+    </div>
+
+    <div class="notif-card">
+      <div class="notif-card-head">
+        <h2>Recent Notifications</h2>
+      </div>
+
+      <div class="notif-table-wrap">
+        <table class="data-table notif-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Message</th>
+              <th>Link</th>
+              <th>Time Sent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for notification in notifications %}
+            <tr>
+              <td><strong>{{ notification.title }}</strong></td>
+              <td>{{ notification.message|truncatewords:10 }}</td>
+              <td>
+                {% if notification.link %}
+                  <a href="{{ notification.link }}" target="_blank" class="notif-link btn btn-secondary">Open</a>
+                {% else %}
+                  <span class="notif-dash">—</span>
+                {% endif %}
+              </td>
+              <td>{{ notification.sent_at|date:"d M Y, h:i A" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="notif-empty">No notifications found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.notif-page {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.notif-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.notif-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.notif-header p {
+  font-size: 0.88rem;
+  color: #888;
+  margin: 0.3rem 0 0 0;
+}
+
+.notif-card {
+  background: #fff;
+  border: 1px solid #e7ebf5;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+}
+
+.notif-card-head {
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f2f8;
+}
+
+.notif-card-head h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.notif-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notif-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notif-group label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.notif-group input,
+.notif-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #dde2ee;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color .2s, background .2s;
+  background: #fff;
+}
+
+.notif-group input:focus,
+.notif-group textarea:focus {
+  outline: none;
+  border-color: #1a3a8f;
+  background: #f8f9ff;
+}
+
+.notif-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.notif-error {
+  color: #e84444;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+.notif-alert {
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.notif-alert-error {
+  background: #ffe8e8;
+  border: 1px solid #ffd8d8;
+  color: #e84444;
+}
+
+.notif-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all .2s;
+  cursor: pointer;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1a3a8f, #0d2060);
+  color: #fff;
+  margin-top: 0.5rem;
+}
+
+.notif-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(26,58,143,0.2);
+}
+
+.notif-table-wrap {
+  overflow-x: auto;
+}
+
+.notif-table {
+  width: 100%;
+  font-size: 0.88rem;
+}
+
+.notif-table th {
+  font-weight: 600;
+  color: #1a3a8f;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.notif-table td {
+  color: #333;
+  vertical-align: middle;
+}
+
+.notif-link {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.notif-dash {
+  color: #888;
+  font-size: 1.2rem;
+}
+
+.notif-empty {
+  text-align: center;
+  color: #888;
+  padding: 2rem !important;
+}
+
+@media (max-width: 768px) {
+  .notif-page {
+    padding: 1rem;
+  }
+  
+  .notif-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .notif-card {
+    padding: 1rem;
+  }
+  
+  .notif-btn {
+    width: 100%;
+  }
+}
+</style>
+{% endblock content1 %}

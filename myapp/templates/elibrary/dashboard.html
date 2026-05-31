@@ -1,0 +1,156 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+
+<div class="custom-page">
+  <div class="custom-container">
+    <div class="custom-header">
+      <h1><i class="fa-solid fa-book-open"></i> E-Library Dashboard</h1>
+      <p>Manage courses and PDF uploads</p>
+      <a href="{% url 'elibrary_add' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Course</a>
+    </div>
+
+
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="custom-alert {% if message.tags == 'error' %}custom-alert-error{% else %}custom-alert-success{% endif %}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <!-- Category Filter -->
+    <div class="custom-card">
+      <form method="get" class="filter-form">
+        <div class="filter-group">
+          <label>Filter by Category:</label>
+          <select name="category" onchange="this.form.submit()" class="form-input">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+              {{ cat.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+    </div>
+
+
+    <div class="custom-card">
+      <div class="card-header">
+        <h2><i class="fa-solid fa-list"></i> All Courses ({{ courses.count }})</h2>
+      </div>
+      <div class="custom-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Thumbnail</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Original Price</th>
+              <th>Current Price</th>
+              <th>PDFs</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for course in courses %}
+            <tr>
+              <td>
+                {% if course.thumbnail %}
+                <img src="{{ course.thumbnail.url }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+                {% else %}
+                <div style="width: 50px; height: 50px; background: #f0f0f0; border-radius: 6px;"></div>
+                {% endif %}
+              </td>
+              <td><strong>{{ course.name }}</strong></td>
+              <td>
+                {% if course.category %}
+                <span class="badge badge-info">{{ course.category.name }}</span>
+                {% else %}
+                <span class="badge badge-secondary">—</span>
+                {% endif %}
+              </td>
+              <td>₹{{ course.original_price }}</td>
+              <td style="color: #28a745; font-weight: 600;">₹{{ course.current_price }}</td>
+              <td>{{ course.pdfs.count }} PDFs</td>
+              <td>
+                {% if course.is_active %}
+                <span class="badge badge-success">Active</span>
+                {% else %}
+                <span class="badge badge-danger">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="action-btns">
+                  <a href="{% url 'elibrary_upload_pdf' course.id %}" class="action-btn" title="Upload PDF"><i class="fa-solid fa-upload"></i></a>
+                  <a href="{% url 'elibrary_edit' course.id %}" class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                  <form method="post" action="{% url 'elibrary_delete' course.id %}" style="display: inline;" onsubmit="return confirmCourseDelete()">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn btn-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="custom-empty"><i class="fa-solid fa-inbox"></i> No courses found. Add your first course!</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<style>
+.custom-page { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+.custom-container { display: flex; flex-direction: column; gap: 1.5rem; }
+.custom-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.custom-header h1 { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; margin: 0; display: flex; align-items: center; gap: 10px; }
+.custom-header h1 i { color: #1a3a8f; }
+.custom-card { background: #fff; border: 1px solid #e7ebf5; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(26,58,143,0.04); }
+.card-header { margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f0f2f8; }
+.card-header h2 { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin: 0; display: flex; align-items: center; gap: 8px; }
+.filter-form { display: flex; gap: 1rem; align-items: center; }
+.filter-group label { font-size: 0.9rem; font-weight: 600; color: #333; margin-right: 10px; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+.data-table th { background: #f8f9fa; font-weight: 600; font-size: 13px; }
+.action-btns { display: flex; gap: 6px; }
+.action-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #e0e4ee; background: #fff; text-decoration: none; color: #666; }
+.action-btn:hover { background: #f0f4ff; border-color: #1a3a8f; color: #1a3a8f; }
+.btn-delete:hover { background: #ffe8e8; border-color: #dc3545; color: #dc3545; }
+.badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-success { background: #d4edda; color: #155724; }
+.badge-danger { background: #f8d7da; color: #721c24; }
+.badge-info { background: #d1ecf1; color: #0c5460; }
+.badge-secondary { background: #e2e3e5; color: #383d41; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-weight: 600; border: none; text-decoration: none; }
+.btn-primary { background: linear-gradient(135deg, #1a3a8f, #0d2060); color: #fff; }
+.btn-secondary { background: #f5f7fa; color: #555; border: 1.5px solid #dde2ee; }
+.messages { margin-bottom: 1rem; }
+.custom-alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; }
+.custom-alert-success { background: #e8f8e8; border: 1px solid #d8f8d8; color: #2e7d32; }
+.custom-alert-error { background: #ffe8e8; border: 1px solid #ffd8d8; color: #e84444; }
+.custom-empty { text-align: center; color: #888; padding: 2rem !important; }
+.custom-empty i { font-size: 2rem; display: block; margin-bottom: 10px; }
+.form-input { padding: 8px 12px; border: 1.5px solid #dde2ee; border-radius: 8px; font-size: 0.88rem; }
+</style>
+
+<script>
+function confirmCourseDelete() {
+    return confirm("⚠️ Are you sure you want to delete this course?\n\nThis will delete the course and ALL its PDFs. This action cannot be undone.");
+}
+
+function confirmDelete() {
+    return confirm("⚠️ Are you sure you want to delete this PDF?\n\nThis action cannot be undone and the file will be removed from Dropbox.");
+}
+</script>
+{% endblock content1 %}

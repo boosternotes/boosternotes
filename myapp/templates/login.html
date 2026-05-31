@@ -1,0 +1,388 @@
+{% extends "index.html" %}
+{% block content %}
+
+<style>
+  .auth-page{
+    min-height:calc(100vh - var(--nav-h));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:2rem 1rem;
+    background:linear-gradient(135deg,#f0f4ff 0%,#f5f7fa 100%);
+  }
+
+  .auth-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:2.4rem 2rem;
+    width:100%;
+    max-width:420px;
+    box-shadow:0 20px 60px rgba(26,58,143,0.1);
+    position:relative;
+  }
+
+  .auth-card-logo{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:1.6rem;
+  }
+
+  .auth-card-logo .logo-circle{
+    width:46px;
+    height:46px;
+    font-size:20px;
+  }
+
+  .auth-card-logo .brand{
+    font-family:'Baloo 2',cursive;
+    font-size:1.3rem;
+    font-weight:800;
+    color:var(--primary);
+    line-height:1;
+  }
+
+  .auth-card-logo .sub{
+    font-size:0.6rem;
+    color:var(--gold);
+    font-weight:600;
+    letter-spacing:0.5px;
+  }
+
+  .auth-heading{
+    text-align:center;
+    margin-bottom:1.8rem;
+  }
+
+  .auth-heading h2{
+    font-size:1.35rem;
+    font-weight:800;
+    color:#1a1a2e;
+    margin-bottom:4px;
+  }
+
+  .auth-heading p{
+    font-size:0.82rem;
+    color:var(--muted);
+  }
+
+  .form-group{
+    margin-bottom:1.1rem;
+  }
+
+  .form-group label{
+    display:block;
+    font-size:0.8rem;
+    font-weight:600;
+    color:#444;
+    margin-bottom:6px;
+  }
+
+  .form-group .input-wrap{
+    position:relative;
+    display:flex;
+    align-items:center;
+  }
+
+  .form-group .input-wrap .input-icon{
+    position:absolute;
+    left:14px;
+    font-size:15px;
+    pointer-events:none;
+    color:#aaa;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="password"]{
+    width:100%;
+    padding:11px 14px 11px 40px;
+    border:1.5px solid var(--soft-border);
+    border-radius:10px;
+    font-size:0.88rem;
+    color:#222;
+    background:#f8f9ff;
+    outline:none;
+    transition:border-color .18s, box-shadow .18s;
+    font-family:'Poppins',sans-serif;
+  }
+
+  .form-group input:focus{
+    border-color:var(--primary);
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(26,58,143,0.08);
+  }
+
+  .form-group input::placeholder{color:#bbb}
+
+  .form-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:1.4rem;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .remember-label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.8rem;
+    color:#555;
+    cursor:pointer;
+    user-select:none;
+  }
+
+  .remember-label input[type="checkbox"]{
+    width:16px;
+    height:16px;
+    accent-color:var(--primary);
+    cursor:pointer;
+  }
+
+  .forgot-link{
+    font-size:0.78rem;
+    color:var(--primary);
+    font-weight:600;
+    transition:opacity .15s;
+  }
+
+  .forgot-link:hover{opacity:.75}
+
+  .auth-submit-btn{
+    width:100%;
+    padding:13px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    font-size:0.92rem;
+    font-weight:700;
+    cursor:pointer;
+    font-family:'Poppins',sans-serif;
+    transition:all .2s ease;
+    box-shadow:0 8px 20px rgba(26,58,143,0.18);
+    letter-spacing:0.2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:48px;
+    margin-bottom:1.2rem;
+  }
+
+  .auth-submit-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px rgba(26,58,143,0.22);
+    filter:brightness(1.05);
+  }
+
+  .auth-submit-btn:disabled{
+    opacity:.75;
+    cursor:not-allowed;
+    transform:none;
+  }
+
+  .auth-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:1.1rem;
+  }
+
+  .auth-divider span{
+    flex:1;
+    height:1px;
+    background:var(--border);
+  }
+
+  .auth-divider p{
+    font-size:0.74rem;
+    color:#bbb;
+    white-space:nowrap;
+  }
+
+  .auth-alt-link{
+    text-align:center;
+    font-size:0.82rem;
+    color:var(--muted);
+  }
+
+  .auth-alt-link a{
+    color:var(--primary);
+    font-weight:700;
+    margin-left:4px;
+  }
+
+  .auth-alt-link a:hover{text-decoration:underline}
+
+  .form-error{
+    background:#fff0f0;
+    border:1px solid #ffd0d0;
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:0.8rem;
+    color:var(--danger);
+    margin-bottom:1.1rem;
+    display:flex;
+    align-items:flex-start;
+    gap:7px;
+  }
+
+  .loader-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,0.72);
+    backdrop-filter:blur(3px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  }
+
+  .loader-box{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:22px 24px;
+    box-shadow:0 16px 50px rgba(0,0,0,0.12);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#1a1a2e;
+    font-weight:700;
+    font-size:0.9rem;
+  }
+
+  .spinner{
+    width:22px;
+    height:22px;
+    border:3px solid #dbe4fb;
+    border-top-color:var(--primary);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+  }
+
+  @keyframes spin{
+    to{transform:rotate(360deg)}
+  }
+
+  @media (max-width:480px){
+    .auth-card{padding:1.8rem 1.2rem;border-radius:18px}
+    .auth-heading h2{font-size:1.15rem}
+    .loader-box{padding:18px 16px;font-size:0.82rem}
+  }
+</style>
+
+<div class="loader-overlay" id="loaderOverlay">
+  <div class="loader-box">
+    <div class="spinner"></div>
+    <div>Logging you in...</div>
+  </div>
+</div>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-card-logo">
+      <div class="logo-circle">🚀</div>
+      <div class="logo-text-block">
+        <div class="brand">BoosterNotes</div>
+        <div class="sub">Smart Notes. Smart Rank</div>
+      </div>
+    </div>
+
+    <div class="auth-heading">
+      <h2>Welcome Back 👋</h2>
+      <p>Login to access your study materials</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="form-error">
+      <span>⚠️</span>
+      <div>Invalid username or password. Please try again.</div>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="form-error" style="{% if message.tags == 'success' %}background:#f0fff8;border-color:#b2f0d8;color:#1d9e75;{% endif %}">
+        <span>{% if message.tags == 'success' %}✅{% else %}⚠️{% endif %}</span>
+        <div>{{ message }}</div>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}" id="loginForm">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="form-group">
+        <label for="id_username">Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input
+            type="text"
+            id="id_username"
+            name="username"
+            placeholder="Enter your username"
+            autocomplete="username"
+            required
+            value="{{ form.username.value|default:'' }}"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="id_password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input
+            type="password"
+            id="id_password"
+            name="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="remember-label">
+          <input type="checkbox" name="remember_me"> Remember me
+        </label>
+        <a href="" class="forgot-link">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="auth-submit-btn" id="loginBtn">
+        🔐 Login to BoosterNotes
+      </button>
+    </form>
+
+    <div class="auth-divider">
+      <span></span><p>Don't have an account?</p><span></span>
+    </div>
+
+    <div class="auth-alt-link">
+      New to BoosterNotes?
+      <a href="{% url 'signup' %}">Create a free account →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const loginForm = document.getElementById('loginForm');
+  const loaderOverlay = document.getElementById('loaderOverlay');
+  const loginBtn = document.getElementById('loginBtn');
+
+  loginForm.addEventListener('submit', function () {
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '⏳ Logging in...';
+    loaderOverlay.style.display = 'flex';
+  });
+</script>
+
+{% endblock content %}

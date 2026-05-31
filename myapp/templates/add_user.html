@@ -1,0 +1,293 @@
+
+<style>
+/* Add User Form Exclusive Styles */
+.add-user-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 2rem 1rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.add-user-container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.add-user-header {
+  margin-bottom: 1.5rem;
+}
+
+.add-user-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.3rem;
+}
+
+.add-user-header p {
+  font-size: 0.88rem;
+  color: #888;
+}
+
+.add-user-card {
+  background: #fff;
+  border: 1px solid #e7ebf5;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(26, 58, 143, 0.06);
+}
+
+.add-user-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e7ebf5;
+}
+
+.add-user-card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.add-user-form {
+  display: block;
+}
+
+.add-user-form .form-group {
+  margin-bottom: 1.3rem;
+}
+
+.add-user-form .form-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.add-user-form .form-label .required {
+  color: #e84444;
+  margin-left: 3px;
+}
+
+.add-user-form input[type="text"],
+.add-user-form input[type="email"],
+.add-user-form input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #dde2ee;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.add-user-form input:focus {
+  outline: none;
+  border-color: #1a3a8f;
+  box-shadow: 0 0 0 3px rgba(26, 58, 143, 0.1);
+  background: #f8f9ff;
+}
+
+.add-user-form .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 0;
+}
+
+.add-user-form .checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  cursor: pointer;
+  margin: 0;
+  font-weight: 500;
+}
+
+.add-user-form input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #1a3a8f;
+  margin: 0;
+  cursor: pointer;
+}
+
+.add-user-form .form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 1.8rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #e7ebf5;
+}
+
+.add-user-form .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  min-width: 140px;
+}
+
+.add-user-form .btn-primary {
+  background: linear-gradient(135deg, #1a3a8f, #0d2060);
+  color: #fff;
+}
+
+.add-user-form .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(26, 58, 143, 0.2);
+}
+
+.add-user-form .btn-secondary {
+  background: #f5f7fa;
+  color: #555;
+  border: 1.5px solid #dde2ee;
+}
+
+.add-user-form .btn-secondary:hover {
+  background: #e8eaf0;
+  border-color: #cdd2de;
+}
+
+.add-user-form .form-alert {
+  background: #fff4e8;
+  border: 1px solid #ffd8a8;
+  color: #b26a00;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 1.3rem;
+  font-size: 0.85rem;
+}
+
+.add-user-form .error-message {
+  color: #e84444;
+  font-size: 0.8rem;
+  margin-top: 6px;
+  min-height: 14px;
+}
+
+@media (max-width: 768px) {
+  .add-user-page {
+    padding: 1rem 0.75rem;
+  }
+  
+  .add-user-card {
+    padding: 1.2rem;
+  }
+  
+  .add-user-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .add-user-form .form-actions {
+    flex-direction: column;
+  }
+  
+  .add-user-form .btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+</style>
+
+<div class="add-user-page">
+  <div class="add-user-container">
+    <div class="add-user-header">
+      <h1>{{ title }}</h1>
+      <p>{{ subtitle }}</p>
+    </div>
+
+    <div class="add-user-card">
+      <div class="add-user-card-header">
+        <h2 class="add-user-card-title">{{ title }}</h2>
+        <a href="{% url 'dashboard' %}#users" class="btn btn-secondary">← Back to Users</a>
+      </div>
+
+      <form method="post" novalidate class="add-user-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-alert">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.username.id_for_label }}">
+            Username <span class="required">*</span>
+          </label>
+          {{ form.username }}
+          <div class="error-message">{{ form.username.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+          {{ form.email }}
+          <div class="error-message">{{ form.email.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.first_name.id_for_label }}">First Name</label>
+          {{ form.first_name }}
+          <div class="error-message">{{ form.first_name.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.last_name.id_for_label }}">Last Name</label>
+          {{ form.last_name }}
+          <div class="error-message">{{ form.last_name.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.password1.id_for_label }}">
+            Password <span class="required">*</span>
+          </label>
+          {{ form.password1 }}
+          <div class="error-message">{{ form.password1.errors }}</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.password2.id_for_label }}">
+            Confirm Password <span class="required">*</span>
+          </label>
+          {{ form.password2 }}
+          <div class="error-message">{{ form.password2.errors }}</div>
+        </div>
+
+        <div class="form-group checkbox-row">
+          <label>{{ form.is_staff }} Is Staff</label>
+        </div>
+
+        <div class="form-group checkbox-row">
+          <label>{{ form.is_superuser }} Is Superuser</label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">➕ Create User</button>
+          <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
