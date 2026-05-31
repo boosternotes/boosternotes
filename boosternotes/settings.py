@@ -131,3 +131,10 @@ DROPBOX_REFRESH_TOKEN = "Si57f7yXuB0AAAAAAAAAAZGrsYbd1YLQpvGHxlJES4DRvKr7mDfZo8x
 DROPBOX_FOLDER = '/elibrary'  # Folder in Dropbox to save files
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://www.boosternotes.in",
+    "https://boosternotes-production.up.railway.app/",
+]
