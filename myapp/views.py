@@ -152,20 +152,27 @@ def _build_cart_items(cart):
 # ── Add to Cart ─────────────────────────────────────────────────────────────────
 @require_POST
 def add_to_cart(request):
-    item_id       = request.POST.get('item_id', '').strip()
-    item_type     = request.POST.get('item_type', '').strip()
+    item_id     = request.POST.get('item_id', '').strip()
+    item_type   = request.POST.get('item_type', '').strip()
+    redirect_to = request.POST.get('redirect_to', '').strip()  # 'checkout' for Buy Now
+
     redirect_back = request.META.get('HTTP_REFERER', '/')
     if not item_id or item_type not in ('pdf', 'book'):
         messages.error(request, 'Invalid item.')
         return redirect(redirect_back)
+
     cart = _get_cart(request)
     key  = f"{item_type}_{item_id}"
-    if key in cart:
-        messages.info(request, 'Item is already in your cart.')
-    else:
+    if key not in cart:
         cart[key] = {'id': item_id, 'type': item_type}
         _save_cart(request, cart)
         messages.success(request, '\u2705 Added to cart!')
+    else:
+        messages.info(request, 'Item is already in your cart.')
+
+    # Buy Now: go straight to checkout
+    if redirect_to == 'checkout':
+        return redirect('checkout')
     return redirect(redirect_back)
 
 
@@ -278,7 +285,6 @@ def all_categories(request):
         pdf_count=Count('elibrary_courses')
     ).order_by('name')
     total_categories = categories.count()
-    # Single aggregated query instead of two separate counts
     from django.db.models import IntegerField, Value
     from django.db.models.functions import Coalesce
     total_courses = (
@@ -298,7 +304,6 @@ def all_categories(request):
 # ── Category Courses (public) ───────────────────────────────────────────────────────
 def category_courses_view(request, category_id):
     category = get_object_or_404(Category, id=category_id, is_active=True)
-    # Single DB hit — prefetch both relations together
     elibrary_courses = ELibraryModel.objects.filter(
         category=category, is_active=True
     ).select_related('category').only(
@@ -535,7 +540,7 @@ def navbar_custom(request):
         form = NavbarSettingForm(request.POST, request.FILES, instance=setting)
         if form.is_valid():
             form.save()
-            cache.delete('navbar_setting')  # bust cache
+            cache.delete('navbar_setting')
             messages.success(request, 'Navbar settings updated successfully!')
             return redirect('dashboard')
         messages.error(request, 'Please correct the errors below.')
@@ -637,7 +642,7 @@ def about_custom(request):
         form = AboutSettingForm(request.POST, instance=setting)
         if form.is_valid():
             form.save()
-            cache.delete('about_setting')  # bust cache
+            cache.delete('about_setting')
             messages.success(request, 'About section updated successfully!')
             return redirect('about_custom')
         messages.error(request, 'Please correct the errors below.')
@@ -659,7 +664,7 @@ def footer_custom(request):
         form = FooterSettingForm(request.POST, instance=setting)
         if form.is_valid():
             form.save()
-            cache.delete('footer_setting')  # bust cache
+            cache.delete('footer_setting')
             messages.success(request, 'Footer updated!')
             return redirect('footer_custom')
         messages.error(request, 'Please correct the errors below.')
@@ -842,7 +847,6 @@ def delete_user(request, user_id):
 
 # ── HOME ─────────────────────────────────────────────────────────────────────────────
 def home(request):
-    # ─ Site-wide settings (cached 1 hour each) ─
     navbar = _get_navbar()
     if not navbar:
         navbar = NavbarSetting.objects.create(
@@ -853,7 +857,6 @@ def home(request):
         )
         cache.delete('navbar_setting')
 
-    # ─ Banners ─
     desktop_banners = BannerSetting.objects.filter(is_active=True, banner_type='desktop').order_by('order')
     mobile_banners  = BannerSetting.objects.filter(is_active=True, banner_type='mobile').order_by('order')
     if not desktop_banners.exists():
@@ -867,7 +870,6 @@ def home(request):
     about  = _get_about()
     footer = _get_footer()
 
-    # ─ Coupons (exclude already-used ones for logged-in users) ─
     coupon_qs = Coupon.objects.filter(
         is_active=True, expiry_date__gte=timezone.now().date(),
     ).annotate(remaining=F('usage_limit') - F('times_used')).filter(remaining__gt=0)
@@ -876,7 +878,6 @@ def home(request):
         coupon_qs = coupon_qs.exclude(id__in=used_ids)
     active_coupons = coupon_qs.order_by('-created_at')[:6]
 
-    # ─ Content (optimized: only needed fields + prefetch) ─
     categories   = cache.get('home_categories')
     if categories is None:
         categories = list(
@@ -884,7 +885,7 @@ def home(request):
             .annotate(pdf_count=Count('elibrary_courses'))
             .order_by('name')[:10]
         )
-        cache.set('home_categories', categories, 600)  # 10 min
+        cache.set('home_categories', categories, 600)
 
     popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').only(
         'id', 'name', 'current_price', 'original_price', 'thumbnail', 'category_id'
@@ -931,7 +932,7 @@ def elibrary_detail(request, pk):
             item_type='pdf',
             item_id=str(pk)
         ).exists()
-    uploaded_pdfs = course.pdfs.all()  # already prefetched
+    uploaded_pdfs = course.pdfs.all()
     return render(request, 'elibrary_detail.html', {
         'pdf': course,
         'uploaded_pdfs': uploaded_pdfs,
@@ -988,7 +989,6 @@ def dashboard(request):
     if not request.user.is_staff and not request.user.is_superuser:
         messages.error(request, "You don't have permission.")
         return redirect('home')
-    # Use only() to avoid loading all User fields unnecessarily
     users = User.objects.only(
         'id', 'username', 'email', 'first_name', 'last_name',
         'is_active', 'is_staff', 'date_joined'
