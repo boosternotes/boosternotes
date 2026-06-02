@@ -667,11 +667,9 @@ def delete_user(request, user_id):
     return redirect('dashboard')
 
 
-
 def home(request):
     """Home page with dynamic customization data and active coupons"""
     
-    # Get customization settings (create defaults if they don't exist)
     navbar = NavbarSetting.objects.first()
     if not navbar:
         navbar = NavbarSetting.objects.create(
@@ -683,18 +681,16 @@ def home(request):
             coupon_text="🎟️ Apply Coupon"
         )
     
-    # Get active banners for desktop and mobile
     desktop_banners = BannerSetting.objects.filter(
-        is_active=True, 
+        is_active=True,
         banner_type='desktop'
     ).order_by('order')
     
     mobile_banners = BannerSetting.objects.filter(
-        is_active=True, 
+        is_active=True,
         banner_type='mobile'
     ).order_by('order')
     
-    # Create default banners if none exist
     if not desktop_banners.exists():
         BannerSetting.objects.create(
             banner_type='desktop',
@@ -702,7 +698,7 @@ def home(request):
             is_active=True
         )
         desktop_banners = BannerSetting.objects.filter(
-            is_active=True, 
+            is_active=True,
             banner_type='desktop'
         ).order_by('order')
     
@@ -713,14 +709,14 @@ def home(request):
             is_active=True
         )
         mobile_banners = BannerSetting.objects.filter(
-            is_active=True, 
+            is_active=True,
             banner_type='mobile'
         ).order_by('order')
     
     stats = StatsSetting.objects.filter(is_active=True).order_by('display_order')
     if not stats.exists():
         StatsSetting.objects.bulk_create([
-            StatsSetting(icon="📚", value="343", title="E-Library Courses", 
+            StatsSetting(icon="📚", value="343", title="E-Library Courses",
                         note="Exam-ready PDFs and revision packs", display_order=1),
             StatsSetting(icon="📦", value="500+", title="Physical Books",
                         note="Printed material delivered to students", display_order=2),
@@ -750,7 +746,6 @@ def home(request):
             copyright_text="© 2026 BoosterNotes. All rights reserved."
         )
     
-    # Get active coupons - exclude ones user has already used
     if request.user.is_authenticated:
         used_coupon_ids = CouponUsage.objects.filter(
             user=request.user
@@ -776,17 +771,17 @@ def home(request):
             remaining__gt=0
         ).order_by('-created_at')[:6]
     
-    categories = Category.objects.all()[:10]
-
-    # Popular PDFs: use only fields that exist on ELibraryModel
-    popular_pdfs = (
-        ELibraryModel.objects.filter(
-            is_active=True,
-            # remove product_type filter – it doesn't exist
-        )
-        .order_by('-created_at')
-        [:8]
-    )
+    categories = Category.objects.annotate(
+        pdf_count=Count('elibrary_courses')
+    ).order_by('name')[:10]
+    
+    popular_pdfs = ELibraryModel.objects.filter(
+        is_active=True
+    ).select_related('category').order_by('-created_at')[:8]
+    
+    hard_books = HardBook.objects.filter(
+        is_active=True
+    ).prefetch_related('images').order_by('-created_at')[:8]
     
     context = {
         'navbar': navbar,
@@ -797,10 +792,23 @@ def home(request):
         'footer': footer,
         'categories': categories,
         'active_coupons': active_coupons,
-        'popular_pdfs': popular_pdfs,  
+        'popular_pdfs': popular_pdfs,
+        'hard_books': hard_books,
     }
     
     return render(request, 'index.html', context)
+
+def hard_book_detail(request, pk):
+    book = get_object_or_404(
+        HardBook.objects.prefetch_related('images'),
+        pk=pk,
+        is_active=True
+    )
+    book_images = book.images.all()
+    return render(request, 'hard_book_detail.html', {
+        'book': book,
+        'book_images': book_images,
+    })
 
 def elibrary_detail(request, pk):
     pdf = get_object_or_404(

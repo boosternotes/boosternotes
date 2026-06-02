@@ -594,8 +594,121 @@
   </div>
 </section>
 
+<style>
+  .book-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,240px));
+  gap:1rem;
+  justify-content:flex-start;
+}
 
+.book-card-link{
+  text-decoration:none;
+  color:inherit;
+  display:block;
+}
 
+.book-card{
+  background:#f5f7fa;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid #eaecf4;
+  transition:transform .2s, box-shadow .2s;
+  cursor:pointer;
+  min-width:0;
+  width:100%;
+  max-width:240px;
+}
+
+.book-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 28px rgba(26,58,143,0.1);
+}
+
+.book-thumb{
+  height:150px;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:4rem;
+  overflow:hidden;
+  background:#eef2ff;
+}
+
+.book-thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.book-body{
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.book-body h3{
+  font-size:.82rem;
+  font-weight:600;
+  color:#1a1a2e;
+  line-height:1.35;
+  min-height:42px;
+  margin:0;
+}
+
+.b-tag{
+  display:inline-block;
+  background:#e8f0fe;
+  color:#1a3a8f;
+  font-size:.66rem;
+  padding:3px 8px;
+  border-radius:10px;
+  font-weight:600;
+  margin-bottom:2px;
+}
+
+.b-price{
+  font-size:.95rem;
+  font-weight:800;
+  color:#1a3a8f;
+  margin-bottom:0;
+}
+
+.b-price .b-orig{
+  font-size:.7rem;
+  color:#aaa;
+  text-decoration:line-through;
+  margin-left:4px;
+  font-weight:400;
+}
+
+.cart-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  background:#fff;
+  border:1.5px solid #1a3a8f;
+  color:#1a3a8f;
+  padding:10px;
+  border-radius:8px;
+  font-size:.78rem;
+  font-weight:600;
+  transition:all .15s;
+  font-family:'Poppins',sans-serif;
+  cursor:pointer;
+  width:100%;
+  min-height:42px;
+}
+
+.cart-btn:hover{
+  background:#1a3a8f;
+  color:#fff;
+}
+</style>
 
 
 <section class="section books-section" id="books">
@@ -604,48 +717,46 @@
       <h2>📦 Physical <span>Books</span></h2>
       <div class="sec-sub">Printed books for deep study</div>
     </div>
-    <a href="#" class="view-all">View All</a>
+    <a href="{% url 'hard_books_list' %}" class="view-all">View All</a>
   </div>
+
   <div class="book-grid">
-    <div class="book-card">
-      <div class="book-thumb">📖</div>
-      <div class="book-body">
-        <div class="b-tag">Bestseller</div>
-        <h3>Complete Biology Set for NEET</h3>
-        <div class="b-price">₹499 <span class="b-orig">₹899</span></div>
-        <button class="cart-btn" onclick="addCart(this)">Add to Cart</button>
+    {% for book in hard_books %}
+      <a href="{% url 'hard_book_detail' book.id %}" class="book-card-link">
+        <div class="book-card">
+          <div class="book-thumb">
+            {% with first_image=book.images.first %}
+              {% if first_image and first_image.image %}
+                <img src="{{ first_image.image.url }}" alt="{{ book.title }}">
+              {% else %}
+                📚
+              {% endif %}
+            {% endwith %}
+          </div>
+
+          <div class="book-body">
+            <div class="b-tag">
+              {% if forloop.first %}Bestseller{% elif forloop.counter == 2 %}New Arrival{% elif forloop.counter == 3 %}Popular{% else %}Limited{% endif %}
+            </div>
+            <h3>{{ book.title }}</h3>
+            <div class="b-price">₹{{ book.price|floatformat:0 }} <span class="b-orig">₹{{ book.original_price|floatformat:0 }}</span></div>
+            <button class="cart-btn" type="button">View Details</button>
+          </div>
+        </div>
+      </a>
+    {% empty %}
+      <div class="book-card">
+        <div class="book-thumb">📚</div>
+        <div class="book-body">
+          <div class="b-tag">No Books</div>
+          <h3>No physical books available</h3>
+          <div class="b-price">₹0 <span class="b-orig">₹0</span></div>
+          <button class="cart-btn" type="button" disabled>Coming Soon</button>
+        </div>
       </div>
-    </div>
-    <div class="book-card">
-      <div class="book-thumb">📚</div>
-      <div class="book-body">
-        <div class="b-tag">New Arrival</div>
-        <h3>JEE Advanced Practice Book</h3>
-        <div class="b-price">₹599 <span class="b-orig">₹999</span></div>
-        <button class="cart-btn" onclick="addCart(this)">Add to Cart</button>
-      </div>
-    </div>
-    <div class="book-card">
-      <div class="book-thumb">📘</div>
-      <div class="book-body">
-        <div class="b-tag">Popular</div>
-        <h3>UPSC Prelims Handbook</h3>
-        <div class="b-price">₹449 <span class="b-orig">₹799</span></div>
-        <button class="cart-btn" onclick="addCart(this)">Add to Cart</button>
-      </div>
-    </div>
-    <div class="book-card">
-      <div class="book-thumb">📙</div>
-      <div class="book-body">
-        <div class="b-tag">Limited</div>
-        <h3>SSC English Grammar Guide</h3>
-        <div class="b-price">₹299 <span class="b-orig">₹599</span></div>
-        <button class="cart-btn" onclick="addCart(this)">Add to Cart</button>
-      </div>
-    </div>
+    {% endfor %}
   </div>
 </section>
-
 
 <!-- About Section -->
 <section class="about-section" id="about">

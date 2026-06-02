@@ -1,0 +1,60 @@
+{% extends "index.html" %}
+
+{% block content %}
+<section class="section">
+  <div class="pdf-card" style="max-width:1000px;margin:0 auto;">
+    <div class="pdf-thumb" style="height:360px;overflow:hidden;">
+      {% with first_image=book_images.first %}
+        {% if first_image and first_image.image %}
+          <img src="{{ first_image.image.url }}" alt="{{ book.title }}" style="width:100%;height:100%;object-fit:cover;">
+        {% else %}
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f7fa;color:#1a3a8f;font-size:3rem;font-weight:700;">
+            📚
+          </div>
+        {% endif %}
+      {% endwith %}
+      <span class="pdf-badge blue">Book</span>
+    </div>
+
+    <div class="pdf-body" style="padding:18px;">
+      <h3 style="font-size:1.25rem;margin-bottom:8px;">{{ book.title }}</h3>
+
+      {% if book.description %}
+        <p style="font-size:.92rem;color:#555;line-height:1.7;margin-bottom:14px;">
+          {{ book.description }}
+        </p>
+      {% endif %}
+
+      <div class="pdf-foot" style="margin-bottom:16px;">
+        <div>
+          <span class="price-now">₹{{ book.price|floatformat:0 }}</span>
+          <span class="price-old">₹{{ book.original_price|floatformat:0 }}</span>
+        </div>
+      </div>
+
+      <h4 style="font-size:1rem;margin:18px 0 10px;color:#1a1a2e;">Uploaded Images</h4>
+
+      {% if book_images %}
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
+          {% for img in book_images %}
+            {% if img.image %}
+              <a href="{{ img.image.url }}" target="_blank" style="display:block;border-radius:12px;overflow:hidden;border:1px solid #e6e8f0;">
+                <img src="{{ img.image.url }}" alt="{{ book.title }}" style="width:100%;height:180px;object-fit:cover;display:block;">
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="border:1px dashed #cfd6e6;border-radius:12px;padding:16px;background:#fafbff;color:#777;">
+          No images uploaded yet for this book.
+        </div>
+      {% endif %}
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+        <button class="buy-btn" onclick="addCart(this)" style="flex:1;">Buy Now</button>
+        <a href="{% url 'home' %}#books" class="view-all" style="flex:1;text-align:center;">Back to Books</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}
