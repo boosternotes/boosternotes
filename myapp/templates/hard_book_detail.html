@@ -1,8 +1,11 @@
 {% extends "index.html" %}
+{% load static %}
 
 {% block content %}
 <section class="section">
   <div class="pdf-card" style="max-width:1000px;margin:0 auto;">
+
+    <!-- Book thumbnail -->
     <div class="pdf-thumb" style="height:360px;overflow:hidden;">
       {% with first_image=book_images.first %}
         {% if first_image and first_image.image %}
@@ -16,6 +19,7 @@
       <span class="pdf-badge blue">Book</span>
     </div>
 
+    <!-- Book details -->
     <div class="pdf-body" style="padding:18px;">
       <h3 style="font-size:1.25rem;margin-bottom:8px;">{{ book.title }}</h3>
 
@@ -32,8 +36,8 @@
         </div>
       </div>
 
-      <h4 style="font-size:1rem;margin:18px 0 10px;color:#1a1a2e;">Uploaded Images</h4>
-
+      <!-- Book images gallery -->
+      <h4 style="font-size:1rem;margin:18px 0 10px;color:#1a1a2e;">Book Images</h4>
       {% if book_images %}
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
           {% for img in book_images %}
@@ -50,9 +54,46 @@
         </div>
       {% endif %}
 
+      <!-- Action buttons -->
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
-        <button class="buy-btn" onclick="addCart(this)" style="flex:1;">Buy Now</button>
-        <a href="{% url 'home' %}#books" class="view-all" style="flex:1;text-align:center;">Back to Books</a>
+
+        {% if user.is_authenticated %}
+
+          {# Buy Now — add to cart then go straight to checkout #}
+          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;">
+            {% csrf_token %}
+            <input type="hidden" name="item_id"    value="{{ book.id }}">
+            <input type="hidden" name="item_type"  value="book">
+            <input type="hidden" name="redirect_to" value="checkout">
+            <button type="submit" class="buy-btn" style="width:100%;">
+              🛒 Buy Now
+            </button>
+          </form>
+
+          {# Add to Cart — stays on page #}
+          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;">
+            {% csrf_token %}
+            <input type="hidden" name="item_id"   value="{{ book.id }}">
+            <input type="hidden" name="item_type" value="book">
+            <button type="submit" class="view-all" style="width:100%;text-align:center;">
+              🛍️ Add to Cart
+            </button>
+          </form>
+
+        {% else %}
+
+          {# Not logged in — prompt login #}
+          <a href="{% url 'login' %}?next={{ request.path }}"
+             class="buy-btn" style="flex:1;text-align:center;">
+            🔒 Login to Buy
+          </a>
+
+        {% endif %}
+
+        <a href="{% url 'home' %}#books" class="view-all" style="flex:1;text-align:center;">
+          ← Back to Books
+        </a>
+
       </div>
     </div>
   </div>
