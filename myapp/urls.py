@@ -17,6 +17,11 @@ urlpatterns = [
         auth_views.LogoutView.as_view(next_page=reverse_lazy('home')),
         name='logout'
     ),
+
+    # ── User profile pages ──
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('profile/purchases/', views.my_purchases, name='my_purchases'),
+
     # user management
     path('users/add/', views.add_user, name='add_user'),
     path('users/edit/<int:user_id>/', views.edit_user, name='edit_user'),
@@ -25,7 +30,7 @@ urlpatterns = [
     # Notifications
     path('notifications/', views.notifications_section, name='notifications_section'),
     path('notifications/<int:notification_id>/delete/', views.delete_notification, name='delete_notification'),
-    path('notifications/api/', views.notifications_api, name='notifications_api'),   # <-- NEW
+    path('notifications/api/', views.notifications_api, name='notifications_api'),
 
     # Coupons
     path('coupon_list', views.coupon_list, name='coupon_list'),

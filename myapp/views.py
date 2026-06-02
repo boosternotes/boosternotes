@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -24,7 +24,6 @@ from django.core.files.base import ContentFile
 
 # ── Notifications API (bell icon) ──────────────────────────────────────────────
 def notifications_api(request):
-    """Returns the latest 10 notifications as JSON for the bell icon."""
     notifs = Notification.objects.order_by('-sent_at')[:10]
     data = []
     for n in notifs:
@@ -38,7 +37,57 @@ def notifications_api(request):
     return JsonResponse({'notifications': data, 'count': len(data)})
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ── Edit Profile ──────────────────────────────────────────────────────────────
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        username       = request.POST.get('username', '').strip()
+        email          = request.POST.get('email', '').strip()
+        first_name     = request.POST.get('first_name', '').strip()
+        last_name      = request.POST.get('last_name', '').strip()
+        password       = request.POST.get('password', '').strip()
+        password_confirm = request.POST.get('password_confirm', '').strip()
+
+        user = request.user
+
+        # Username uniqueness check
+        if username and username != user.username:
+            if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+                messages.error(request, 'That username is already taken. Please choose another.')
+                return redirect('edit_profile')
+
+        if username:
+            user.username   = username
+        user.email          = email
+        user.first_name     = first_name
+        user.last_name      = last_name
+
+        # Password change
+        if password:
+            if password != password_confirm:
+                messages.error(request, 'Passwords do not match. Please try again.')
+                return redirect('edit_profile')
+            user.set_password(password)
+            user.save()
+            update_session_auth_hash(request, user)  # keep user logged in
+        else:
+            user.save()
+
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('edit_profile')
+
+    return render(request, 'edit_profile.html')
+
+
+# ── My Purchases ──────────────────────────────────────────────────────────────
+@login_required
+def my_purchases(request):
+    # Placeholder — update when purchase model is ready
+    purchases = []
+    return render(request, 'my_purchases.html', {'purchases': purchases})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 def category_courses_view(request, category_id):
     category = get_object_or_404(Category, id=category_id)
@@ -389,7 +438,7 @@ def footer_custom(request):
             description="Reliable study resources for competitive exams.",
             quick_links_title="Quick Links", support_title="Support", contact_title="Contact",
             whatsapp_contact="WhatsApp: 6350331916", hours_contact="10 AM - 7 PM",
-            copyright_text="© 2026 BoosterNotes. All rights reserved.",
+            copyright_text="\u00a9 2026 BoosterNotes. All rights reserved.",
             social_facebook="", social_linkedin="", social_instagram="", social_youtube="",
             social_facebook_color="#1877f2", social_linkedin_color="#0a66c2",
             social_instagram_color="#e4405f", social_youtube_color="#ff0000"
@@ -555,7 +604,7 @@ def home(request):
             brand_name="BoosterNotes", tagline="Smart Notes. Smart Rank",
             search_placeholder="Search pdf courses, exams...",
             whatsapp_number="6350331916", whatsapp_hours="10 AM to 7 PM",
-            coupon_text="🎟️ Apply Coupon"
+            coupon_text="\U0001f39f\ufe0f Apply Coupon"
         )
 
     desktop_banners = BannerSetting.objects.filter(is_active=True, banner_type='desktop').order_by('order')
@@ -572,9 +621,9 @@ def home(request):
     stats = StatsSetting.objects.filter(is_active=True).order_by('display_order')
     if not stats.exists():
         StatsSetting.objects.bulk_create([
-            StatsSetting(icon="📚", value="343",   title="E-Library Courses", note="Exam-ready PDFs",               display_order=1),
-            StatsSetting(icon="📦", value="500+", title="Physical Books",   note="Delivered to students",          display_order=2),
-            StatsSetting(icon="👥", value="2456+",title="Active Users",    note="Trusted by learners across India", display_order=3),
+            StatsSetting(icon="\U0001f4da", value="343",   title="E-Library Courses", note="Exam-ready PDFs",               display_order=1),
+            StatsSetting(icon="\U0001f4e6", value="500+", title="Physical Books",   note="Delivered to students",          display_order=2),
+            StatsSetting(icon="\U0001f465", value="2456+",title="Active Users",    note="Trusted by learners across India", display_order=3),
         ])
         stats = StatsSetting.objects.filter(is_active=True).order_by('display_order')
 
@@ -592,7 +641,7 @@ def home(request):
         footer = FooterSetting.objects.create(
             brand_name="BoosterNotes", tagline="Smart Notes. Smart Rank.",
             description="Reliable study resources for competitive exams.",
-            copyright_text="© 2026 BoosterNotes. All rights reserved."
+            copyright_text="\u00a9 2026 BoosterNotes. All rights reserved."
         )
 
     if request.user.is_authenticated:
@@ -656,23 +705,23 @@ def apply_coupon(request):
     try:
         coupon = Coupon.objects.get(code__iexact=code)
     except Coupon.DoesNotExist:
-        messages.error(request, "❌ Invalid coupon code.")
+        messages.error(request, "\u274c Invalid coupon code.")
         return redirect(redirect_url)
 
     if not coupon.is_active:
-        messages.error(request, "❌ This coupon is no longer active.")
+        messages.error(request, "\u274c This coupon is no longer active.")
         return redirect(redirect_url)
 
     if coupon.is_expired:
-        messages.error(request, "❌ This coupon has expired.")
+        messages.error(request, "\u274c This coupon has expired.")
         return redirect(redirect_url)
 
     if CouponUsage.objects.filter(user=request.user, coupon=coupon).exists():
-        messages.warning(request, "⚠️ You have already used this coupon.")
+        messages.warning(request, "\u26a0\ufe0f You have already used this coupon.")
         return redirect(redirect_url)
 
     if coupon.remaining_uses <= 0:
-        messages.error(request, "❌ This coupon has reached its usage limit.")
+        messages.error(request, "\u274c This coupon has reached its usage limit.")
         return redirect(redirect_url)
 
     try:
@@ -691,7 +740,7 @@ def apply_coupon(request):
         request.session['applied_coupon_id']     = coupon.id
         request.session['applied_coupon_code']   = coupon.code
         request.session['applied_coupon_amount'] = str(coupon.amount)
-        messages.success(request, f"✅ Coupon '{coupon.code}' applied! You saved ₹{coupon.amount}")
+        messages.success(request, f"\u2705 Coupon '{coupon.code}' applied! You saved \u20b9{coupon.amount}")
 
     except Exception:
         messages.error(request, "Something went wrong applying the coupon. Please try again.")
