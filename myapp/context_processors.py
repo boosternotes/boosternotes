@@ -3,10 +3,9 @@ from .models import NavbarSetting, FooterSetting, StatsSetting
 
 def global_settings(request):
     """
-    Injects navbar, footer, stats, and site_settings into every template
-    that is rendered via Django's template engine.
-    This fixes blank logo/footer on pages that extend index.html
-    but don't go through the home() view.
+    Injects navbar, footer, stats, and site_settings into every template.
+    Register this in settings.py TEMPLATES > context_processors:
+        'myapp.context_processors.global_settings'
     """
     navbar = NavbarSetting.objects.first()
     footer = FooterSetting.objects.first()
@@ -14,7 +13,11 @@ def global_settings(request):
 
     return {
         'navbar':        navbar,
-        'site_settings': navbar,   # alias kept for backward-compat (logo, brand_name etc.)
+        'site_settings': navbar,   # alias: used for logo / brand_name in templates
         'footer':        footer,
         'stats':         stats,
     }
+
+
+# Backward-compat alias — in case settings.py still references the old name
+site_settings = global_settings
