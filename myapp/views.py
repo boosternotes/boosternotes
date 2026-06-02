@@ -752,12 +752,10 @@ def home(request):
     
     # Get active coupons - exclude ones user has already used
     if request.user.is_authenticated:
-        # Get IDs of coupons user has already used
         used_coupon_ids = CouponUsage.objects.filter(
             user=request.user
         ).values_list('coupon_id', flat=True)
         
-        # Filter active coupons excluding used ones
         active_coupons = Coupon.objects.filter(
             is_active=True,
             expiry_date__gte=timezone.now().date(),
@@ -769,7 +767,6 @@ def home(request):
             remaining__gt=0
         ).order_by('-created_at')[:6]
     else:
-        # For non-authenticated users, show all active coupons
         active_coupons = Coupon.objects.filter(
             is_active=True,
             expiry_date__gte=timezone.now().date(),
@@ -780,6 +777,16 @@ def home(request):
         ).order_by('-created_at')[:6]
     
     categories = Category.objects.all()[:10]
+
+    # Popular PDFs: use only fields that exist on ELibraryModel
+    popular_pdfs = (
+        ELibraryModel.objects.filter(
+            is_active=True,
+            # remove product_type filter – it doesn't exist
+        )
+        .order_by('-created_at')
+        [:8]
+    )
     
     context = {
         'navbar': navbar,
@@ -790,9 +797,11 @@ def home(request):
         'footer': footer,
         'categories': categories,
         'active_coupons': active_coupons,
+        'popular_pdfs': popular_pdfs,  
     }
     
     return render(request, 'index.html', context)
+
 
 @login_required
 @require_POST

@@ -483,22 +483,49 @@
       <h2>🎯 Browse by <span>Exam Category</span></h2>
       <div style="font-size:.78rem;color:#888;margin-top:2px;">Choose your exam and explore targeted study material</div>
     </div>
-    <a href="#" class="view-all">View All →</a>
+    <a href="" class="view-all">View All →</a>
   </div>
+
   <div class="cat-scroll" id="catScroll">
-    <div class="cat-card active" onclick="selectCat(this)"><div class="cat-icon">🩺</div><div class="cat-label">NEET / Medical</div><div class="cat-count">48 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">⚗️</div><div class="cat-label">JEE / IIT-JEE</div><div class="cat-count">36 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">🏛️</div><div class="cat-label">UPSC / CSE</div><div class="cat-count">52 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">🏦</div><div class="cat-label">SSC / Banking</div><div class="cat-count">29 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">🏥</div><div class="cat-label">B.Sc Nursing</div><div class="cat-count">31 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">🐄</div><div class="cat-label">Veterinary</div><div class="cat-count">18 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">⚔️</div><div class="cat-label">NDA / Defence</div><div class="cat-count">22 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">🔬</div><div class="cat-label">Paramedical</div><div class="cat-count">24 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">📐</div><div class="cat-label">State PSC</div><div class="cat-count">15 PDFs</div></div>
-    <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">🎓</div><div class="cat-label">B.Ed / D.Ed</div><div class="cat-count">12 PDFs</div></div>
+    {% for category in categories %}
+      <div class="cat-card {% if forloop.first %}active{% endif %}" onclick="selectCat(this)">
+        <div class="cat-icon">
+          {# You can store an emoji/icon in Category if you want, e.g. category.icon #}
+          {{ category.icon|default:"📚" }}
+        </div>
+        <div class="cat-label">{{ category.name }}</div>
+        <div class="cat-count">{{ category.pdf_count|default:"0" }} PDFs</div>
+      </div>
+    {% empty %}
+      <div class="cat-card">
+        <div class="cat-icon">📚</div>
+        <div class="cat-label">No categories yet</div>
+        <div class="cat-count">0 PDFs</div>
+      </div>
+    {% endfor %}
   </div>
 </section>
 
+<style>
+  .pdf-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,240px));
+  gap:1rem;
+  justify-content:flex-start;
+}
+
+.pdf-card{
+  width:100%;
+  max-width:240px;
+  background:#fff;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid #eaecf4;
+  transition:transform .2s, box-shadow .2s;
+  cursor:pointer;
+  min-width:0;
+}
+</style>
 
 <section class="section pdf-section" id="pdfs">
   <div class="sec-head">
@@ -508,53 +535,65 @@
     </div>
     <a href="#" class="view-all">View All</a>
   </div>
+
   <div class="pdf-grid">
-    <div class="pdf-card">
-      <div class="pdf-thumb">📘 <span class="pdf-badge blue">Top</span></div>
-      <div class="pdf-body">
-        <h3>NEET Biology Full Revision PDF</h3>
-        <div class="pdf-foot">
-          <div><span class="price-now">₹149</span> <span class="price-old">₹299</span></div>
-          <div class="pdf-pages">180 Pages</div>
+    {% for pdf in popular_pdfs %}
+      <div class="pdf-card">
+        <div class="pdf-thumb">
+          {% if pdf.thumbnail %}
+            <img src="{{ pdf.thumbnail.url }}" alt="{{ pdf.name }}">
+          {% else %}
+            📘
+          {% endif %}
+          <span class="pdf-badge blue">Top</span>
         </div>
-        <button class="buy-btn" onclick="addCart(this)">Buy Now</button>
-      </div>
-    </div>
-    <div class="pdf-card">
-      <div class="pdf-thumb">📗 <span class="pdf-badge green">New</span></div>
-      <div class="pdf-body">
-        <h3>JEE Mathematics Formula Sheet</h3>
-        <div class="pdf-foot">
-          <div><span class="price-now">₹99</span> <span class="price-old">₹199</span></div>
-          <div class="pdf-pages">90 Pages</div>
+
+        <div class="pdf-body">
+          <h3>{{ pdf.name }}</h3>
+
+          {% if pdf.category %}
+            <div style="font-size:.72rem;color:#1a3a8f;font-weight:600;margin-bottom:6px;">
+              {{ pdf.category.name }}
+            </div>
+          {% endif %}
+
+          {% if pdf.description %}
+            <div style="font-size:.74rem;color:#777;line-height:1.45;margin-bottom:8px;min-height:34px;">
+              {{ pdf.description|truncatechars:70 }}
+            </div>
+          {% endif %}
+
+          <div class="pdf-foot">
+            <div>
+              <span class="price-now">₹{{ pdf.current_price|floatformat:0 }}</span>
+              {% if pdf.original_price and pdf.original_price > pdf.current_price %}
+                <span class="price-old">₹{{ pdf.original_price|floatformat:0 }}</span>
+              {% endif %}
+            </div>
+            <div class="pdf-pages">PDF</div>
+          </div>
+
+          <button class="buy-btn" onclick="addCart(this)">Buy Now</button>
         </div>
-        <button class="buy-btn" onclick="addCart(this)">Buy Now</button>
       </div>
-    </div>
-    <div class="pdf-card">
-      <div class="pdf-thumb">📙 <span class="pdf-badge">Hot</span></div>
-      <div class="pdf-body">
-        <h3>UPSC Current Affairs Monthly Digest</h3>
-        <div class="pdf-foot">
-          <div><span class="price-now">₹179</span> <span class="price-old">₹349</span></div>
-          <div class="pdf-pages">220 Pages</div>
+    {% empty %}
+      <div class="pdf-card">
+        <div class="pdf-thumb">📘 <span class="pdf-badge blue">Top</span></div>
+        <div class="pdf-body">
+          <h3>No PDF courses yet</h3>
+          <div class="pdf-foot">
+            <div><span class="price-now">₹0</span></div>
+            <div class="pdf-pages">PDF</div>
+          </div>
+          <button class="buy-btn" disabled>Coming Soon</button>
         </div>
-        <button class="buy-btn" onclick="addCart(this)">Buy Now</button>
       </div>
-    </div>
-    <div class="pdf-card">
-      <div class="pdf-thumb">📕 <span class="pdf-badge blue">Best</span></div>
-      <div class="pdf-body">
-        <h3>SSC Reasoning Crash Course</h3>
-        <div class="pdf-foot">
-          <div><span class="price-now">₹129</span> <span class="price-old">₹249</span></div>
-          <div class="pdf-pages">150 Pages</div>
-        </div>
-        <button class="buy-btn" onclick="addCart(this)">Buy Now</button>
-      </div>
-    </div>
+    {% endfor %}
   </div>
 </section>
+
+
+
 
 
 <section class="section books-section" id="books">

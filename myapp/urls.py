@@ -72,6 +72,9 @@ urlpatterns = [
 
       # Coupon System
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
+
+    
+    
 ]
 
 # Serve media files in development
