@@ -1057,7 +1057,14 @@ def signup(request):
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already exists')
             return redirect('signup')
-        user = User.objects.create_user(username=username, email=email, password=password)
+        # Always create as a regular student — never grant staff/superuser via public signup
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            is_staff=False,
+            is_superuser=False,
+        )
         login(request, user)
         messages.success(request, 'Account created successfully!')
         return redirect('home')
