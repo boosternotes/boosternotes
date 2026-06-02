@@ -9,6 +9,30 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      font-size: .82rem;
+      font-weight: 600;
+      text-decoration: none;
+      font-family: 'Poppins', sans-serif;
+      transition: background .18s, border-color .18s;
+      white-space: nowrap;
+    }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.22);
+      border-color: rgba(255,255,255,0.5);
+      color: #fff;
+    }
+    .back-btn .back-arrow { font-size: .9rem; }
+  </style>
 </head>  
 <body>
   {% block content1 %}
@@ -23,6 +47,11 @@
       </div>
     </a>
 
+    <!-- Back to Site button in navbar -->
+    <a href="{% url 'home' %}" class="back-btn">
+      <span class="back-arrow">←</span> Back to Site
+    </a>
+
     <button class="ham-btn" onclick="toggleSidebar()" type="button">☰</button>
   </nav>
 
@@ -30,12 +59,6 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <ul class="sidebar-menu">
-         <li class="sidebar-item">
-          <a href=" {% url "home" %} " class="sidebar-link">
-            <span class="sidebar-icon">🏠</span>
-            <span>Homepage</span>
-          </a>
-        </li>
         <li class="sidebar-item">
           <a href=" {% url "dashboard" %} " class="sidebar-link active" onclick="showSection('dashboard')">
             <span class="sidebar-icon">📊</span>
@@ -578,7 +601,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <td style="font-size:1.4rem;">🏛️</td>
+                  <td style="font-size:1.4rem;">🏗️</td>
                   <td>UPSC / CSE</td>
                   <td>52</td>
                   <td>31</td>
@@ -745,31 +768,22 @@
 
   <script>
     function showSection(sectionName) {
-      // Hide all sections
       document.querySelectorAll('.content-section').forEach(section => {
         section.style.display = 'none';
       });
-      
-      // Show selected section
       document.getElementById(sectionName + '-section').style.display = 'block';
-      
-      // Update active sidebar link
       document.querySelectorAll('.sidebar-link').forEach(link => {
         link.classList.remove('active');
       });
       document.querySelectorAll('.sidebar-sublink').forEach(link => {
         link.classList.remove('active');
       });
-      
-      // Add active class to clicked link
       if (event && event.target) {
         const clickedLink = event.target.closest('.sidebar-link') || event.target.closest('.sidebar-sublink');
         if (clickedLink) {
           clickedLink.classList.add('active');
         }
       }
-      
-      // Close sidebar on mobile
       if (window.innerWidth <= 820) {
         document.getElementById('sidebar').classList.remove('open');
       }
@@ -796,11 +810,9 @@
       alert('Add Book form will open here');
     }
 
-    // Close sidebar when clicking outside on mobile
     document.addEventListener('click', function(event) {
       const sidebar = document.getElementById('sidebar');
       const hamBtn = document.querySelector('.ham-btn');
-      
       if (window.innerWidth <= 820 && 
           !sidebar.contains(event.target) && 
           !hamBtn.contains(event.target)) {
