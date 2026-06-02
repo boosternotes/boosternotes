@@ -4,58 +4,41 @@
 {% block content %}
 <style>
   .purchases-page {
-    min-height: 60vh;
-    padding: 48px 16px 64px;
+    min-height: 65vh;
+    padding: 52px 16px 72px;
     background: #f5f7fb;
   }
   .purchases-inner {
     max-width: 860px;
     margin: 0 auto;
   }
+  .purchases-inner .page-icon { font-size: 2rem; margin-bottom: 6px; }
   .purchases-inner h2 {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: #1a3a8f;
-    margin: 0 0 4px;
+    font-size: 1.4rem; font-weight: 800; color: #1a3a8f; margin: 0 0 4px;
   }
-  .purchases-inner .sub {
-    font-size: .8rem;
-    color: #aaa;
-    margin-bottom: 32px;
-  }
+  .purchases-inner .sub { font-size: .8rem; color: #aaa; margin-bottom: 32px; }
+
+  /* Empty state */
   .empty-box {
     background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 4px 20px rgba(26,58,143,0.07);
-    padding: 60px 24px;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(26,58,143,0.08);
+    padding: 70px 24px;
     text-align: center;
   }
-  .empty-box .icon { font-size: 3.5rem; margin-bottom: 16px; }
-  .empty-box h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #333;
-    margin: 0 0 8px;
-  }
-  .empty-box p {
-    font-size: .85rem;
-    color: #aaa;
-    margin: 0 0 24px;
-  }
+  .empty-box .empty-icon { font-size: 4rem; margin-bottom: 18px; }
+  .empty-box h3 { font-size: 1.15rem; font-weight: 700; color: #333; margin: 0 0 8px; }
+  .empty-box p { font-size: .85rem; color: #aaa; margin: 0 0 26px; line-height: 1.6; }
   .empty-box a {
     display: inline-block;
     background: linear-gradient(135deg, #1a3a8f, #0d6efd);
-    color: #fff;
-    padding: 12px 28px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: .88rem;
-    text-decoration: none;
+    color: #fff; padding: 13px 30px; border-radius: 10px;
+    font-weight: 700; font-size: .9rem; text-decoration: none;
     transition: opacity .15s;
   }
-  .empty-box a:hover { opacity: .9; }
+  .empty-box a:hover { opacity: .88; }
 
-  /* Purchase cards (for future use) */
+  /* Purchase card */
   .purchase-card {
     background: #fff;
     border-radius: 14px;
@@ -69,31 +52,34 @@
   }
   .purchase-card:hover { box-shadow: 0 6px 22px rgba(26,58,143,0.09); }
   .purchase-thumb {
-    width: 64px; height: 64px; border-radius: 10px;
+    width: 68px; height: 68px; border-radius: 10px;
     background: #eef2ff;
     display: flex; align-items: center; justify-content: center;
-    font-size: 2rem; flex-shrink: 0;
-    overflow: hidden;
+    font-size: 2rem; flex-shrink: 0; overflow: hidden;
   }
-  .purchase-thumb img { width:100%; height:100%; object-fit:cover; }
+  .purchase-thumb img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
   .purchase-info { flex: 1; min-width: 0; }
   .purchase-info h4 { font-size: .9rem; font-weight: 700; color: #222; margin: 0 0 4px; }
-  .purchase-info .meta { font-size: .75rem; color: #aaa; }
-  .purchase-info .price { font-size: .85rem; font-weight: 700; color: #1a3a8f; margin-top: 4px; }
+  .purchase-info .meta { font-size: .74rem; color: #aaa; margin-bottom: 3px; }
+  .purchase-info .price { font-size: .85rem; font-weight: 700; color: #1a3a8f; }
   .download-btn {
-    background: #1a3a8f; color: #fff;
-    border: none; border-radius: 8px;
-    padding: 8px 16px; font-size: .78rem;
-    font-weight: 600; cursor: pointer;
+    background: linear-gradient(135deg,#1a3a8f,#0d6efd); color: #fff;
+    border: none; border-radius: 8px; padding: 9px 18px;
+    font-size: .78rem; font-weight: 600; cursor: pointer;
     font-family: inherit; text-decoration: none;
-    display: inline-block; transition: opacity .15s;
+    display: inline-block; transition: opacity .15s; white-space: nowrap;
   }
   .download-btn:hover { opacity: .85; }
+  @media (max-width: 540px) {
+    .purchase-card { flex-wrap: wrap; }
+    .download-btn { width: 100%; text-align: center; margin-top: 6px; }
+  }
 </style>
 
 <div class="purchases-page">
   <div class="purchases-inner">
-    <h2>🛒 My Purchases</h2>
+    <div class="page-icon">🛒</div>
+    <h2>My Purchases</h2>
     <div class="sub">All your bought PDFs and books in one place</div>
 
     {% if purchases %}
@@ -118,9 +104,9 @@
       {% endfor %}
     {% else %}
       <div class="empty-box">
-        <div class="icon">🛒</div>
+        <div class="empty-icon">🛒</div>
         <h3>No purchases yet</h3>
-        <p>You haven't bought any PDF courses or books yet.<br>Browse our collection and start learning!</p>
+        <p>You haven't bought any PDF courses or books yet.<br>Browse our collection and start learning today!</p>
         <a href="{% url 'home' %}">Explore Courses →</a>
       </div>
     {% endif %}

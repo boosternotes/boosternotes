@@ -4,95 +4,72 @@
 {% block content %}
 <style>
   .profile-page {
-    min-height: 60vh;
+    min-height: 65vh;
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding: 48px 16px 64px;
+    padding: 52px 16px 72px;
     background: #f5f7fb;
   }
   .profile-card {
     background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 8px 32px rgba(26,58,143,0.10);
-    padding: 40px 36px;
+    border-radius: 20px;
+    box-shadow: 0 8px 36px rgba(26,58,143,0.11);
+    padding: 42px 40px;
     width: 100%;
-    max-width: 480px;
+    max-width: 500px;
   }
+  .profile-card .page-icon { font-size: 2rem; margin-bottom: 6px; }
   .profile-card h2 {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: 800;
     color: #1a3a8f;
-    margin: 0 0 6px;
+    margin: 0 0 4px;
   }
-  .profile-card .sub {
-    font-size: .8rem;
-    color: #aaa;
-    margin-bottom: 28px;
-  }
-  .form-group { margin-bottom: 18px; }
+  .profile-card .sub { font-size: .8rem; color: #aaa; margin-bottom: 30px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { margin-bottom: 16px; }
   .form-group label {
-    display: block;
-    font-size: .8rem;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 6px;
+    display: block; font-size: .78rem; font-weight: 600;
+    color: #555; margin-bottom: 5px; letter-spacing: .2px;
   }
   .form-group input {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid #e0e4f0;
-    border-radius: 9px;
-    font-size: .9rem;
-    font-family: inherit;
-    color: #222;
-    outline: none;
-    transition: border .15s;
-    box-sizing: border-box;
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid #e0e4f0; border-radius: 9px;
+    font-size: .88rem; font-family: inherit; color: #222;
+    outline: none; transition: border .15s; box-sizing: border-box;
   }
-  .form-group input:focus { border-color: #1a3a8f; }
-  .form-group input[disabled] { background: #f8f8f8; color: #aaa; cursor: not-allowed; }
+  .form-group input:focus { border-color: #1a3a8f; box-shadow: 0 0 0 3px rgba(26,58,143,0.07); }
+  .divider { border: none; border-top: 1px solid #f0f0f0; margin: 20px 0; }
   .save-btn {
-    width: 100%;
-    padding: 12px;
+    width: 100%; padding: 13px;
     background: linear-gradient(135deg, #1a3a8f, #0d6efd);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: .95rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: opacity .15s;
-    font-family: inherit;
+    color: #fff; border: none; border-radius: 10px;
+    font-size: .95rem; font-weight: 700; cursor: pointer;
+    margin-top: 6px; transition: opacity .15s; font-family: inherit;
+    letter-spacing: .3px;
   }
-  .save-btn:hover { opacity: .9; }
+  .save-btn:hover { opacity: .88; }
   .alert-success {
-    background: #e8f8f0;
-    color: #1d9e75;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: .82rem;
-    font-weight: 600;
-    margin-bottom: 18px;
+    background: #e6f9f1; color: #1a8a5a; border-left: 4px solid #1d9e75;
+    border-radius: 8px; padding: 11px 14px; font-size: .82rem;
+    font-weight: 600; margin-bottom: 20px;
   }
   .alert-error {
-    background: #fff0f0;
-    color: #e74c3c;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: .82rem;
-    font-weight: 600;
-    margin-bottom: 18px;
+    background: #fff0f0; color: #c0392b; border-left: 4px solid #e74c3c;
+    border-radius: 8px; padding: 11px 14px; font-size: .82rem;
+    font-weight: 600; margin-bottom: 20px;
   }
-  @media (max-width: 500px) {
+  @media (max-width: 540px) {
     .profile-card { padding: 28px 18px; }
+    .form-row { grid-template-columns: 1fr; }
   }
 </style>
 
 <div class="profile-page">
   <div class="profile-card">
-    <h2>✏️ Edit Profile</h2>
+    <div class="page-icon">✏️</div>
+    <h2>Edit Profile</h2>
     <div class="sub">Update your account details below</div>
 
     {% if messages %}
@@ -107,33 +84,38 @@
       {% csrf_token %}
 
       <div class="form-group">
-        <label>Username</label>
+        <label>Username *</label>
         <input type="text" name="username" value="{{ user.username }}" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First name">
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last name">
+        </div>
       </div>
 
       <div class="form-group">
         <label>Email</label>
-        <input type="email" name="email" value="{{ user.email }}">
+        <input type="email" name="email" value="{{ user.email }}" placeholder="your@email.com">
       </div>
 
-      <div class="form-group">
-        <label>First Name</label>
-        <input type="text" name="first_name" value="{{ user.first_name }}">
-      </div>
+      <hr class="divider">
+      <div style="font-size:.78rem;color:#aaa;font-weight:600;margin-bottom:12px;">CHANGE PASSWORD <span style="font-weight:400;">(leave blank to keep current)</span></div>
 
-      <div class="form-group">
-        <label>Last Name</label>
-        <input type="text" name="last_name" value="{{ user.last_name }}">
-      </div>
-
-      <div class="form-group">
-        <label>New Password <span style="color:#aaa;font-weight:400;">(leave blank to keep current)</span></label>
-        <input type="password" name="password" placeholder="Enter new password">
-      </div>
-
-      <div class="form-group">
-        <label>Confirm Password</label>
-        <input type="password" name="password_confirm" placeholder="Confirm new password">
+      <div class="form-row">
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" name="password" placeholder="New password">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" name="password_confirm" placeholder="Confirm password">
+        </div>
       </div>
 
       <button class="save-btn" type="submit">💾 Save Changes</button>
