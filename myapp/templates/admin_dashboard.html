@@ -90,7 +90,7 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a href="#books" class="sidebar-link" onclick="showSection('books')">
+          <a href="{% url 'orders_dashboard' %}" class="sidebar-link">
             <span class="sidebar-icon">📦</span>
             <span>Orders</span>
           </a>
@@ -172,29 +172,29 @@
           <div class="stat-card">
             <div class="stat-icon blue">👥</div>
             <div class="stat-info">
-              <h3>2,456</h3>
+              <h3>{{ total_users }}</h3>
               <p>Total Users</p>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon green">💰</div>
             <div class="stat-info">
-              <h3>₹1,24,580</h3>
+              <h3>₹{{ total_revenue|floatformat:0 }}</h3>
               <p>Total Revenue</p>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon orange">📚</div>
+            <div class="stat-icon orange">✅</div>
             <div class="stat-info">
-              <h3>343</h3>
-              <p>E-Library Courses</p>
+              <h3>{{ completed_orders }}</h3>
+              <p>Completed Orders</p>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon purple">📦</div>
+            <div class="stat-icon purple">⏳</div>
             <div class="stat-info">
-              <h3>500+</h3>
-              <p>Physical Books</p>
+              <h3>{{ pending_orders }}</h3>
+              <p>Pending Orders</p>
             </div>
           </div>
         </div>
@@ -202,45 +202,51 @@
         <div class="content-card">
           <div class="card-header">
             <h2 class="card-title">Recent Orders</h2>
-            <button class="btn btn-secondary">View All</button>
+            <a href="{% url 'orders_dashboard' %}" class="btn btn-secondary">View All</a>
           </div>
           <div style="overflow-x:auto;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Order ID</th>
+                  <th>Order #</th>
                   <th>User</th>
-                  <th>Product</th>
+                  <th>Items</th>
                   <th>Amount</th>
                   <th>Status</th>
                   <th>Date</th>
                 </tr>
               </thead>
               <tbody>
+                {% for order in recent_transactions %}
                 <tr>
-                  <td>#ORD-1234</td>
-                  <td>Rahul Sharma</td>
-                  <td>NEET Biology PDF</td>
-                  <td>₹149</td>
-                  <td><span class="badge badge-success">Completed</span></td>
-                  <td>2024-01-15</td>
+                  <td>#{{ order.order_number }}</td>
+                  <td>{{ order.full_name }}</td>
+                  <td>
+                    {% for item in order.items.all %}
+                      <span style="font-size:.8rem;">{{ item.item_name }}{% if not forloop.last %}, {% endif %}</span>
+                    {% empty %}
+                      —
+                    {% endfor %}
+                  </td>
+                  <td>₹{{ order.grand_total|floatformat:0 }}</td>
+                  <td>
+                    {% if order.status == 'paid' %}
+                      <span class="badge badge-success">Paid</span>
+                    {% elif order.status == 'pending' %}
+                      <span class="badge badge-warning">Pending</span>
+                    {% elif order.status == 'cancelled' %}
+                      <span class="badge badge-danger">Cancelled</span>
+                    {% else %}
+                      <span class="badge badge-secondary">{{ order.get_status_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ order.created_at|date:"Y-m-d" }}</td>
                 </tr>
+                {% empty %}
                 <tr>
-                  <td>#ORD-1235</td>
-                  <td>Priya Patel</td>
-                  <td>JEE Math Formula</td>
-                  <td>₹99</td>
-                  <td><span class="badge badge-warning">Pending</span></td>
-                  <td>2024-01-15</td>
+                  <td colspan="6" style="text-align:center;color:#888;">No orders yet.</td>
                 </tr>
-                <tr>
-                  <td>#ORD-1236</td>
-                  <td>Amit Kumar</td>
-                  <td>UPSC Current Affairs</td>
-                  <td>₹179</td>
-                  <td><span class="badge badge-success">Completed</span></td>
-                  <td>2024-01-14</td>
-                </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
@@ -319,80 +325,105 @@
   </div>
 </div>
 
-      <!-- Payments Section -->
+      <!-- Payments Section — fully dynamic -->
       <div id="payments-section" class="content-section" style="display:none;">
         <div class="page-header">
           <h1 class="page-title">Payment Dashboard</h1>
           <p class="page-subtitle">Track all transactions</p>
         </div>
 
+        <!-- Stats cards -->
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon green">💰</div>
             <div class="stat-info">
-              <h3>₹1,24,580</h3>
+              <h3>₹{{ total_revenue|floatformat:0 }}</h3>
               <p>Total Revenue</p>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon blue">✅</div>
             <div class="stat-info">
-              <h3>842</h3>
+              <h3>{{ completed_orders }}</h3>
               <p>Completed</p>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon orange">⏳</div>
             <div class="stat-info">
-              <h3>23</h3>
+              <h3>{{ pending_orders }}</h3>
               <p>Pending</p>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon purple">❌</div>
             <div class="stat-info">
-              <h3>12</h3>
-              <p>Failed</p>
+              <h3>{{ failed_orders }}</h3>
+              <p>Cancelled</p>
             </div>
           </div>
         </div>
 
+        <!-- Recent Transactions table -->
         <div class="content-card">
           <div class="card-header">
             <h2 class="card-title">Recent Transactions</h2>
+            <a href="{% url 'orders_dashboard' %}" class="btn btn-secondary">View All Orders</a>
           </div>
           <div style="overflow-x:auto;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Transaction ID</th>
+                  <th>Order #</th>
                   <th>User</th>
-                  <th>Product</th>
+                  <th>Items</th>
                   <th>Amount</th>
                   <th>Method</th>
                   <th>Status</th>
                   <th>Date</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
+                {% for order in recent_transactions %}
                 <tr>
-                  <td>#TXN-9876</td>
-                  <td>Rahul Sharma</td>
-                  <td>NEET Biology PDF</td>
-                  <td>₹149</td>
-                  <td>UPI</td>
-                  <td><span class="badge badge-success">Success</span></td>
-                  <td>2024-01-15 14:30</td>
+                  <td style="font-weight:600;">#{{ order.order_number }}</td>
+                  <td>
+                    {{ order.full_name }}
+                    {% if order.user %}
+                      <br><small style="color:#888;">{{ order.user.email }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% for item in order.items.all %}
+                      <span style="font-size:.8rem;display:block;">{{ item.item_name }}</span>
+                    {% empty %}—{% endfor %}
+                  </td>
+                  <td>₹{{ order.grand_total|floatformat:0 }}</td>
+                  <td style="text-transform:capitalize;">{{ order.payment_method }}</td>
+                  <td>
+                    {% if order.status == 'paid' %}
+                      <span class="badge badge-success">Paid</span>
+                    {% elif order.status == 'pending' %}
+                      <span class="badge badge-warning">Pending</span>
+                    {% elif order.status == 'cancelled' %}
+                      <span class="badge badge-danger">Cancelled</span>
+                    {% elif order.status == 'refunded' %}
+                      <span class="badge badge-secondary">Refunded</span>
+                    {% else %}
+                      <span class="badge badge-secondary">{{ order.get_status_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ order.created_at|date:"d M Y" }}<br><small style="color:#aaa;">{{ order.created_at|time:"H:i" }}</small></td>
+                  <td>
+                    <a href="{% url 'order_detail' order.id %}" class="action-btn" title="View">👁️</a>
+                  </td>
                 </tr>
+                {% empty %}
                 <tr>
-                  <td>#TXN-9877</td>
-                  <td>Priya Patel</td>
-                  <td>JEE Math Book</td>
-                  <td>₹599</td>
-                  <td>Card</td>
-                  <td><span class="badge badge-warning">Pending</span></td>
-                  <td>2024-01-15 15:20</td>
+                  <td colspan="8" style="text-align:center;color:#888;padding:24px;">No transactions yet.</td>
                 </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
@@ -819,6 +850,11 @@
         sidebar.classList.remove('open');
       }
     });
+
+    // Auto-open payments section if URL hash is #payments
+    if (window.location.hash === '#payments') {
+      showSection('payments');
+    }
   </script>
 {% endblock content1 %}
 </body>

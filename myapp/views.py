@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Count, Q, F, Prefetch
+from django.db.models import Count, Q, F, Prefetch, Sum
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.template.loader import render_to_string
@@ -989,6 +989,8 @@ def dashboard(request):
     if not request.user.is_staff and not request.user.is_superuser:
         messages.error(request, "You don't have permission.")
         return redirect('home')
+
+    # ── User stats ────────────────────────────────────────────────
     users = User.objects.only(
         'id', 'username', 'email', 'first_name', 'last_name',
         'is_active', 'is_staff', 'date_joined'
@@ -999,11 +1001,32 @@ def dashboard(request):
     thirty_days_ago = datetime.now() - timedelta(days=30)
     new_users       = users.filter(date_joined__gte=thirty_days_ago).count()
     staff_users     = users.filter(is_staff=True).count()
+
+    # ── Payment / Order stats ──────────────────────────────────────
+    from .models import Order
+    total_revenue    = Order.objects.filter(is_paid=True).aggregate(r=Sum('grand_total'))['r'] or 0
+    completed_orders = Order.objects.filter(status='paid').count()
+    pending_orders   = Order.objects.filter(status='pending').count()
+    failed_orders    = Order.objects.filter(status='cancelled').count()
+    recent_transactions = (
+        Order.objects
+        .select_related('user')
+        .prefetch_related('items')
+        .order_by('-created_at')[:10]
+    )
+
     return render(request, 'admin_dashboard.html', {
+        # user context
         'users': users, 'total_users': total_users,
         'active_users': active_users, 'inactive_users': inactive_users,
         'new_users': new_users, 'staff_users': staff_users,
         'form': CustomUserCreationForm(),
+        # payment context
+        'total_revenue':       total_revenue,
+        'completed_orders':    completed_orders,
+        'pending_orders':      pending_orders,
+        'failed_orders':       failed_orders,
+        'recent_transactions': recent_transactions,
     })
 
 
