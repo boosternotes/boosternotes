@@ -8,7 +8,7 @@ idna==3.17
 packaging==26.2
 pillow==12.2.0
 ply==3.11
-razorpay==2.2.1
+razorpay==2.0.1
 requests==2.34.2
 six==1.17.0
 sqlparse==0.5.5
