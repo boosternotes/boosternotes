@@ -156,6 +156,21 @@
       line-height:17px; text-align:center; font-weight:700;
       display:none;
     }
+
+    /* ── Category Card Image ── */
+    .cat-card { cursor:pointer; }
+    .cat-img-wrap {
+      width:52px; height:52px; border-radius:12px;
+      overflow:hidden; margin:0 auto 8px;
+      background:#eef2ff;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
+    }
+    .cat-img-wrap img {
+      width:52px; height:52px; object-fit:cover;
+      border-radius:12px; display:block;
+    }
+    .cat-img-wrap .cat-emoji { font-size:1.6rem; line-height:1; }
   </style>
 </head>
 <body>
@@ -388,13 +403,24 @@
   <div class="cat-scroll" id="catScroll">
     {% for category in categories %}
       <div class="cat-card {% if forloop.first %}active{% endif %}" onclick="selectCat(this)">
-        <div class="cat-icon">{{ category.icon|default:"📚" }}</div>
+        <div class="cat-img-wrap">
+          {% if category.image %}
+            <img src="{{ category.image.url }}"
+                 alt="{{ category.name }}"
+                 width="52" height="52"
+                 loading="lazy" decoding="async"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <span class="cat-emoji" style="display:none;">📚</span>
+          {% else %}
+            <span class="cat-emoji">📚</span>
+          {% endif %}
+        </div>
         <div class="cat-label">{{ category.name }}</div>
         <div class="cat-count">{{ category.pdf_count|default:"0" }} PDFs</div>
       </div>
     {% empty %}
       <div class="cat-card">
-        <div class="cat-icon">📚</div>
+        <div class="cat-img-wrap"><span class="cat-emoji">📚</span></div>
         <div class="cat-label">No categories yet</div>
         <div class="cat-count">0 PDFs</div>
       </div>
