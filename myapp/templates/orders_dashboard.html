@@ -1,0 +1,180 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<div class="admin-sub-page">
+
+  <div class="admin-sub-header">
+    <div>
+      <h1>📦 Orders</h1>
+      <p>All customer orders — digital &amp; physical</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="back-to-dash-btn">🏠 Dashboard</a>
+  </div>
+
+  <!-- Stats row -->
+  <div class="ord-stats">
+    <div class="ord-stat-box"><span class="ostat-val">{{ total_orders }}</span><span class="ostat-lbl">Total Orders</span></div>
+    <div class="ord-stat-box"><span class="ostat-val">{{ paid_orders }}</span><span class="ostat-lbl">Paid</span></div>
+    <div class="ord-stat-box"><span class="ostat-val">{{ pending_orders }}</span><span class="ostat-lbl">Pending</span></div>
+    <div class="ord-stat-box"><span class="ostat-val">₹{{ total_revenue }}</span><span class="ostat-lbl">Revenue</span></div>
+  </div>
+
+  {% if messages %}
+  <div class="admin-messages">
+    {% for message in messages %}
+    <div class="admin-msg admin-msg-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Filter bar -->
+  <div class="ord-filter-bar">
+    <form method="get">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <select name="status" class="ord-filter-select" onchange="this.form.submit()">
+          <option value="">All Status</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="q" value="{{ search_q }}" placeholder="Search name, email, order#..." class="ord-filter-input">
+        <button type="submit" class="ord-filter-btn">🔍 Search</button>
+        {% if current_status or search_q %}
+        <a href="{% url 'orders_dashboard' %}" class="ord-clear-btn">✕ Clear</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <div class="admin-sub-card">
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#Order</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td><strong>{{ order.order_number }}</strong></td>
+            <td>
+              <div style="font-weight:600;font-size:.85rem;">{{ order.full_name }}</div>
+              <div style="font-size:.74rem;color:#888;">{{ order.email }}</div>
+              <div style="font-size:.74rem;color:#888;">📱 {{ order.mobile }}</div>
+            </td>
+            <td>
+              {% for item in order.items.all %}
+              <div style="font-size:.78rem;color:#333;">• {{ item.item_name|truncatechars:30 }} <span style="color:#1a3a8f;font-weight:700;">₹{{ item.item_price }}</span></div>
+              {% endfor %}
+            </td>
+            <td><strong style="color:#1a3a8f;">₹{{ order.grand_total }}</strong>
+              {% if order.discount_amount > 0 %}
+              <div style="font-size:.72rem;color:#1d9e75;">-₹{{ order.discount_amount }} off</div>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge {% if order.is_paid %}badge-success{% else %}badge-warning{% endif %}">
+                {% if order.is_paid %}✅ Paid{% else %}⏳ Unpaid{% endif %}
+              </span>
+              {% if order.razorpay_payment_id %}
+              <div style="font-size:.68rem;color:#888;margin-top:3px;">{{ order.razorpay_payment_id }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <form method="post" action="{% url 'order_update_status' order.pk %}">
+                {% csrf_token %}
+                <select name="status" class="ord-status-sel" onchange="this.form.submit()">
+                  {% for val, label in status_choices %}
+                  <option value="{{ val }}" {% if order.status == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+            <td style="font-size:.76rem;color:#888;">{{ order.created_at|date:"d M Y" }}<br>{{ order.created_at|time:"H:i" }}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <a href="{% url 'order_detail' order.pk %}" class="action-btn" title="View">👁️</a>
+                <form method="post" action="{% url 'order_delete' order.pk %}" style="display:inline;"
+                      onsubmit="return confirm('Delete order {{ order.order_number }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="action-btn" title="Delete">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" style="text-align:center;color:#888;padding:3rem;">No orders found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if orders.has_other_pages %}
+    <div class="ord-pagination">
+      {% if orders.has_previous %}<a href="?page={{ orders.previous_page_number }}&status={{ current_status }}&q={{ search_q }}" class="ord-pg-btn">← Prev</a>{% endif %}
+      <span class="ord-pg-info">Page {{ orders.number }} of {{ orders.paginator.num_pages }}</span>
+      {% if orders.has_next %}<a href="?page={{ orders.next_page_number }}&status={{ current_status }}&q={{ search_q }}" class="ord-pg-btn">Next →</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+setTimeout(function(){
+  document.querySelectorAll('.admin-msg').forEach(function(el){ el.style.opacity='0'; setTimeout(function(){ el.remove(); },400); });
+}, 4000);
+</script>
+
+<style>
+.back-to-dash-btn {
+  display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#1a3a8f;color:#fff;
+  border-radius:8px;font-size:.84rem;font-weight:600;text-decoration:none;transition:background .18s;
+}
+.back-to-dash-btn:hover{background:#0d2060;color:#fff;}
+.admin-sub-page{padding:1.5rem;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem;}
+.admin-sub-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.admin-sub-header h1{font-size:1.5rem;font-weight:700;color:#1a1a2e;margin:0;}
+.admin-sub-header p{font-size:.86rem;color:#888;margin:.25rem 0 0;}
+.admin-sub-card{background:#fff;border:1px solid #e7ebf5;border-radius:16px;padding:1.5rem;box-shadow:0 4px 12px rgba(26,58,143,.04);}
+/* stats */
+.ord-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.ord-stat-box{background:#fff;border:1px solid #e7ebf5;border-radius:12px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:4px;box-shadow:0 2px 8px rgba(26,58,143,.05);}
+.ostat-val{font-size:1.6rem;font-weight:800;color:#1a3a8f;line-height:1;}
+.ostat-lbl{font-size:.76rem;color:#888;font-weight:500;}
+/* filter */
+.ord-filter-bar{background:#fff;border:1px solid #e7ebf5;border-radius:12px;padding:1rem 1.2rem;}
+.ord-filter-select,.ord-filter-input{padding:8px 12px;border:1.5px solid #dde2ee;border-radius:8px;font-size:.84rem;font-family:Poppins,sans-serif;background:#fff;min-width:160px;}
+.ord-filter-select:focus,.ord-filter-input:focus{outline:none;border-color:#1a3a8f;}
+.ord-filter-btn{padding:8px 18px;background:#1a3a8f;color:#fff;border:none;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;}
+.ord-clear-btn{padding:8px 14px;background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:8px;font-size:.82rem;text-decoration:none;}
+/* status select */
+.ord-status-sel{padding:5px 8px;border:1.5px solid #dde2ee;border-radius:6px;font-size:.76rem;font-family:Poppins,sans-serif;background:#fff;cursor:pointer;max-width:120px;}
+/* pagination */
+.ord-pagination{display:flex;align-items:center;gap:12px;justify-content:center;padding:1rem 0 0;}
+.ord-pg-btn{padding:7px 16px;background:#1a3a8f;color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600;}
+.ord-pg-info{font-size:.82rem;color:#888;}
+/* messages */
+.admin-messages{display:flex;flex-direction:column;gap:8px;}
+.admin-msg{padding:12px 18px;border-radius:10px;font-size:.88rem;font-weight:500;transition:opacity .4s;}
+.admin-msg-success{background:#e6f9ef;border:1px solid #b2e8cc;color:#1a7a45;}
+.admin-msg-error{background:#ffe8e8;border:1px solid #ffd8d8;color:#c0392b;}
+/* action btn */
+.action-btn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid #e0e4ee;background:#fff;font-size:.9rem;padding:0;transition:all .15s;text-decoration:none;}
+.action-btn:hover{background:#f0f4ff;border-color:#1a3a8f;}
+/* badges */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.badge-success{background:#e6f9ef;color:#1a7a45;}
+.badge-warning{background:#fff8e6;color:#856404;}
+.badge-danger{background:#ffe8e8;color:#c0392b;}
+@media(max-width:768px){.ord-stats{grid-template-columns:repeat(2,1fr);}}
+</style>
+{% endblock content1 %}

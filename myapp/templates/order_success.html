@@ -1,30 +1,85 @@
 {% extends 'index.html' %}
 {% load static %}
 
+{% block title %}Order Confirmed - BoosterNotes{% endblock %}
+
 {% block content %}
 <style>
-  .success-page { min-height:65vh; background:#f5f7fb; display:flex; align-items:center; justify-content:center; padding:60px 16px; }
-  .success-card { background:#fff; border-radius:20px; box-shadow:0 8px 36px rgba(26,58,143,.1); padding:50px 40px; max-width:480px; width:100%; text-align:center; }
-  .success-icon { font-size:4rem; margin-bottom:16px; }
-  .success-card h2 { font-size:1.4rem; font-weight:800; color:#1a3a8f; margin:0 0 8px; }
-  .success-card p { font-size:.85rem; color:#777; line-height:1.65; margin:0 0 24px; }
-  .order-ref { background:#f0f4ff; border-radius:10px; padding:12px 18px; font-size:.82rem; font-weight:700; color:#1a3a8f; margin:0 0 24px; display:inline-block; }
-  .success-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
-  .btn-primary { background:linear-gradient(135deg,#1a3a8f,#0d6efd); color:#fff; padding:12px 26px; border-radius:10px; font-weight:700; font-size:.88rem; text-decoration:none; }
-  .btn-outline { border:2px solid #1a3a8f; color:#1a3a8f; padding:10px 26px; border-radius:10px; font-weight:700; font-size:.88rem; text-decoration:none; }
-  @media(max-width:480px){ .success-card{ padding:36px 20px; } }
+.success-page { min-height:70vh; background:#f5f7fb; display:flex; align-items:center; justify-content:center; padding:40px 16px; }
+.success-card { background:#fff; border-radius:24px; border:1px solid #e0e8f0; box-shadow:0 10px 40px rgba(26,58,143,.08); padding:48px 40px; max-width:560px; width:100%; text-align:center; }
+.success-icon { font-size:4rem; margin-bottom:16px; animation:pop .4s ease; }
+@keyframes pop { from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+.success-card h1 { font-size:1.8rem; font-weight:900; color:#1a7a45; margin-bottom:8px; }
+.success-card .sub { font-size:.88rem; color:#888; margin-bottom:28px; line-height:1.6; }
+.order-ref-box { background:#f0f4ff; border:1px solid #c8d8ff; border-radius:12px; padding:16px 20px; margin-bottom:24px; }
+.order-ref-box .label { font-size:.72rem; color:#888; font-weight:600; text-transform:uppercase; margin-bottom:4px; }
+.order-ref-box .ref { font-size:1.4rem; font-weight:900; color:#1a3a8f; letter-spacing:2px; }
+.order-items { text-align:left; margin-bottom:28px; }
+.order-items h3 { font-size:.8rem; font-weight:700; color:#aaa; text-transform:uppercase; margin-bottom:12px; }
+.oi-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f5f5f5; }
+.oi-row:last-child { border-bottom:none; }
+.oi-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.oi-icon.pdf  { background:#eef2ff; }
+.oi-icon.book { background:#fff0f5; }
+.oi-name { flex:1; font-size:.82rem; font-weight:600; color:#333; }
+.oi-price { font-size:.82rem; font-weight:700; color:#1a3a8f; }
+.oi-badge { font-size:.65rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:6px; }
+.badge-pdf  { background:#e6f9ef; color:#1a7a45; }
+.badge-book { background:#ffe8f0; color:#c0392b; }
+.success-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.sa-btn { display:inline-flex; align-items:center; gap:7px; padding:11px 22px; border-radius:10px; font-size:.85rem; font-weight:700; text-decoration:none; transition:opacity .15s; }
+.sa-primary { background:linear-gradient(135deg,#1a3a8f,#0d6efd); color:#fff; }
+.sa-secondary { background:#f5f5f5; color:#444; border:1px solid #e0e0e0; }
+.sa-btn:hover { opacity:.85; }
+.delivery-note { background:#fff8e6; border:1px solid #ffe0a0; border-radius:10px; padding:12px 16px; font-size:.8rem; color:#856404; text-align:left; margin-bottom:24px; line-height:1.6; }
+@media(max-width:480px){ .success-card{padding:32px 20px;} .success-actions{flex-direction:column;} }
 </style>
 
 <div class="success-page">
   <div class="success-card">
-    <div class="success-icon">🎉</div>
-    <h2>Order Placed Successfully!</h2>
-    <p>Thank you for your purchase. We've received your order and will process it shortly. You'll receive a confirmation on WhatsApp/Email.</p>
-    {% if order_ref %}<div class="order-ref">Order Ref: #{{ order_ref }}</div>{% endif %}
+    <div class="success-icon">✅</div>
+    <h1>Payment Successful!</h1>
+    <p class="sub">Thank you, <strong>{{ order.full_name }}</strong>! Your order has been confirmed and is being processed.</p>
+
+    <div class="order-ref-box">
+      <div class="label">Order Number</div>
+      <div class="ref">#{{ order.order_number }}</div>
+    </div>
+
+    {% if order.items.all %}
+    <div class="order-items">
+      <h3>Items Ordered</h3>
+      {% for item in order.items.all %}
+      <div class="oi-row">
+        <div class="oi-icon {{ item.item_type }}">{% if item.item_type == 'pdf' %}📄{% else %}📚{% endif %}</div>
+        <div class="oi-name">
+          {{ item.item_name }}
+          <span class="oi-badge {% if item.item_type == 'pdf' %}badge-pdf{% else %}badge-book{% endif %}">
+            {% if item.item_type == 'pdf' %}E-Library{% else %}Hardcopy{% endif %}
+          </span>
+        </div>
+        <div class="oi-price">₹{{ item.item_price }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if order.has_physical_items %}
+    <div class="delivery-note">
+      📦 <strong>Delivery Note:</strong> Your physical book(s) will be dispatched to <strong>{{ order.address }}, {{ order.city }}, {{ order.state }} - {{ order.pincode }}</strong> within 3-5 working days. You will receive a WhatsApp update.
+    </div>
+    {% endif %}
+
+    {% if order.has_digital_items %}
+    <div class="delivery-note" style="background:#eef9ff;border-color:#b8d9ff;color:#1a5276;">
+      💻 <strong>E-Library Access:</strong> Your purchased course(s) are now unlocked. Go to the course page and click <strong>"Access Course"</strong> to start reading.
+    </div>
+    {% endif %}
+
     <div class="success-actions">
-      <a href="{% url 'my_purchases' %}" class="btn-primary">My Purchases</a>
-      <a href="{% url 'home' %}" class="btn-outline">Continue Shopping</a>
+      <a href="{% url 'home' %}" class="sa-btn sa-secondary">🏠 Back to Home</a>
+      <a href="{% url 'my_purchases' %}" class="sa-btn sa-primary">📦 My Purchases</a>
     </div>
   </div>
 </div>
-{% endblock content %}
+{% endblock %}

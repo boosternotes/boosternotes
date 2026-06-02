@@ -1,0 +1,135 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<div class="admin-sub-page">
+  <div class="admin-sub-header">
+    <div>
+      <h1>📄 Order #{{ order.order_number }}</h1>
+      <p>{{ order.created_at|date:"d M Y, H:i" }}</p>
+    </div>
+    <a href="{% url 'orders_dashboard' %}" class="back-to-dash-btn">← All Orders</a>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;">
+    <!-- Left -->
+    <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+      <!-- Customer -->
+      <div class="admin-sub-card">
+        <div class="admin-sub-card-head"><h2>👤 Customer Details</h2></div>
+        <div class="det-grid">
+          <div class="det-row"><span>Name</span><strong>{{ order.full_name }}</strong></div>
+          <div class="det-row"><span>Email</span><strong>{{ order.email }}</strong></div>
+          <div class="det-row"><span>Mobile</span><strong>{{ order.mobile }}</strong></div>
+          {% if order.user %}
+          <div class="det-row"><span>Account</span><strong>{{ order.user.username }}</strong></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Delivery -->
+      {% if order.has_physical_items %}
+      <div class="admin-sub-card">
+        <div class="admin-sub-card-head"><h2>🏠 Delivery Address</h2></div>
+        <div class="det-grid">
+          <div class="det-row"><span>Street</span><strong>{{ order.address|default:"—" }}</strong></div>
+          <div class="det-row"><span>City</span><strong>{{ order.city|default:"—" }}</strong></div>
+          <div class="det-row"><span>State</span><strong>{{ order.state|default:"—" }}</strong></div>
+          <div class="det-row"><span>PIN</span><strong>{{ order.pincode|default:"—" }}</strong></div>
+          <div class="det-row"><span>Country</span><strong>{{ order.country }}</strong></div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Items -->
+      <div class="admin-sub-card">
+        <div class="admin-sub-card-head"><h2>🛒 Order Items</h2></div>
+        <table class="data-table" style="font-size:.85rem;">
+          <thead><tr><th>Type</th><th>Item</th><th>Price</th></tr></thead>
+          <tbody>
+            {% for item in order.items.all %}
+            <tr>
+              <td><span class="badge {% if item.item_type == 'pdf' %}badge-info{% else %}badge-warning{% endif %}">{{ item.get_item_type_display }}</span></td>
+              <td>{{ item.item_name }}</td>
+              <td><strong>₹{{ item.item_price }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right -->
+    <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+      <!-- Payment -->
+      <div class="admin-sub-card">
+        <div class="admin-sub-card-head"><h2>💰 Payment</h2></div>
+        <div class="det-grid">
+          <div class="det-row"><span>Subtotal</span><strong>₹{{ order.subtotal }}</strong></div>
+          {% if order.discount_amount > 0 %}
+          <div class="det-row"><span>Discount</span><strong style="color:#1d9e75;">-₹{{ order.discount_amount }}</strong></div>
+          {% endif %}
+          <div class="det-row"><span>Grand Total</span><strong style="color:#1a3a8f;font-size:1.05rem;">₹{{ order.grand_total }}</strong></div>
+          <div class="det-row"><span>Paid</span>
+            <span class="badge {% if order.is_paid %}badge-success{% else %}badge-warning{% endif %}">
+              {% if order.is_paid %}✅ Yes{% else %}⏳ No{% endif %}
+            </span>
+          </div>
+          {% if order.razorpay_payment_id %}
+          <div class="det-row"><span>Payment ID</span><code style="font-size:.75rem;">{{ order.razorpay_payment_id }}</code></div>
+          <div class="det-row"><span>Order ID</span><code style="font-size:.75rem;">{{ order.razorpay_order_id }}</code></div>
+          {% endif %}
+          {% if order.paid_at %}
+          <div class="det-row"><span>Paid At</span><strong>{{ order.paid_at|date:"d M Y, H:i" }}</strong></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Status update -->
+      <div class="admin-sub-card">
+        <div class="admin-sub-card-head"><h2>📋 Update Status</h2></div>
+        <form method="post" action="{% url 'order_update_status' order.pk %}">
+          {% csrf_token %}
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <select name="status" class="ord-status-sel" style="width:100%;padding:10px;font-size:.88rem;">
+              {% for val, label in status_choices %}
+              <option value="{{ val }}" {% if order.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="admin-save-btn">💾 Update Status</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Notes -->
+      <div class="admin-sub-card">
+        <div class="admin-sub-card-head"><h2>📝 Notes</h2></div>
+        <p style="font-size:.84rem;color:#555;line-height:1.6;">{{ order.notes|default:"No notes." }}</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.back-to-dash-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#1a3a8f;color:#fff;border-radius:8px;font-size:.84rem;font-weight:600;text-decoration:none;}
+.back-to-dash-btn:hover{background:#0d2060;color:#fff;}
+.admin-sub-page{padding:1.5rem;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem;}
+.admin-sub-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.admin-sub-header h1{font-size:1.5rem;font-weight:700;color:#1a1a2e;margin:0;}
+.admin-sub-header p{font-size:.86rem;color:#888;margin:.25rem 0 0;}
+.admin-sub-card{background:#fff;border:1px solid #e7ebf5;border-radius:16px;padding:1.5rem;box-shadow:0 4px 12px rgba(26,58,143,.04);}
+.admin-sub-card-head{margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid #f0f2f8;}
+.admin-sub-card-head h2{font-size:1.05rem;font-weight:700;color:#1a1a2e;margin:0;}
+.det-grid{display:flex;flex-direction:column;gap:10px;}
+.det-row{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;padding:6px 0;border-bottom:1px solid #f8f8f8;}
+.det-row span{color:#888;font-size:.8rem;}
+.ord-status-sel{padding:5px 8px;border:1.5px solid #dde2ee;border-radius:6px;font-size:.84rem;font-family:Poppins,sans-serif;background:#fff;cursor:pointer;}
+.admin-save-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:linear-gradient(135deg,#1a3a8f,#0d2060);color:#fff;border:none;border-radius:8px;font-size:.87rem;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif;width:100%;justify-content:center;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.badge-success{background:#e6f9ef;color:#1a7a45;}
+.badge-warning{background:#fff8e6;color:#856404;}
+.badge-info{background:#e8f4ff;color:#1a5276;}
+@media(max-width:768px){.det-row>div{grid-template-columns:1fr;}}
+</style>
+{% endblock content1 %}
