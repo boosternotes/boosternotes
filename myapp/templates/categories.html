@@ -8,6 +8,39 @@
       <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
     </div>
 
+    <!-- Edit Modal -->
+    <div id="editModal" class="cat-modal" style="display:none;">
+      <div class="cat-modal-box">
+        <div class="cat-modal-head">
+          <h2>✏️ Edit Category</h2>
+          <button onclick="closeEditModal()" class="cat-modal-close">✕</button>
+        </div>
+        <form id="editForm" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="_method" value="edit">
+          <div class="category-group">
+            <label>Category Name</label>
+            <input type="text" name="name" id="edit_name" required>
+          </div>
+          <div class="category-group">
+            <label>Description</label>
+            <textarea name="description" id="edit_description" rows="3"></textarea>
+          </div>
+          <div class="category-group">
+            <label>New Image (optional)</label>
+            <input type="file" name="image" accept="image/*">
+          </div>
+          <div class="category-group">
+            <div class="checkbox-row">
+              <input type="checkbox" name="is_active" id="edit_is_active">
+              <label for="edit_is_active">Active Category</label>
+            </div>
+          </div>
+          <button type="submit" class="category-btn btn btn-primary" style="width:100%;">💾 Save Changes</button>
+        </form>
+      </div>
+    </div>
+
     <div class="category-card">
       <div class="category-card-head">
         <h2>Create New Category</h2>
@@ -90,10 +123,25 @@
               </td>
               <td>
                 <div class="action-btns">
-                  <a href="{% url 'category_toggle_active' category.pk %}" class="action-btn" title="Toggle Status">
-                    {% if category.is_active %}🔴{% else %}🟢{% endif %}
-                  </a>
-                  <a href="{% url 'category_delete' category.pk %}" class="action-btn" title="Delete">🗑️</a>
+                  <!-- Edit -->
+                  <button
+                    onclick="openEditModal('{{ category.pk }}','{{ category.name|escapejs }}','{{ category.description|default:''|escapejs }}',{{ category.is_active|yesno:'true,false' }})"
+                    class="action-btn" title="Edit">✏️</button>
+
+                  <!-- Toggle Active -->
+                  <form method="post" action="{% url 'category_toggle_active' category.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn" title="Toggle Status">
+                      {% if category.is_active %}🔴{% else %}🟢{% endif %}
+                    </button>
+                  </form>
+
+                  <!-- Delete -->
+                  <form method="post" action="{% url 'category_delete' category.pk %}" style="display:inline;"
+                        onsubmit="return confirm('Delete category \'{{ category.name|escapejs }}\'? This cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn" title="Delete">🗑️</button>
+                  </form>
                 </div>
               </td>
             </tr>
@@ -109,19 +157,65 @@
   </div>
 </div>
 
+<!-- Edit Modal JS -->
+<script>
+function openEditModal(pk, name, desc, isActive) {
+  document.getElementById('editForm').action = '/category/edit/' + pk + '/';
+  document.getElementById('edit_name').value = name;
+  document.getElementById('edit_description').value = desc;
+  document.getElementById('edit_is_active').checked = isActive;
+  document.getElementById('editModal').style.display = 'flex';
+}
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+</script>
+
 <style>
+/* Modal overlay */
+.cat-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.cat-modal-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.cat-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cat-modal-head h2 { font-size: 1.1rem; font-weight: 700; margin: 0; color: #1a1a2e; }
+.cat-modal-close {
+  border: none; background: none; font-size: 1.2rem;
+  cursor: pointer; color: #888; padding: 4px 8px;
+  border-radius: 6px;
+}
+.cat-modal-close:hover { background: #f0f0f0; color: #333; }
+
+/* Page layout */
 .category-page {
   padding: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
-
-.category-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
+.category-container { display: flex; flex-direction: column; gap: 1.5rem; }
 .category-header {
   display: flex;
   align-items: center;
@@ -130,20 +224,8 @@
   gap: 1rem;
   margin-bottom: 0.5rem;
 }
-
-.category-header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0;
-}
-
-.category-header p {
-  font-size: 0.88rem;
-  color: #888;
-  margin: 0.3rem 0 0 0;
-}
-
+.category-header h1 { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.category-header p { font-size: 0.88rem; color: #888; margin: 0.3rem 0 0 0; }
 .category-card {
   background: #fff;
   border: 1px solid #e7ebf5;
@@ -151,231 +233,78 @@
   padding: 1.5rem;
   box-shadow: 0 4px 12px rgba(26,58,143,0.04);
 }
-
-.category-card-head {
-  margin-bottom: 1.2rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid #f0f2f8;
-}
-
-.category-card-head h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0;
-}
-
-.category-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.category-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.category-group label {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: #333;
-}
-
+.category-card-head { margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid #f0f2f8; }
+.category-card-head h2 { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.category-form { display: flex; flex-direction: column; gap: 1rem; }
+.category-group { display: flex; flex-direction: column; gap: 6px; }
+.category-group label { font-size: 0.86rem; font-weight: 600; color: #333; }
 .category-group input,
 .category-group textarea,
 .category-group select {
-  width: 100%;
-  padding: 10px 14px;
+  width: 100%; padding: 10px 14px;
   border: 1.5px solid #dde2ee;
-  border-radius: 8px;
-  font-size: 0.88rem;
+  border-radius: 8px; font-size: 0.88rem;
   font-family: 'Poppins', sans-serif;
   transition: border-color .2s, background .2s;
   background: #fff;
 }
-
 .category-group input:focus,
 .category-group textarea:focus,
 .category-group select:focus {
-  outline: none;
-  border-color: #1a3a8f;
-  background: #f8f9ff;
+  outline: none; border-color: #1a3a8f; background: #f8f9ff;
 }
-
-.category-group small.category-hint {
-  font-size: 0.78rem;
-  color: #888;
-  margin-top: 4px;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.checkbox-row label {
-  font-size: 0.88rem;
-  color: #333;
-  cursor: pointer;
-  margin: 0;
-  font-weight: 500;
-}
-
+.category-group small.category-hint { font-size: 0.78rem; color: #888; margin-top: 4px; }
+.checkbox-row { display: flex; align-items: center; gap: 10px; }
+.checkbox-row label { font-size: 0.88rem; color: #333; cursor: pointer; margin: 0; font-weight: 500; }
 .category-group input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #1a3a8f;
-  margin: 0;
-  cursor: pointer;
+  width: 18px; height: 18px; accent-color: #1a3a8f; margin: 0; cursor: pointer;
 }
-
-.category-error {
-  color: #e84444;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  min-height: 14px;
-}
-
-.category-alert {
-  padding: 12px 14px;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-}
-
-.category-alert-error {
-  background: #ffe8e8;
-  border: 1px solid #ffd8d8;
-  color: #e84444;
-}
-
+.category-error { color: #e84444; font-size: 0.8rem; margin-top: 4px; min-height: 14px; }
+.category-alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 1rem; font-size: 0.85rem; }
+.category-alert-error { background: #ffe8e8; border: 1px solid #ffd8d8; color: #e84444; }
 .category-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  transition: all .2s;
-  cursor: pointer;
-  border: none;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #1a3a8f, #0d2060);
-  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 12px 24px; border-radius: 8px;
+  font-size: 0.88rem; font-weight: 600; transition: all .2s;
+  cursor: pointer; border: none; font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1a3a8f, #0d2060); color: #fff;
   margin-top: 0.5rem;
 }
-
-.category-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(26,58,143,0.2);
-}
-
-.category-table-wrap {
-  overflow-x: auto;
-}
-
-.category-table {
-  width: 100%;
-  font-size: 0.88rem;
-}
-
+.category-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(26,58,143,0.2); }
+.category-table-wrap { overflow-x: auto; }
+.category-table { width: 100%; font-size: 0.88rem; }
 .category-table th {
-  font-weight: 600;
-  color: #1a3a8f;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 600; color: #1a3a8f; font-size: 0.82rem;
+  text-transform: uppercase; letter-spacing: 0.5px;
 }
-
-.category-table td {
-  color: #333;
-  vertical-align: middle;
-}
-
+.category-table td { color: #333; vertical-align: middle; }
 .category-thumb {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e7ebf5;
+  width: 50px; height: 50px; object-fit: cover;
+  border-radius: 8px; border: 1px solid #e7ebf5;
 }
-
 .category-thumb-empty {
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f8f9ff;
-  border-radius: 8px;
-  border: 1px solid #e7ebf5;
-  font-size: 1.5rem;
+  width: 50px; height: 50px; display: flex;
+  align-items: center; justify-content: center;
+  background: #f8f9ff; border-radius: 8px;
+  border: 1px solid #e7ebf5; font-size: 1.5rem;
 }
-
-.category-empty {
-  text-align: center;
-  color: #888;
-  padding: 2rem !important;
-}
-
-.action-btns {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
+.category-empty { text-align: center; color: #888; padding: 2rem !important; }
+.action-btns { display: flex; gap: 6px; align-items: center; }
 .action-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all .15s;
-  border: 1px solid #e0e4ee;
-  background: #fff;
-  font-size: 0.9rem;
-  text-decoration: none;
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s;
+  border: 1px solid #e0e4ee; background: #fff;
+  font-size: 0.9rem; text-decoration: none;
+  padding: 0;
 }
-
-.action-btn:hover {
-  background: #f0f4ff;
-  border-color: #1a3a8f;
-}
-
+.action-btn:hover { background: #f0f4ff; border-color: #1a3a8f; }
 @media (max-width: 768px) {
-  .category-page {
-    padding: 1rem;
-  }
-  
-  .category-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .category-card {
-    padding: 1rem;
-  }
-  
-  .category-btn {
-    width: 100%;
-  }
-  
-  .category-thumb {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .category-thumb-empty {
-    width: 40px;
-    height: 40px;
-  }
+  .category-page { padding: 1rem; }
+  .category-header { flex-direction: column; align-items: flex-start; }
+  .category-card { padding: 1rem; }
+  .category-btn { width: 100%; }
+  .category-thumb, .category-thumb-empty { width: 40px; height: 40px; }
 }
 </style>
 {% endblock content1 %}

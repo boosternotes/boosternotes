@@ -48,7 +48,9 @@ urlpatterns = [
 
     # Category
     path('category_list', views.category_list, name='category_list'),
+    path('category/edit/<int:pk>/', views.category_edit, name='category_edit'),
     path('category/delete/<int:pk>/', views.category_delete, name='category_delete'),
+    path('category/toggle/<int:pk>/', views.category_toggle_active, name='category_toggle_active'),
 
     # Navbar / Banner / Stats / About / Footer
     path('navbar/', views.navbar_custom, name='navbar_custom'),
