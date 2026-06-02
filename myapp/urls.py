@@ -61,6 +61,17 @@ urlpatterns = [
     path('elibrary/delete/<uuid:id>/', views.elibrary_delete, name='elibrary_delete'),
     path('elibrary/<uuid:pk>/upload-pdf/', views.elibrary_upload_pdf, name='elibrary_upload_pdf'),
     path('elibrary/pdf/delete/<uuid:pk>/', views.elibrary_pdf_delete, name='elibrary_pdf_delete'),
+
+    path('hard-books/', views.hard_books_list, name='hard_books_list'),
+    path('hard-books/add/', views.hard_book_add, name='hard_book_add'),
+    path('hard-books/edit/<uuid:pk>/', views.hard_book_edit, name='hard_book_edit'),
+    path('hard-books/delete/<uuid:pk>/', views.hard_book_delete, name='hard_book_delete'),
+    path('hard-books/image-delete/<uuid:pk>/', views.hard_book_image_delete, name='hard_book_image_delete'),
+    path('search/', views.search, name='search'),  # Add this line
+
+
+      # Coupon System
+    path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
 ]
 
 # Serve media files in development

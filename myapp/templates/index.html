@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ navbar.brand_name|default:"BoosterNotes" }}</title>
 
+
   <!-- Favicon - DYNAMIC -->
   {% if navbar.favicon %}
   <link rel="icon" href="{{ navbar.favicon.url }}" type="image/png">
@@ -15,10 +16,12 @@
   <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
   {% endif %}
 
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="{% static "css/style.css" %}">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+
 
   <style>
     /* ── Mobile profile avatar button ── */
@@ -26,6 +29,7 @@
       display: none;
       position: relative;
     }
+
 
     .mob-avatar-btn {
       width: 36px;
@@ -50,6 +54,7 @@
       box-shadow: 0 4px 14px rgba(0,0,0,.25);
     }
 
+
     .mob-profile-drop {
       position: absolute;
       top: calc(100% + 8px);
@@ -70,6 +75,7 @@
       pointer-events: all;
       transform: translateY(0) scale(1);
     }
+
 
     .mob-profile-drop a,
     .mob-profile-drop button {
@@ -92,6 +98,7 @@
     .mob-profile-drop button:hover { background: #f4f6ff; }
     .mob-profile-drop hr { margin: 4px 12px; border: none; border-top: 1px solid #eee; }
     .mob-profile-drop .drop-icon { font-size: 1rem; }
+
 
     .has-drop.profile-pill {
       position: relative;
@@ -124,6 +131,7 @@
     .has-drop.profile-pill .drop-menu { transition-delay: 0.15s; }
     .has-drop.profile-pill:hover .drop-menu { transition-delay: 0s; }
 
+
     .has-drop.profile-pill .drop-menu a,
     .has-drop.profile-pill .drop-menu button {
       display: flex;
@@ -146,6 +154,7 @@
     .has-drop.profile-pill .drop-menu hr { margin: 6px 12px; border: none; border-top: 1px solid #eee; }
     .has-drop.profile-pill .drop-menu .icon { font-size: 1.1rem; width: 20px; text-align: center; }
 
+
     @media (max-width: 820px) {
       .mob-profile-wrap { display: flex; align-items: center; }
       .has-drop.profile-pill { display: none !important; }
@@ -154,6 +163,7 @@
       .mob-profile-wrap { display: none !important; }
     }
 
+
     /* ── Banner Slider ── */
     .banner-wrap   { position: relative; overflow: hidden; width: 100%; }
     .banner-slider { display: none; position: relative; width: 100%; }
@@ -161,6 +171,7 @@
     .banner-slide  { display: none; width: 100%; }
     .banner-slide.active { display: block; }
     .banner-slide img { width: 100%; display: block; object-fit: fill; max-height: 480px; }
+
 
     .banner-arrow {
       position: absolute; top: 50%; transform: translateY(-50%);
@@ -176,6 +187,7 @@
     .banner-prev { left: 12px; }
     .banner-next { right: 12px; }
 
+
     .banner-dots {
       position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
       display: flex; gap: 6px; z-index: 10;
@@ -188,12 +200,15 @@
     }
     .banner-dot.active { background: #fff; transform: scale(1.3); }
     .banner-arrow.hidden, .banner-dots.hidden { display: none !important; }
+    
   </style>
 </head>
 <body>
 
+
 {% include "msg.html" %}
 
+{% block navbar %}
 <!--Nav bar -->
 <nav>
   <a href="{% url 'home' %}" class="logo-wrap" id="logoWrap">
@@ -209,12 +224,16 @@
     </div>
   </a>
 
-  <div class="search-box">
-    <svg width="13" height="13" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" placeholder="{{ navbar.search_placeholder|default:'Search pdf courses, exams...' }}">
-  </div>
 
-  <button class="nav-pill always-show" onclick="showCoupon()" type="button">{{ navbar.coupon_text|default:'🎟️ Apply Coupon' }}</button>
+  <form method="get" action="{% url 'search' %}" class="search-box">
+    <svg width="13" height="13" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" name="q" placeholder="{{ navbar.search_placeholder|default:'Search pdf courses, exams...' }}" value="{{ search_query|default:'' }}">
+    <button type="submit" style="display:none;"></button>
+  </form>
+
+
+  <button class="nav-pill always-show" onclick="showCouponModal()" type="button">{{ navbar.coupon_text|default:'🎟️ Apply Coupon' }}</button>
+
 
   {% if user.is_authenticated %}
   <div class="notif-wrap" id="notifWrap">
@@ -250,6 +269,7 @@
     </div>
   </div>
 
+
   <div class="mob-profile-wrap" id="mobProfileWrap">
     <button class="mob-avatar-btn" onclick="toggleMobProfile(event)" type="button" aria-label="Profile menu">
       {{ user.username|slice:":2"|upper }}
@@ -266,6 +286,7 @@
       </form>
     </div>
   </div>
+
 
   <div class="has-drop profile-pill">
     <div class="avatar">{{ user.username|slice:":2"|upper }}</div>
@@ -290,6 +311,7 @@
   </div>
   {% endif %}
 
+
   <div class="wa-block">
     <span class="wa-icon">💬</span>
     <div class="wa-info">
@@ -298,8 +320,10 @@
     </div>
   </div>
 
+
   <button class="ham-btn" onclick="toggleMobile()" type="button">☰</button>
 </nav>
+{% endblock navbar %}
 
 <div class="mobile-menu" id="mobileMenu">
   <div class="mob-section">
@@ -323,14 +347,20 @@
   <div class="mob-section">
     <h5>Contact</h5>
     <div class="mob-link"><span class="icon">💬</span>WhatsApp: {{ navbar.whatsapp_number|default:"6350331916" }} ({{ navbar.whatsapp_hours|default:"10 AM – 7 PM" }})</div>
-    <div class="mob-link" onclick="showCoupon()"><span class="icon">🎟️</span>Apply Coupon</div>
+    <div class="mob-link" onclick="showCouponModal()"><span class="icon">🎟️</span>Apply Coupon</div>
   </div>
 </div>
 
-{% block content %}
 
+
+
+
+{% include "coupon_data.html" %}
+
+{% block content %}
 <!-- ── Banner Slider ─────────────────────────────────────── -->
 <div class="banner-wrap">
+
 
   <!-- Desktop Slider -->
   <div class="banner-slider desktop-banner" id="desktopBanner">
@@ -348,6 +378,7 @@
     {% endif %}
   </div>
 
+
   <!-- Mobile Slider -->
   <div class="banner-slider mobile-banner" id="mobileBanner">
     {% if mobile_banners %}
@@ -364,28 +395,37 @@
     {% endif %}
   </div>
 
+
   <!-- Arrows -->
   <button class="banner-arrow banner-prev" id="bannerPrev" onclick="slideMove(-1)" type="button">&#8249;</button>
   <button class="banner-arrow banner-next" id="bannerNext" onclick="slideMove(1)"  type="button">&#8250;</button>
 
+
   <!-- Dots -->
   <div class="banner-dots" id="bannerDots"></div>
 
+
 </div>
+
 
 <!-- Mobile-only centered search bar -->
 <div class="mobile-search-center" style="display:none; padding: 12px 16px; max-width: 640px; margin: 0 auto;">
-  <div class="mobile-search-box" style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:8px;padding:8px 12px;">
+  <form method="get" action="{% url 'search' %}" style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:8px;padding:8px 12px;">
     <svg width="14" height="14" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text"
+    <input type="text" name="q"
       placeholder="{{ navbar.search_placeholder|default:'Search pdf courses, exams...' }}"
+      value="{{ search_query|default:'' }}"
       style="flex:1;background:transparent;border:none;outline:none;font:inherit;color:#333;">
-  </div>
+    <button type="submit" style="background:#1a3a8f;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-weight:600;cursor:pointer;">Search</button>
+  </form>
 </div>
+
 
 <!-- Stats Section -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+
+{% if not search_query %}
 <section class="stats-highlight-section">
   <div class="stats-highlight-inner">
     <div class="stats-cards">
@@ -436,6 +476,7 @@
   </div>
 </section>
 
+
 <section class="categories-section" id="categories">
   <div class="sec-head">
     <div>
@@ -457,6 +498,7 @@
     <div class="cat-card" onclick="selectCat(this)"><div class="cat-icon">🎓</div><div class="cat-label">B.Ed / D.Ed</div><div class="cat-count">12 PDFs</div></div>
   </div>
 </section>
+
 
 <section class="section pdf-section" id="pdfs">
   <div class="sec-head">
@@ -514,6 +556,7 @@
   </div>
 </section>
 
+
 <section class="section books-section" id="books">
   <div class="sec-head">
     <div>
@@ -562,11 +605,12 @@
   </div>
 </section>
 
+
 <!-- About Section -->
 <section class="about-section" id="about">
   <div class="about-inner">
     <div class="about-text">
-      <h2>{{ about.heading }} </span></h2>
+      <h2>{{ about.heading }}</h2>
       <p>{{ about.text1 }}</p>
       {% if about.text2 %}
       <p>{{ about.text2 }}</p>
@@ -625,7 +669,10 @@
     </div>
   </div>
 </section>
+{% endif %}
 {% endblock content %}
+
+{% block footer %}
 <!-- Footer -->
 <footer>
   <div class="footer-grid">
@@ -682,15 +729,21 @@
     <p class="gold">{{ footer.tagline }}</p>
   </div>
 </footer>
-
+{% endblock footer %}
 <script>
-  // ── Logo ──
+  function showCouponModal() {
+    document.getElementById('couponModal').classList.add('active');
+  }
+
+  function closeCouponModal() {
+    document.getElementById('couponModal').classList.remove('active');
+  }
+
   function handleLogoError() {
     document.getElementById('logoImg').style.display = 'none';
     document.getElementById('logoFallback').style.display = 'flex';
   }
 
-  // ── Cart / Coupon / Category ──
   function addCart(btn){
     const original = btn.innerHTML;
     btn.innerHTML = '✅ Done!';
@@ -705,32 +758,11 @@
     }, 1600);
   }
 
-  function showCoupon(){
-    const c = prompt('Enter coupon code:','BOOST40');
-    if(c) alert('Coupon "' + c + '" applied! 🎉');
-  }
-
   function selectCat(card){
     document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
   }
 
-  // ── Smooth scroll ──
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{
-    a.addEventListener('click',e=>{
-      const href = a.getAttribute('href');
-      if(href === '#') return;
-      const target = document.querySelector(href);
-      if(target){
-        e.preventDefault();
-        target.scrollIntoView({behavior:'smooth'});
-        document.getElementById('mobileMenu').classList.remove('open');
-        document.body.style.overflow = '';
-      }
-    });
-  });
-
-  // ── Mobile search visibility ──
   function updateMobileSearchVisibility() {
     const mobileSearch = document.querySelector('.mobile-search-center');
     if (!mobileSearch) return;
@@ -739,70 +771,9 @@
   window.addEventListener('resize', updateMobileSearchVisibility);
   updateMobileSearchVisibility();
 
-  // ── Notifications ──
-  let unread = 3;
-  function toggleNotif(e){
-    e.stopPropagation();
-    document.getElementById('mobileMenu').classList.remove('open');
-    document.getElementById('notifPanel').classList.toggle('open');
-    const mp = document.getElementById('mobProfileWrap');
-    if(mp) mp.classList.remove('open');
-  }
-  function readNotif(item){
-    const d = item.querySelector('.notif-dot');
-    if(!d.classList.contains('read')){
-      d.classList.add('read');
-      unread = Math.max(0, unread - 1);
-      const b = document.getElementById('notifBadge');
-      b.textContent = unread;
-      b.style.display = unread > 0 ? 'flex' : 'none';
-    }
-  }
-  function markAllRead(){
-    document.querySelectorAll('.notif-dot').forEach(d => d.classList.add('read'));
-    unread = 0;
-    const b = document.getElementById('notifBadge');
-    b.textContent = 0;
-    b.style.display = 'none';
-  }
-  document.addEventListener('click', e => {
-    const p = document.getElementById('notifPanel');
-    const w = document.getElementById('notifWrap');
-    if(w && !w.contains(e.target)) p.classList.remove('open');
-    const mp = document.getElementById('mobProfileWrap');
-    if(mp && !mp.contains(e.target)) mp.classList.remove('open');
-  });
-
-  // ── Mobile menu ──
-  function toggleMobile(){
-    const m = document.getElementById('mobileMenu');
-    document.getElementById('notifPanel').classList.remove('open');
-    m.classList.toggle('open');
-    document.body.style.overflow = m.classList.contains('open') ? 'hidden' : '';
-  }
-  document.getElementById('mobileMenu').addEventListener('click', e => {
-    if(e.target === e.currentTarget) toggleMobile();
-  });
-
-  function toggleMobProfile(e) {
-    e.stopPropagation();
-    const wrap = document.getElementById('mobProfileWrap');
-    wrap.classList.toggle('open');
-    document.getElementById('notifPanel').classList.remove('open');
-    document.getElementById('mobileMenu').classList.remove('open');
-  }
-
-  window.addEventListener('resize', () => {
-    if(window.innerWidth > 820){
-      document.getElementById('mobileMenu').classList.remove('open');
-      document.body.style.overflow = '';
-    }
-  });
-
-  // ── Banner Slider ──
   (function(){
     let currentSlide = 0;
-    let autoTimer    = null;
+    let autoTimer = null;
 
     function getActiveSlider(){
       return document.querySelector('.banner-slider.active');
@@ -812,9 +783,11 @@
       return s ? Array.from(s.querySelectorAll('.banner-slide')) : [];
     }
     function buildDots(){
-      const dots  = document.getElementById('bannerDots');
-      const prev  = document.getElementById('bannerPrev');
-      const next  = document.getElementById('bannerNext');
+      const dots = document.getElementById('bannerDots');
+      const prev = document.getElementById('bannerPrev');
+      const next = document.getElementById('bannerNext');
+      if (!dots || !prev || !next) return;
+
       const count = getSlides().length;
       dots.innerHTML = '';
       if(count <= 1){
@@ -826,14 +799,16 @@
       dots.classList.remove('hidden');
       prev.classList.remove('hidden');
       next.classList.remove('hidden');
+
       for(let i = 0; i < count; i++){
         const d = document.createElement('button');
         d.className = 'banner-dot' + (i === 0 ? ' active' : '');
-        d.setAttribute('aria-label', 'Slide ' + (i+1));
+        d.setAttribute('aria-label', 'Slide ' + (i + 1));
         d.addEventListener('click', () => goToSlide(i));
         dots.appendChild(d);
       }
     }
+
     function goToSlide(n){
       const slides = getSlides();
       if(!slides.length) return;
@@ -844,6 +819,7 @@
       slides[currentSlide].classList.add('active');
       if(dotsList[currentSlide]) dotsList[currentSlide].classList.add('active');
     }
+
     window.slideMove = function(dir){ goToSlide(currentSlide + dir); };
 
     function startAuto(){
@@ -861,12 +837,14 @@
     }
 
     window.updateBannerMode = function(){
-      const desktop  = document.getElementById('desktopBanner');
-      const mobile   = document.getElementById('mobileBanner');
+      const desktop = document.getElementById('desktopBanner');
+      const mobile = document.getElementById('mobileBanner');
+      if (!desktop || !mobile) return;
+
       const isMobile = window.innerWidth <= 640;
       desktop.classList.toggle('active', !isMobile);
-      mobile.classList.toggle('active',   isMobile);
-      // reset to first slide
+      mobile.classList.toggle('active', isMobile);
+
       currentSlide = 0;
       document.querySelectorAll('.banner-slide').forEach(s => s.classList.remove('active'));
       const slides = getSlides();
@@ -876,7 +854,7 @@
     };
 
     window.addEventListener('resize', window.updateBannerMode);
-    window.addEventListener('load',   window.updateBannerMode);
+    window.addEventListener('load', window.updateBannerMode);
   })();
 </script>
 </body>

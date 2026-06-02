@@ -1,0 +1,87 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<div class="custom-form-page">
+  <div class="custom-form-container">
+    <div class="custom-header">
+      <a href="{% url 'hard_books_list' %}" class="btn btn-secondary" style="margin-right: 12px;">← Back</a>
+      <div>
+        <h1>📚 Hard Books Upload</h1>
+        <p style="margin: 6px 0 0 0;">Add or update hard books and up to 5 images</p>
+      </div>
+    </div>
+
+
+    <div class="custom-card">
+      <form method="post" enctype="multipart/form-data" class="custom-form">
+        {% csrf_token %}
+
+
+        <div class="custom-group">
+          <label>Book Title</label>
+          {{ form.title }}
+          <div class="custom-error">{{ form.title.errors }}</div>
+        </div>
+
+
+        <div class="custom-group">
+          <label>Description</label>
+          {{ form.description }}
+          <div class="custom-error">{{ form.description.errors }}</div>
+        </div>
+
+
+        <div class="custom-grid-2">
+          <div class="custom-group">
+            <label>Original Price</label>
+            {{ form.original_price }}
+            <div class="custom-error">{{ form.original_price.errors }}</div>
+          </div>
+          <div class="custom-group">
+            <label>Price</label>
+            {{ form.price }}
+            <div class="custom-error">{{ form.price.errors }}</div>
+          </div>
+        </div>
+
+
+        <div class="custom-group">
+          <label>Book Images (max 5)</label>
+          <input type="file" name="images" class="form-input" accept="image/*" multiple>
+          <small style="color:#777;">You can select up to 5 images.</small>
+        </div>
+
+
+        <div class="custom-group">
+          <div class="checkbox-row">
+            {{ form.is_active }}
+            <label>Active</label>
+          </div>
+          <div class="custom-error">{{ form.is_active.errors }}</div>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">💾 Save Hard Book</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<style>
+.custom-form-page { padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+.custom-form-container { display: flex; flex-direction: column; gap: 1.5rem; }
+.custom-header { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 1rem; }
+.custom-card { background: #fff; border: 1px solid #e7ebf5; border-radius: 16px; padding: 1.5rem; }
+.custom-form { display: flex; flex-direction: column; gap: 1rem; }
+.custom-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.custom-group { display: flex; flex-direction: column; gap: 6px; }
+.form-input { padding: 10px 14px; border: 1.5px solid #dde2ee; border-radius: 8px; }
+.custom-error { color: #e84444; font-size: 0.8rem; }
+.checkbox-row { display: flex; align-items: center; gap: 10px; }
+.btn { display:inline-flex; align-items:center; justify-content:center; padding:12px 22px; border:none; border-radius:8px; text-decoration:none; }
+.btn-primary { background:#1a3a8f; color:#fff; }
+.btn-secondary { background:#f5f7fa; color:#333; border:1px solid #dde2ee; }
+.btn-secondary:hover { background:#e9edf5; transform: translateY(-1px); }
+@media (max-width: 768px) { .custom-grid-2 { grid-template-columns: 1fr; } }
+</style>
+{% endblock content1 %}

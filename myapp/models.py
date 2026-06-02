@@ -4,6 +4,57 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 import uuid
 
+
+class HardBook(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255, verbose_name="Book Title")
+    description = models.TextField(verbose_name="Description")
+    original_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name="Original Price"
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name="Sale Price"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Is Active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Hard Book"
+        verbose_name_plural = "Hard Books"
+
+    def __str__(self):
+        return self.title
+
+
+class HardBookImage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    book = models.ForeignKey(
+        HardBook,
+        on_delete=models.CASCADE,
+        related_name='images',
+        verbose_name="Book"
+    )
+    image = models.ImageField(upload_to='hardbooks/images/', verbose_name="Book Image")
+    dropbox_path = models.CharField(max_length=500, blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['uploaded_at']
+        verbose_name = "Hard Book Image"
+        verbose_name_plural = "Hard Book Images"
+
+    def __str__(self):
+        return f"{self.book.title} - Image"
+    
+
 class SiteSetting(models.Model):
     """Generic site setting for single-value settings"""
     key = models.CharField(max_length=100, unique=True, verbose_name="Setting Key")
@@ -20,6 +71,7 @@ class SiteSetting(models.Model):
         return f"{self.key} = {self.value[:50]}..." if self.value and len(self.value) > 50 else f"{self.key} = {self.value}"
 
 
+
 class NavbarSetting(models.Model):
     """Navbar customization settings"""
     brand_name = models.CharField(max_length=100, default="BoosterNotes", verbose_name="Brand Name")
@@ -29,6 +81,12 @@ class NavbarSetting(models.Model):
         blank=True,
         null=True,
         verbose_name="Logo Image"
+    )
+    favicon = models.ImageField(
+        upload_to='favicons/',
+        blank=True,
+        null=True,
+        verbose_name="Favicon"
     )
     search_placeholder = models.CharField(
         max_length=200,
@@ -240,29 +298,41 @@ class Notification(models.Model):
         return self.title
     
 
+
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+
+
 class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True, verbose_name="Coupon Code")
     amount = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
+        max_digits=10,
+        decimal_places=2,
         verbose_name="Discount Amount"
     )
     expiry_date = models.DateField(verbose_name="Expiry Date")
     usage_limit = models.PositiveIntegerField(
-        default=1, 
+        default=1,
         verbose_name="Usage Limit"
     )
     times_used = models.PositiveIntegerField(default=0, editable=False)
     is_active = models.BooleanField(default=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Coupon"
         verbose_name_plural = "Coupons"
 
+
     def __str__(self):
         return f"{self.code} - ₹{self.amount}"
+
 
     def save(self, *args, **kwargs):
         # Auto-deactivate if expired
@@ -270,16 +340,49 @@ class Coupon(models.Model):
             self.is_active = False
         super().save(*args, **kwargs)
 
+
     @property
     def is_expired(self):
         return self.expiry_date < timezone.now().date()
 
+
     @property
     def remaining_uses(self):
         return max(0, self.usage_limit - self.times_used)
-    
 
 
+
+class CouponUsage(models.Model):
+    """Track which users have used which coupons - READ ONLY"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='coupon_usages',
+        verbose_name="User"
+    )
+    coupon = models.ForeignKey(
+        Coupon,
+        on_delete=models.CASCADE,
+        related_name='usages',
+        verbose_name="Coupon"
+    )
+    used_at = models.DateTimeField(auto_now_add=True, verbose_name="Used At")
+    discount_applied = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Discount Applied",
+        editable=False
+    )
+   
+    class Meta:
+        ordering = ['-used_at']
+        verbose_name = "Coupon Usage"
+        verbose_name_plural = "Coupon Usages"
+        unique_together = ('user', 'coupon')  # One coupon per user only
+
+
+    def __str__(self):
+        return f"{self.user.username} - {self.coupon.code}"
 
 
 #dropbox

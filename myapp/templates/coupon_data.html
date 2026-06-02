@@ -1,0 +1,259 @@
+<style>
+  
+    /* ── Coupon Modal Styles ── */
+    .coupon-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    .coupon-modal.active {
+      display: flex;
+    }
+    .coupon-modal-content {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: couponSlideUp 0.3s ease;
+    }
+    @keyframes couponSlideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .coupon-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem;
+      border-bottom: 1px solid #e7ebf5;
+      background: linear-gradient(135deg, #1a3a8f, #0d2060);
+      color: #fff;
+    }
+    .coupon-modal-header h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .coupon-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.8rem;
+      cursor: pointer;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .coupon-close:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .coupon-modal-body {
+      padding: 1.5rem;
+    }
+    .coupon-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .coupon-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #dde2ee;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .coupon-input:focus {
+      outline: none;
+      border-color: #1a3a8f;
+    }
+    .coupon-submit {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #1a3a8f, #0d2060);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .coupon-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(26,58,143,0.3);
+    }
+    .coupon-list {
+      margin-top: 1rem;
+    }
+    .coupon-list h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .coupon-card {
+      background: #f8f9fa;
+      border: 2px solid #e7ebf5;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .coupon-card:hover {
+      border-color: #1a3a8f;
+      background: #f0f4ff;
+    }
+    .coupon-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .coupon-code {
+      background: linear-gradient(135deg, #1a3a8f, #0d2060);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+    .coupon-details {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .coupon-detail {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .coupon-detail i {
+      color: #1a3a8f;
+    }
+    .coupon-apply-btn {
+      padding: 8px 16px;
+      background: #1d9e75;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .coupon-apply-btn:hover {
+      background: #168863;
+      transform: translateY(-2px);
+    }
+    .coupon-empty {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+    .coupon-notice {
+      background: #fff9e6;
+      border: 1px solid #ffe066;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #856404;
+      margin-bottom: 1rem;
+    }
+  </style>
+
+<div class="coupon-modal" id="couponModal">
+  <div class="coupon-modal-content">
+    <div class="coupon-modal-header">
+      <h3><i class="fa-solid fa-ticket"></i> Apply Coupon</h3>
+      <button class="coupon-close" onclick="closeCouponModal()">&times;</button>
+    </div>
+
+    <div class="coupon-modal-body">
+{% if user.is_authenticated %}
+  
+  <!-- Coupon Input Form -->
+  <form class="coupon-form" method="post" action="{% url 'apply_coupon' %}">
+    {% csrf_token %}
+    <input type="text" class="coupon-input" name="code" placeholder="Enter coupon code" required>
+    <button type="submit" class="coupon-submit">Apply</button>
+  </form>
+
+  <!-- Available Coupons List -->
+  <div class="coupon-list">
+    <h4 style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
+      <i class="fa-solid fa-tags"></i> Available Coupons
+    </h4>
+    
+    {% if active_coupons %}
+      {% for coupon in active_coupons %}
+      <form method="post" action="{% url 'apply_coupon' %}" style="margin-bottom: 10px;">
+        {% csrf_token %}
+        <input type="hidden" name="code" value="{{ coupon.code }}">
+        <div class="coupon-card">
+          <div class="coupon-info">
+            <span class="coupon-code">{{ coupon.code }}</span>
+            <div class="coupon-details">
+              <div class="coupon-detail">
+                <i class="fa-solid fa-tag"></i>
+                ₹{{ coupon.amount }} off
+              </div>
+              <div class="coupon-detail">
+                <i class="fa-solid fa-calendar"></i>
+                Expires: {{ coupon.expiry_date|date:"d M Y" }}
+              </div>
+              <div class="coupon-detail">
+                <i class="fa-solid fa-users"></i>
+                {{ coupon.remaining_uses }} left
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="coupon-apply-btn">Apply</button>
+        </div>
+      </form>
+      {% endfor %}
+    {% else %}
+      <div class="coupon-empty">
+        <i class="fa-solid fa-ticket" style="font-size: 3rem; color: #ddd; display: block; margin-bottom: 10px;"></i>
+        <p style="color: #888; margin: 0;">No coupons available</p>
+      </div>
+    {% endif %}
+  </div>
+
+{% else %}
+  <!-- Not Logged In State -->
+  <div class="coupon-empty" style="padding: 3rem 1.5rem;">
+    <i class="fa-solid fa-lock" style="font-size: 3.5rem; color: #ddd; display: block; margin-bottom: 1rem;"></i>
+    <p style="color: #666; font-size: 1.1rem; margin-bottom: 1.5rem;">Please log in to use coupons</p>
+    <a href="{% url 'login' %}?next={{ request.path }}" class="coupon-submit" style="display: inline-block; text-decoration: none;">
+      Login Now
+    </a>
+  </div>
+{% endif %}
+    </div>
+  </div>
+</div>

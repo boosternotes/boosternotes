@@ -1,0 +1,586 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  .search-results-section {
+    padding: 2rem 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 50vh;
+  }
+
+  .search-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e7ebf5;
+  }
+
+  .search-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .search-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .search-header h2 i {
+    color: #1a3a8f;
+  }
+
+  .search-query-badge {
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .search-count-badge {
+    background: #f0f4ff;
+    color: #1a3a8f;
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .search-result-group {
+    margin-bottom: 2.5rem;
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+  }
+
+  .search-result-group h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f0f2f8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .search-result-group h3 span {
+    background: #1a3a8f;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+  }
+
+  .no-results i {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1.5rem;
+    color: #ddd;
+  }
+
+  .no-results h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .no-results p {
+    color: #888;
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .cat-scroll-search {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: #1a3a8f #f0f0f0;
+  }
+
+  .cat-scroll-search::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .cat-scroll-search::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+  }
+
+  .cat-scroll-search::-webkit-scrollbar-thumb {
+    background: #1a3a8f;
+    border-radius: 10px;
+  }
+
+  .cat-card-search {
+    flex-shrink: 0;
+    min-width: 180px;
+    max-width: 180px;
+    background: #fff;
+    border: 2px solid #e7ebf5;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cat-card-search:hover {
+    border-color: #1a3a8f;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(26,58,143,0.15);
+  }
+
+  .cat-card-search .cat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .cat-card-search .cat-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+
+  .cat-card-search .cat-count {
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  .cat-card-search .view-link {
+    display: block;
+    margin-top: 10px;
+    color: #1a3a8f;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cat-card-search .view-link:hover {
+    text-decoration: underline;
+  }
+
+  .pdf-grid-search {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .pdf-card-search {
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .pdf-card-search:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(26,58,143,0.15);
+  }
+
+  .pdf-thumb-search {
+    height: 140px;
+    background: linear-gradient(135deg, #f5f7fa, #e9edf5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    position: relative;
+  }
+
+  .pdf-body-search {
+    padding: 1rem;
+  }
+
+  .pdf-body-search h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .pdf-categorySearch {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 0.8rem;
+  }
+
+  .pdf-foot-search {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .price-now-search {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a3a8f;
+  }
+
+  .price-old-search {
+    font-size: 0.9rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 8px;
+  }
+
+  .pdf-pages-search {
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  .buy-btn-search {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .buy-btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26,58,143,0.3);
+  }
+
+  .book-grid-search {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .book-card-search {
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .book-card-search:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(26,58,143,0.15);
+  }
+
+  .book-thumb-search {
+    height: 160px;
+    background: linear-gradient(135deg, #fff9e6, #ffe066);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+  }
+
+  .book-body-search {
+    padding: 1rem;
+  }
+
+  .b-tag-search {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #f0f4ff;
+    color: #1a3a8f;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+
+  .book-body-search h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.8rem 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .b-price-search {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a3a8f;
+    margin-bottom: 1rem;
+  }
+
+  .b-orig-search {
+    font-size: 0.9rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 8px;
+    font-weight: 400;
+  }
+
+  .cart-btn-search {
+    width: 100%;
+    padding: 10px;
+    background: #fff;
+    color: #1a3a8f;
+    border: 2px solid #1a3a8f;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cart-btn-search:hover {
+    background: #1a3a8f;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  .back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f5f7fa;
+    color: #333;
+    border: 1.5px solid #dde2ee;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .back-to-home:hover {
+    background: #e9edf5;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 768px) {
+    .search-results-section {
+      padding: 1rem;
+    }
+
+    .search-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .search-header-left {
+      width: 100%;
+    }
+
+    .pdf-grid-search,
+    .book-grid-search {
+      grid-template-columns: 1fr;
+    }
+
+    .cat-card-search {
+      min-width: 150px;
+      max-width: 150px;
+    }
+  }
+      
+    
+    /* ── Search Results Styles ── */
+    .search-results-section {
+      padding: 2rem 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .search-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .search-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin: 0;
+    }
+    .search-query-badge {
+      background: #f0f4ff;
+      color: #1a3a8f;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .search-result-group {
+      margin-bottom: 2rem;
+    }
+    .search-result-group h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e7ebf5;
+    }
+    .search-result-group h3 span {
+      background: #1a3a8f;
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+      color: #888;
+    }
+    .no-results i {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 1rem;
+      color: #ddd;
+    }
+    
+</style>
+
+<div class="search-results-section">
+  <a href="{% url 'home' %}" class="back-to-home">
+    <i class="fa-solid fa-arrow-left"></i> Back to Home
+  </a>
+
+  <div class="search-header">
+    <div class="search-header-left">
+      <h2><i class="fa-solid fa-magnifying-glass"></i> Search Results</h2>
+      <span class="search-query-badge">"{{ search_query }}"</span>
+      <span class="search-count-badge">{{ total_results }} result{{ total_results|pluralize }}</span>
+    </div>
+  </div>
+
+  {% if total_results > 0 %}
+    {% if category_results %}
+    <div class="search-result-group">
+      <h3><i class="fa-solid fa-folder-open"></i> Categories <span>{{ category_results.count }}</span></h3>
+      <div class="cat-scroll-search">
+        {% for cat in category_results %}
+        <div class="cat-card-search">
+          <div class="cat-icon">{% if cat.image %}📚{% else %}🎯{% endif %}</div>
+          <div class="cat-label">{{ cat.name }}</div>
+          <div class="cat-count">{% with course_count=cat.elibrary_courses.count %}{% if course_count %}{{ course_count }} PDFs{% else %}—{% endif %}{% endwith %}</div>
+          <a href="#" class="view-link">View →</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if elibrary_results %}
+    <div class="search-result-group">
+      <h3><i class="fa-solid fa-file-pdf"></i> E-Library Courses <span>{{ elibrary_results.count }}</span></h3>
+      <div class="pdf-grid-search">
+        {% for course in elibrary_results %}
+        <div class="pdf-card-search">
+          <div class="pdf-thumb-search">📘</div>
+          <div class="pdf-body-search">
+            <h3>{{ course.name }}</h3>
+            {% if course.category %}
+            <div class="pdf-categorySearch">{{ course.category.name }}</div>
+            {% endif %}
+            <div class="pdf-foot-search">
+              <div>
+                <span class="price-now-search">₹{{ course.current_price }}</span>
+                <span class="price-old-search">₹{{ course.original_price }}</span>
+              </div>
+              <div class="pdf-pages-search">{{ course.pdfs.count }} PDFs</div>
+            </div>
+            <button class="buy-btn-search" onclick="addCart(this)">Buy Now</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if hardbook_results %}
+    <div class="search-result-group">
+      <h3><i class="fa-solid fa-book"></i> Physical Books <span>{{ hardbook_results.count }}</span></h3>
+      <div class="book-grid-search">
+        {% for book in hardbook_results %}
+        <div class="book-card-search">
+          <div class="book-thumb-search">📖</div>
+          <div class="book-body-search">
+            <div class="b-tag-search">{% if book.is_active %}Active{% else %}Inactive{% endif %}</div>
+            <h3>{{ book.title }}</h3>
+            <div class="b-price-search">
+              ₹{{ book.price }}
+              <span class="b-orig-search">₹{{ book.original_price }}</span>
+            </div>
+            <button class="cart-btn-search" onclick="addCart(this)">Add to Cart</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  {% else %}
+  <div class="no-results">
+    <i>🔍</i>
+    <h3>No results found for "{{ search_query }}"</h3>
+    <p>Try different keywords or browse our categories</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  function addCart(btn){
+    const original = btn.innerHTML;
+    btn.innerHTML = '✅ Done!';
+    btn.style.background = '#1d9e75';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#1d9e75';
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1600);
+  }
+</script>
+{% endblock content %}

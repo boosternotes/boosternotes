@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.db.models import Count, Q
-from django.http import JsonResponse
+from django.db.models import Count, Q ,F
+from django.http import JsonResponse , HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -20,6 +20,132 @@ from .dropbox_utils import DropboxManager
 import os
 from django.core.files.base import ContentFile
 
+def search(request):
+    query = request.GET.get('q', '').strip()
+
+    navbar = NavbarSetting.objects.first()
+    footer = FooterSetting.objects.first()
+
+    category_results = Category.objects.filter(name__icontains=query) if query else Category.objects.none()
+    elibrary_results = ELibraryModel.objects.filter(name__icontains=query) if query else ELibraryModel.objects.none()
+    hardbook_results = HardBook.objects.filter(title__icontains=query) if query else HardBook.objects.none()
+
+    total_results = category_results.count() + elibrary_results.count() + hardbook_results.count()
+
+    active_coupons = Coupon.objects.filter(
+        is_active=True,
+        expiry_date__gte=timezone.now().date(),
+        usage_limit__gt=F('times_used')
+    ).order_by('-created_at')[:6]
+
+    context = {
+        'navbar': navbar,
+        'footer': footer,
+        'search_query': query,
+        'category_results': category_results,
+        'elibrary_results': elibrary_results,
+        'hardbook_results': hardbook_results,
+        'total_results': total_results,
+        'active_coupons': active_coupons,
+    }
+    return render(request, 'search_results.html', context)
+
+@login_required
+def hard_books_list(request):
+    books = HardBook.objects.prefetch_related('images').all()
+    return render(request, 'hard_books_list.html', {'books': books})
+
+@login_required
+def hard_book_add(request):
+    if request.method == 'POST':
+        form = HardBookForm(request.POST)
+        files = request.FILES.getlist('images')
+
+        if form.is_valid():
+            book = form.save()
+
+            if files:
+                files = files[:5]
+                for i, file_obj in enumerate(files, start=1):
+                    result = DropboxManager.upload_file(
+                        file_obj=file_obj,
+                        file_name=f"{book.title.replace(' ', '_')}_{i}_{file_obj.name}",
+                        folder_path='hardbooks/images'
+                    )
+                    if result['success']:
+                        HardBookImage.objects.create(
+                            book=book,
+                            image=file_obj,
+                            dropbox_path=result['dropbox_path']
+                        )
+                    else:
+                        messages.error(request, f"Image {i} upload failed: {result['error']}")
+
+            messages.success(request, "Hard book added successfully!")
+            return redirect('hard_books_list')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = HardBookForm()
+
+    return render(request, 'hard_book_form.html', {'form': form})
+
+@login_required
+def hard_book_edit(request, pk):
+    book = get_object_or_404(HardBook, pk=pk)
+
+    if request.method == 'POST':
+        form = HardBookForm(request.POST, instance=book)
+        files = request.FILES.getlist('images')
+
+        if form.is_valid():
+            book = form.save()
+
+            existing_count = book.images.count()
+            available_slots = max(0, 5 - existing_count)
+
+            if files and available_slots > 0:
+                files = files[:available_slots]
+                for i, file_obj in enumerate(files, start=1):
+                    result = DropboxManager.upload_file(
+                        file_obj=file_obj,
+                        file_name=f"{book.title.replace(' ', '_')}_{i}_{file_obj.name}",
+                        folder_path='hardbooks/images'
+                    )
+                    if result['success']:
+                        HardBookImage.objects.create(
+                            book=book,
+                            image=file_obj,
+                            dropbox_path=result['dropbox_path']
+                        )
+                    else:
+                        messages.error(request, f"Image upload failed: {result['error']}")
+
+            messages.success(request, "Hard book updated successfully!")
+            return redirect('hard_books_list')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = HardBookForm(instance=book)
+
+    return render(request, 'hard_book_form.html', {'form': form, 'book': book})
+
+@login_required
+def hard_book_delete(request, pk):
+    book = get_object_or_404(HardBook, pk=pk)
+    if request.method == 'POST':
+        book.delete()
+        messages.success(request, "Hard book deleted successfully!")
+    return redirect('hard_books_list')
+
+@login_required
+def hard_book_image_delete(request, pk):
+    img = get_object_or_404(HardBookImage, pk=pk)
+    if request.method == 'POST':
+        DropboxManager.delete_file(img.dropbox_path)
+        img.delete()
+        messages.success(request, "Image deleted successfully!")
+    return redirect('hard_books_list')
 
 @login_required
 def elibrary_dashboard(request):
@@ -541,8 +667,9 @@ def delete_user(request, user_id):
     return redirect('dashboard')
 
 
+
 def home(request):
-    """Home page with dynamic customization data"""
+    """Home page with dynamic customization data and active coupons"""
     
     # Get customization settings (create defaults if they don't exist)
     navbar = NavbarSetting.objects.first()
@@ -592,7 +719,6 @@ def home(request):
     
     stats = StatsSetting.objects.filter(is_active=True).order_by('display_order')
     if not stats.exists():
-        # Create default stats
         StatsSetting.objects.bulk_create([
             StatsSetting(icon="📚", value="343", title="E-Library Courses", 
                         note="Exam-ready PDFs and revision packs", display_order=1),
@@ -624,7 +750,35 @@ def home(request):
             copyright_text="© 2026 BoosterNotes. All rights reserved."
         )
     
-    # Get your existing data
+    # Get active coupons - exclude ones user has already used
+    if request.user.is_authenticated:
+        # Get IDs of coupons user has already used
+        used_coupon_ids = CouponUsage.objects.filter(
+            user=request.user
+        ).values_list('coupon_id', flat=True)
+        
+        # Filter active coupons excluding used ones
+        active_coupons = Coupon.objects.filter(
+            is_active=True,
+            expiry_date__gte=timezone.now().date(),
+        ).exclude(
+            id__in=used_coupon_ids
+        ).annotate(
+            remaining=F('usage_limit') - F('times_used')
+        ).filter(
+            remaining__gt=0
+        ).order_by('-created_at')[:6]
+    else:
+        # For non-authenticated users, show all active coupons
+        active_coupons = Coupon.objects.filter(
+            is_active=True,
+            expiry_date__gte=timezone.now().date(),
+        ).annotate(
+            remaining=F('usage_limit') - F('times_used')
+        ).filter(
+            remaining__gt=0
+        ).order_by('-created_at')[:6]
+    
     categories = Category.objects.all()[:10]
     
     context = {
@@ -635,9 +789,75 @@ def home(request):
         'about': about,
         'footer': footer,
         'categories': categories,
+        'active_coupons': active_coupons,
     }
     
     return render(request, 'index.html', context)
+
+@login_required
+@require_POST
+def apply_coupon(request):
+    code = request.POST.get("code", "").strip().upper()
+
+    # Step 1: Check if code is provided
+    if not code:
+        messages.error(request, "Please enter a coupon code.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    # Step 2: Check if coupon exists
+    try:
+        coupon = Coupon.objects.get(code__iexact=code)
+    except Coupon.DoesNotExist:
+        messages.error(request, "Invalid coupon code.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    # Step 3: Check if coupon is active
+    if not coupon.is_active:
+        messages.error(request, "This coupon is no longer active.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    # Step 4: Check if coupon is expired
+    if coupon.is_expired:
+        messages.error(request, "This coupon has expired.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    # Step 5: Check if user already used this coupon
+    if CouponUsage.objects.filter(user=request.user, coupon=coupon).exists():
+        messages.error(request, "You have already used this coupon.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    # Step 6: Check if coupon has remaining uses
+    if coupon.remaining_uses <= 0:
+        messages.error(request, "This coupon has reached its usage limit.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    # Step 7: Save the coupon usage (NO EDIT/DELETE)
+    try:
+        with transaction.atomic():
+            # Create permanent usage record
+            CouponUsage.objects.create(
+                user=request.user, 
+                coupon=coupon,
+                discount_applied=coupon.amount
+            )
+            
+            # Update coupon usage count
+            coupon.times_used += 1
+            if coupon.times_used >= coupon.usage_limit:
+                coupon.is_active = False
+            coupon.save()
+
+        # Store in session for current checkout
+        request.session["applied_coupon_id"] = coupon.id
+        request.session["applied_coupon_code"] = coupon.code
+        request.session["applied_coupon_amount"] = str(coupon.amount)
+        
+        messages.success(request, f"Coupon '{coupon.code}' applied! You saved ₹{coupon.amount}")
+        
+    except Exception as e:
+        messages.error(request, "Error applying coupon. Please try again.")
+    
+    return redirect(request.META.get("HTTP_REFERER", "/"))
 
 @login_required
 def dashboard(request):

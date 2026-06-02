@@ -1,0 +1,273 @@
+{% extends "admin_dashboard.html" %}
+{% block content1 %}
+<div class="custom-page">
+  <div class="custom-container">
+    <div class="custom-header">
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="margin-right: 12px;">← Back</a>
+      <h1>📚 Hard Books</h1>
+      <a href="{% url 'hard_book_add' %}" class="btn btn-primary">➕ Add Hard Book</a>
+    </div>
+
+
+    {% include "msg.html" %}
+
+
+    <div class="custom-card">
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Preview</th>
+              <th>Title</th>
+              <th>Original Price</th>
+              <th>Price</th>
+              <th>Images</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for book in books %}
+            <tr>
+              <td>
+                {% with first_image=book.images.first %}
+                  {% if first_image and first_image.image %}
+                    <a href="{{ first_image.image.url }}" target="_blank">
+                      <img src="{{ first_image.image.url }}" alt="{{ book.title }}"
+                           style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #e0e4ee;">
+                    </a>
+                  {% else %}
+                    <div style="width:60px;height:60px;background:#f0f0f0;border-radius:8px;border:1px solid #e0e4ee;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
+                      No Image
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              </td>
+
+
+              <td>{{ book.title }}</td>
+              <td>₹{{ book.original_price }}</td>
+              <td>₹{{ book.price }}</td>
+
+
+              <td>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div>{{ book.images.count }} / 5</div>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    {% for img in book.images.all %}
+                      {% if img.image %}
+                        <a href="{{ img.image.url }}" target="_blank">
+                          <img src="{{ img.image.url }}" alt="{{ book.title }}"
+                               style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid #e0e4ee;">
+                        </a>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </td>
+
+
+              <td>
+                {% if book.is_active %}
+                  <span class="badge badge-success">Active</span>
+                {% else %}
+                  <span class="badge badge-danger">Inactive</span>
+                {% endif %}
+              </td>
+
+
+              <td>
+                <div class="action-btns">
+                  <a href="{% url 'hard_book_edit' book.id %}" class="action-btn action-edit" title="Edit">✏️ Edit</a>
+                  <form method="post" action="{% url 'hard_book_delete' book.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn action-delete" title="Delete">🗑️ Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" style="text-align:center;">No hard books found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<style>
+.custom-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+
+.custom-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+
+.custom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+
+.custom-card {
+  background: #fff;
+  border: 1px solid #e7ebf5;
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+}
+
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+
+.data-table th,
+.data-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+
+.data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+
+.action-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+
+.action-edit {
+  background: #f0f4ff;
+  color: #1a3a8f;
+  border-color: #d9e4ff;
+}
+
+
+.action-edit:hover {
+  background: #dfe9ff;
+  transform: translateY(-1px);
+}
+
+
+.action-delete {
+  background: #fff1f1;
+  color: #dc3545;
+  border-color: #ffd6d6;
+}
+
+
+.action-delete:hover {
+  background: #ffe1e1;
+  transform: translateY(-1px);
+}
+
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  text-decoration: none;
+}
+
+
+.btn-primary {
+  background: linear-gradient(135deg, #1a3a8f, #0d2060);
+  color: #fff;
+}
+
+
+.btn-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+
+
+.btn-secondary:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+
+.badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+.badge-success {
+  background: #d4edda;
+  color: #155724;
+}
+
+
+.badge-danger {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+
+@media (max-width: 768px) {
+  .custom-page {
+    padding: 1rem;
+  }
+
+
+  .custom-card {
+    padding: 1rem;
+  }
+
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+  }
+}
+</style>
+{% endblock content1 %}

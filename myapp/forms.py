@@ -4,6 +4,18 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import *
 
 
+class HardBookForm(forms.ModelForm):
+    class Meta:
+        model = HardBook
+        fields = ['title', 'description', 'original_price', 'price', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Enter book title'}),
+            'description': forms.Textarea(attrs={'class': 'form-input', 'rows': 4, 'placeholder': 'Enter description'}),
+            'original_price': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Original price', 'step': '0.01'}),
+            'price': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Sale price', 'step': '0.01'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-input'}),
+        }
+
 class ELibraryForm(forms.ModelForm):
     class Meta:
         model = ELibraryModel

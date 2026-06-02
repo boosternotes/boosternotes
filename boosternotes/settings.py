@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-g)(h61zja22%r+hx-l=x2jia$agp8_a+)+_p7nx7sb!r)b(f15'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -136,5 +136,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 CSRF_TRUSTED_ORIGINS = [
     "https://www.boosternotes.in",
-    "https://boosternotes-production.up.railway.app/",
+    "https://boosternotes-production.up.railway.app",
 ]
+
+STATICFILES_STORAGE = (
+    'whitenoise.storage.CompressedManifestStaticFilesStorage'
+)
