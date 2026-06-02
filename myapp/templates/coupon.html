@@ -1,285 +1,137 @@
 {% extends "admin_dashboard.html" %}
+{% load static %}
 {% block content1 %}
-<div class="coupon-page">
-  <div class="coupon-container">
-    <div class="coupon-header">
-      <h1>Coupons</h1>
+<div class="admin-sub-page">
+
+  <div class="admin-sub-header">
+    <div>
+      <h1>🎟️ Coupons</h1>
       <p>Create and manage discount coupons</p>
-      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
     </div>
+    <a href="{% url 'dashboard' %}" class="back-to-dash-btn">🏠 Dashboard</a>
+  </div>
 
-    <div class="coupon-card">
-      <div class="coupon-card-head">
-        <h2>Create New Coupon</h2>
+  {% if messages %}
+  <div class="admin-messages">
+    {% for message in messages %}
+    <div class="admin-msg admin-msg-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="admin-sub-card">
+    <div class="admin-sub-card-head"><h2>Create New Coupon</h2></div>
+    <form method="post" class="admin-sub-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="admin-form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="admin-form-error">{{ field.errors }}</div>{% endif %}
       </div>
+      {% endfor %}
+      <button type="submit" class="admin-save-btn">➕ Create Coupon</button>
+    </form>
+  </div>
 
-      <form method="post" novalidate class="coupon-form">
-        {% csrf_token %}
-
-        {% if form.non_field_errors %}
-        <div class="coupon-alert coupon-alert-error">
-          {{ form.non_field_errors }}
-        </div>
-        {% endif %}
-
-        <div class="coupon-group">
-          <label for="{{ form.code.id_for_label }}">Coupon Code</label>
-          {{ form.code }}
-          <div class="coupon-error">{{ form.code.errors }}</div>
-        </div>
-
-        <div class="coupon-group">
-          <label for="{{ form.amount.id_for_label }}">Discount Amount</label>
-          {{ form.amount }}
-          <div class="coupon-error">{{ form.amount.errors }}</div>
-        </div>
-
-        <div class="coupon-group">
-          <label for="{{ form.expiry_date.id_for_label }}">Expiry Date</label>
-          {{ form.expiry_date }}
-          <div class="coupon-error">{{ form.expiry_date.errors }}</div>
-        </div>
-
-        <div class="coupon-group">
-          <label for="{{ form.usage_limit.id_for_label }}">Usage Limit</label>
-          {{ form.usage_limit }}
-          <div class="coupon-error">{{ form.usage_limit.errors }}</div>
-        </div>
-
-        <button type="submit" class="coupon-btn btn btn-primary">💳 Create Coupon</button>
-      </form>
-    </div>
-
-    <div class="coupon-card">
-      <div class="coupon-card-head">
-        <h2>Active Coupons</h2>
-      </div>
-
-      <div class="coupon-table-wrap">
-        <table class="data-table coupon-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Discount</th>
-              <th>Expiry Date</th>
-              <th>Usage Limit</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for coupon in coupons %}
-            <tr>
-              <td><strong>{{ coupon.code }}</strong></td>
-              <td>{{ coupon.amount }}</td>
-              <td>{{ coupon.expiry_date|date:"d M Y" }}</td>
-              <td>{{ coupon.usage_limit }}</td>
-              <td>
-                {% if coupon.is_active %}
-                  <span class="badge badge-success">Active</span>
-                {% else %}
-                  <span class="badge badge-danger">Expired/Inactive</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="5" class="coupon-empty">No coupons found.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+  <div class="admin-sub-card">
+    <div class="admin-sub-card-head"><h2>All Coupons</h2></div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Code</th><th>Amount (₹)</th><th>Expiry</th><th>Used/Limit</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for coupon in coupons %}
+          <tr>
+            <td><strong>{{ coupon.code }}</strong></td>
+            <td>₹{{ coupon.amount }}</td>
+            <td>{{ coupon.expiry_date }}</td>
+            <td>{{ coupon.times_used }}/{{ coupon.usage_limit }}</td>
+            <td>
+              {% if coupon.is_active %}
+                <span class="badge badge-success">Active</span>
+              {% else %}
+                <span class="badge badge-danger">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-btns">
+                <form method="post" action="{% url 'coupon_toggle_active' coupon.pk %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="action-btn" title="Toggle">{% if coupon.is_active %}🔴{% else %}🟢{% endif %}</button>
+                </form>
+                <form method="post" action="{% url 'coupon_delete' coupon.pk %}" style="display:inline;"
+                      onsubmit="return confirm('Delete coupon {{ coupon.code }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="action-btn" title="Delete">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align:center;color:#888;padding:2rem;">No coupons yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
+
 </div>
-
+<script>
+setTimeout(function(){
+  document.querySelectorAll('.admin-msg').forEach(function(el){ el.style.opacity='0'; setTimeout(function(){ el.remove(); },400); });
+}, 4000);
+</script>
+{{ block.super }}
+{% include 'admin_sub_styles.html' ignore missing %}
 <style>
-.coupon-page {
-  padding: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.back-to-dash-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; background: #1a3a8f; color: #fff;
+  border-radius: 8px; font-size: .84rem; font-weight: 600;
+  text-decoration: none; transition: background .18s;
 }
-
-.coupon-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.back-to-dash-btn:hover { background: #0d2060; color: #fff; }
+.admin-sub-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+.admin-sub-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.admin-sub-header h1 { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.admin-sub-header p { font-size: .86rem; color: #888; margin: .25rem 0 0; }
+.admin-sub-card { background: #fff; border: 1px solid #e7ebf5; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(26,58,143,.04); }
+.admin-sub-card-head { margin-bottom: 1rem; padding-bottom: .8rem; border-bottom: 1px solid #f0f2f8; }
+.admin-sub-card-head h2 { font-size: 1.05rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.admin-sub-form { display: flex; flex-direction: column; gap: 1rem; }
+.admin-form-group { display: flex; flex-direction: column; gap: 5px; }
+.admin-form-group label { font-size: .85rem; font-weight: 600; color: #333; }
+.admin-form-group input, .admin-form-group select, .admin-form-group textarea {
+  width: 100%; padding: 9px 13px; border: 1.5px solid #dde2ee;
+  border-radius: 8px; font-size: .87rem; font-family: Poppins, sans-serif; background: #fff;
 }
-
-.coupon-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+.admin-form-group input:focus, .admin-form-group select:focus, .admin-form-group textarea:focus {
+  outline: none; border-color: #1a3a8f; background: #f8f9ff;
 }
-
-.coupon-header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0;
+.admin-form-error { color: #e84444; font-size: .78rem; }
+.admin-save-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px;
+  background: linear-gradient(135deg,#1a3a8f,#0d2060); color: #fff;
+  border: none; border-radius: 8px; font-size: .87rem; font-weight: 600;
+  cursor: pointer; font-family: Poppins, sans-serif; margin-top: .5rem;
 }
-
-.coupon-header p {
-  font-size: 0.88rem;
-  color: #888;
-  margin: 0.3rem 0 0 0;
+.admin-save-btn:hover { opacity: .9; }
+.admin-messages { display: flex; flex-direction: column; gap: 8px; }
+.admin-msg { padding: 12px 18px; border-radius: 10px; font-size: .88rem; font-weight: 500; transition: opacity .4s; }
+.admin-msg-success { background: #e6f9ef; border: 1px solid #b2e8cc; color: #1a7a45; }
+.admin-msg-error   { background: #ffe8e8; border: 1px solid #ffd8d8; color: #c0392b; }
+.admin-msg-warning { background: #fff8e6; border: 1px solid #ffe0a0; color: #856404; }
+.admin-msg-info    { background: #e8f4ff; border: 1px solid #b8d9ff; color: #1a5276; }
+.action-btns { display: flex; gap: 6px; align-items: center; }
+.action-btn {
+  width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; border: 1px solid #e0e4ee;
+  background: #fff; font-size: .9rem; padding: 0; transition: all .15s;
 }
-
-.coupon-card {
-  background: #fff;
-  border: 1px solid #e7ebf5;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(26,58,143,0.04);
-}
-
-.coupon-card-head {
-  margin-bottom: 1.2rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid #f0f2f8;
-}
-
-.coupon-card-head h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0;
-}
-
-.coupon-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.coupon-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.coupon-group label {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.coupon-group input,
-.coupon-group textarea,
-.coupon-group select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid #dde2ee;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  font-family: 'Poppins', sans-serif;
-  transition: border-color .2s, background .2s;
-  background: #fff;
-}
-
-.coupon-group input:focus,
-.coupon-group textarea:focus,
-.coupon-group select:focus {
-  outline: none;
-  border-color: #1a3a8f;
-  background: #f8f9ff;
-}
-
-.coupon-group input[type="date"] {
-  cursor: pointer;
-}
-
-.coupon-error {
-  color: #e84444;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  min-height: 14px;
-}
-
-.coupon-alert {
-  padding: 12px 14px;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-}
-
-.coupon-alert-error {
-  background: #ffe8e8;
-  border: 1px solid #ffd8d8;
-  color: #e84444;
-}
-
-.coupon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  transition: all .2s;
-  cursor: pointer;
-  border: none;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #1a3a8f, #0d2060);
-  color: #fff;
-  margin-top: 0.5rem;
-}
-
-.coupon-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(26,58,143,0.2);
-}
-
-.coupon-table-wrap {
-  overflow-x: auto;
-}
-
-.coupon-table {
-  width: 100%;
-  font-size: 0.88rem;
-}
-
-.coupon-table th {
-  font-weight: 600;
-  color: #1a3a8f;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.coupon-table td {
-  color: #333;
-  vertical-align: middle;
-}
-
-.coupon-empty {
-  text-align: center;
-  color: #888;
-  padding: 2rem !important;
-}
-
-@media (max-width: 768px) {
-  .coupon-page {
-    padding: 1rem;
-  }
-  
-  .coupon-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .coupon-card {
-    padding: 1rem;
-  }
-  
-  .coupon-btn {
-    width: 100%;
-  }
-}
+.action-btn:hover { background: #f0f4ff; border-color: #1a3a8f; }
 </style>
 {% endblock content1 %}

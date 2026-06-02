@@ -3,10 +3,21 @@
 <div class="category-page">
   <div class="category-container">
     <div class="category-header">
-      <h1>Categories</h1>
-      <p>Create and manage product categories</p>
-      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+      <div>
+        <h1>Categories</h1>
+        <p>Create and manage product categories</p>
+      </div>
+      <a href="{% url 'dashboard' %}" class="back-to-dash-btn">🏠 Dashboard</a>
     </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="admin-messages">
+      {% for message in messages %}
+      <div class="admin-msg admin-msg-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- Edit Modal -->
     <div id="editModal" class="cat-modal" style="display:none;">
@@ -172,9 +183,32 @@ function closeEditModal() {
 document.getElementById('editModal').addEventListener('click', function(e) {
   if (e.target === this) closeEditModal();
 });
+// Auto-dismiss messages after 4s
+setTimeout(function(){
+  document.querySelectorAll('.admin-msg').forEach(function(el){ el.style.opacity='0'; setTimeout(function(){ el.remove(); },400); });
+}, 4000);
 </script>
 
 <style>
+.back-to-dash-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; background: #1a3a8f; color: #fff;
+  border-radius: 8px; font-size: .84rem; font-weight: 600;
+  text-decoration: none; transition: background .18s;
+  white-space: nowrap;
+}
+.back-to-dash-btn:hover { background: #0d2060; color: #fff; }
+/* Messages */
+.admin-messages { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+.admin-msg {
+  padding: 12px 18px; border-radius: 10px;
+  font-size: .88rem; font-weight: 500;
+  transition: opacity .4s;
+}
+.admin-msg-success { background: #e6f9ef; border: 1px solid #b2e8cc; color: #1a7a45; }
+.admin-msg-error   { background: #ffe8e8; border: 1px solid #ffd8d8; color: #c0392b; }
+.admin-msg-warning { background: #fff8e6; border: 1px solid #ffe0a0; color: #856404; }
+.admin-msg-info    { background: #e8f4ff; border: 1px solid #b8d9ff; color: #1a5276; }
 /* Modal overlay */
 .cat-modal {
   position: fixed; inset: 0;
@@ -208,7 +242,6 @@ document.getElementById('editModal').addEventListener('click', function(e) {
   border-radius: 6px;
 }
 .cat-modal-close:hover { background: #f0f0f0; color: #333; }
-
 /* Page layout */
 .category-page {
   padding: 1.5rem;

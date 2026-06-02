@@ -1,286 +1,123 @@
 {% extends "admin_dashboard.html" %}
 {% block content1 %}
-<div class="notif-page">
-  <div class="notif-container">
-    <div class="notif-header">
-      <h1>Notifications</h1>
-      <p>Send and manage notifications</p>
-      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+<div class="admin-sub-page">
+
+  <div class="admin-sub-header">
+    <div>
+      <h1>🔔 Notifications</h1>
+      <p>Send push notifications to all users</p>
     </div>
+    <a href="{% url 'dashboard' %}" class="back-to-dash-btn">🏠 Dashboard</a>
+  </div>
 
-    <div class="notif-card">
-      <div class="notif-card-head">
-        <h2>Send New Notification</h2>
+  {% if messages %}
+  <div class="admin-messages">
+    {% for message in messages %}
+    <div class="admin-msg admin-msg-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="admin-sub-card">
+    <div class="admin-sub-card-head"><h2>Send New Notification</h2></div>
+    <form method="post" class="admin-sub-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="admin-form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="admin-form-error">{{ field.errors }}</div>{% endif %}
       </div>
+      {% endfor %}
+      <button type="submit" class="admin-save-btn">📢 Send Notification</button>
+    </form>
+  </div>
 
-      <form method="post" novalidate class="notif-form">
-        {% csrf_token %}
-
-        {% if form.non_field_errors %}
-        <div class="notif-alert notif-alert-error">
-          {{ form.non_field_errors }}
-        </div>
-        {% endif %}
-
-        <div class="notif-group">
-          <label for="{{ form.title.id_for_label }}">Title</label>
-          {{ form.title }}
-          <div class="notif-error">{{ form.title.errors }}</div>
-        </div>
-
-        <div class="notif-group">
-          <label for="{{ form.message.id_for_label }}">Message</label>
-          {{ form.message }}
-          <div class="notif-error">{{ form.message.errors }}</div>
-        </div>
-
-        <div class="notif-group">
-          <label for="{{ form.link.id_for_label }}">Link</label>
-          {{ form.link }}
-          <div class="notif-error">{{ form.link.errors }}</div>
-        </div>
-
-        <button type="submit" class="notif-btn btn btn-primary">📤 Send Notification</button>
-      </form>
+  <div class="admin-sub-card">
+    <div class="admin-sub-card-head">
+      <h2>Recent Notifications
+        <small style="font-weight:400;color:#888;font-size:.8rem;margin-left:8px;">Total: {{ total_notifications }} | Today: {{ sent_today }}</small>
+      </h2>
     </div>
-
-    <div class="notif-card">
-      <div class="notif-card-head">
-        <h2>Recent Notifications</h2>
-      </div>
-
-      <div class="notif-table-wrap">
-        <table class="data-table notif-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Message</th>
-              <th>Link</th>
-              <th>Time Sent</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for notification in notifications %}
-            <tr>
-              <td><strong>{{ notification.title }}</strong></td>
-              <td>{{ notification.message|truncatewords:10 }}</td>
-              <td>
-                {% if notification.link %}
-                  <a href="{{ notification.link }}" target="_blank" class="notif-link btn btn-secondary">Open</a>
-                {% else %}
-                  <span class="notif-dash">—</span>
-                {% endif %}
-              </td>
-              <td>{{ notification.sent_at|date:"d M Y, h:i A" }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="4" class="notif-empty">No notifications found.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr><th>Title</th><th>Message</th><th>Link</th><th>Sent At</th><th>Delete</th></tr>
+        </thead>
+        <tbody>
+          {% for notif in notifications %}
+          <tr>
+            <td><strong>{{ notif.title }}</strong></td>
+            <td>{{ notif.message|truncatewords:10 }}</td>
+            <td>{% if notif.link %}<a href="{{ notif.link }}" target="_blank">Open</a>{% else %}—{% endif %}</td>
+            <td>{{ notif.sent_at|date:"d M Y H:i" }}</td>
+            <td>
+              <form method="post" action="{% url 'delete_notification' notif.id %}" style="display:inline;"
+                    onsubmit="return confirm('Delete this notification?');">
+                {% csrf_token %}
+                <button type="submit" class="action-btn" title="Delete">🗑️</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" style="text-align:center;color:#888;padding:2rem;">No notifications sent yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
+
 </div>
-
+<script>
+setTimeout(function(){
+  document.querySelectorAll('.admin-msg').forEach(function(el){ el.style.opacity='0'; setTimeout(function(){ el.remove(); },400); });
+}, 4000);
+</script>
 <style>
-.notif-page {
-  padding: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.back-to-dash-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; background: #1a3a8f; color: #fff;
+  border-radius: 8px; font-size: .84rem; font-weight: 600;
+  text-decoration: none; transition: background .18s;
 }
-
-.notif-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.back-to-dash-btn:hover { background: #0d2060; color: #fff; }
+.admin-sub-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+.admin-sub-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.admin-sub-header h1 { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.admin-sub-header p { font-size: .86rem; color: #888; margin: .25rem 0 0; }
+.admin-sub-card { background: #fff; border: 1px solid #e7ebf5; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(26,58,143,.04); }
+.admin-sub-card-head { margin-bottom: 1rem; padding-bottom: .8rem; border-bottom: 1px solid #f0f2f8; }
+.admin-sub-card-head h2 { font-size: 1.05rem; font-weight: 700; color: #1a1a2e; margin: 0; }
+.admin-sub-form { display: flex; flex-direction: column; gap: 1rem; }
+.admin-form-group { display: flex; flex-direction: column; gap: 5px; }
+.admin-form-group label { font-size: .85rem; font-weight: 600; color: #333; }
+.admin-form-group input, .admin-form-group select, .admin-form-group textarea {
+  width: 100%; padding: 9px 13px; border: 1.5px solid #dde2ee;
+  border-radius: 8px; font-size: .87rem; font-family: Poppins, sans-serif; background: #fff;
 }
-
-.notif-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+.admin-form-group input:focus, .admin-form-group select:focus, .admin-form-group textarea:focus {
+  outline: none; border-color: #1a3a8f; background: #f8f9ff;
 }
-
-.notif-header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0;
+.admin-form-error { color: #e84444; font-size: .78rem; }
+.admin-save-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px;
+  background: linear-gradient(135deg,#1a3a8f,#0d2060); color: #fff;
+  border: none; border-radius: 8px; font-size: .87rem; font-weight: 600;
+  cursor: pointer; font-family: Poppins, sans-serif; margin-top: .5rem;
 }
-
-.notif-header p {
-  font-size: 0.88rem;
-  color: #888;
-  margin: 0.3rem 0 0 0;
+.admin-save-btn:hover { opacity: .9; }
+.admin-messages { display: flex; flex-direction: column; gap: 8px; }
+.admin-msg { padding: 12px 18px; border-radius: 10px; font-size: .88rem; font-weight: 500; transition: opacity .4s; }
+.admin-msg-success { background: #e6f9ef; border: 1px solid #b2e8cc; color: #1a7a45; }
+.admin-msg-error   { background: #ffe8e8; border: 1px solid #ffd8d8; color: #c0392b; }
+.admin-msg-warning { background: #fff8e6; border: 1px solid #ffe0a0; color: #856404; }
+.admin-msg-info    { background: #e8f4ff; border: 1px solid #b8d9ff; color: #1a5276; }
+.action-btns { display: flex; gap: 6px; align-items: center; }
+.action-btn {
+  width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; border: 1px solid #e0e4ee;
+  background: #fff; font-size: .9rem; padding: 0; transition: all .15s;
 }
-
-.notif-card {
-  background: #fff;
-  border: 1px solid #e7ebf5;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(26,58,143,0.04);
-}
-
-.notif-card-head {
-  margin-bottom: 1.2rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid #f0f2f8;
-}
-
-.notif-card-head h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0;
-}
-
-.notif-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.notif-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.notif-group label {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.notif-group input,
-.notif-group textarea {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid #dde2ee;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  font-family: 'Poppins', sans-serif;
-  transition: border-color .2s, background .2s;
-  background: #fff;
-}
-
-.notif-group input:focus,
-.notif-group textarea:focus {
-  outline: none;
-  border-color: #1a3a8f;
-  background: #f8f9ff;
-}
-
-.notif-group textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.notif-error {
-  color: #e84444;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  min-height: 14px;
-}
-
-.notif-alert {
-  padding: 12px 14px;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-}
-
-.notif-alert-error {
-  background: #ffe8e8;
-  border: 1px solid #ffd8d8;
-  color: #e84444;
-}
-
-.notif-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  transition: all .2s;
-  cursor: pointer;
-  border: none;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #1a3a8f, #0d2060);
-  color: #fff;
-  margin-top: 0.5rem;
-}
-
-.notif-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(26,58,143,0.2);
-}
-
-.notif-table-wrap {
-  overflow-x: auto;
-}
-
-.notif-table {
-  width: 100%;
-  font-size: 0.88rem;
-}
-
-.notif-table th {
-  font-weight: 600;
-  color: #1a3a8f;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.notif-table td {
-  color: #333;
-  vertical-align: middle;
-}
-
-.notif-link {
-  padding: 6px 12px;
-  font-size: 0.8rem;
-}
-
-.notif-dash {
-  color: #888;
-  font-size: 1.2rem;
-}
-
-.notif-empty {
-  text-align: center;
-  color: #888;
-  padding: 2rem !important;
-}
-
-@media (max-width: 768px) {
-  .notif-page {
-    padding: 1rem;
-  }
-  
-  .notif-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .notif-card {
-    padding: 1rem;
-  }
-  
-  .notif-btn {
-    width: 100%;
-  }
-}
+.action-btn:hover { background: #f0f4ff; border-color: #1a3a8f; }
 </style>
 {% endblock content1 %}
