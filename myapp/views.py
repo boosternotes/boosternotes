@@ -802,6 +802,18 @@ def home(request):
     
     return render(request, 'index.html', context)
 
+def elibrary_detail(request, pk):
+    pdf = get_object_or_404(
+        ELibraryModel.objects.select_related('category').prefetch_related('pdfs'),
+        pk=pk,
+        is_active=True
+    )
+    uploaded_pdfs = pdf.pdfs.filter(is_active=True).order_by('uploaded_at')
+    return render(request, 'elibrary_detail.html', {
+        'pdf': pdf,
+        'uploaded_pdfs': uploaded_pdfs,
+    })
+
 
 @login_required
 @require_POST

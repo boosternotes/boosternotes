@@ -72,6 +72,7 @@ urlpatterns = [
 
       # Coupon System
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
+    path('elibrary/<uuid:pk>/', views.elibrary_detail, name='elibrary_detail'),
 
     
     

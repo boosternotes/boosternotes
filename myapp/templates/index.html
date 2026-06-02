@@ -212,8 +212,8 @@
 <!--Nav bar -->
 <nav>
   <a href="{% url 'home' %}" class="logo-wrap" id="logoWrap">
-    {% if navbar.logo %}
-    <img src="{{ navbar.logo.url }}" alt="{{ navbar.brand_name }} Logo" class="logo-img" id="logoImg" onerror="handleLogoError()">
+    {% if site_settings.logo %}
+    <img src="{{ site_settings.logo.url }}" alt="{{ navbar.brand_name }} Logo" class="logo-img" id="logoImg" onerror="handleLogoError()">
     {% endif %}
     <div class="logo-fallback" id="logoFallback">
       <div class="logo-circle">🚀</div>
@@ -533,49 +533,51 @@
       <h2>📄 Popular <span>PDF Courses</span></h2>
       <div class="sec-sub">Most downloaded study packs</div>
     </div>
-    <a href="#" class="view-all">View All</a>
+    <a href="" class="view-all">View All</a>
   </div>
 
   <div class="pdf-grid">
     {% for pdf in popular_pdfs %}
-      <div class="pdf-card">
-        <div class="pdf-thumb">
-          {% if pdf.thumbnail %}
-            <img src="{{ pdf.thumbnail.url }}" alt="{{ pdf.name }}">
-          {% else %}
-            📘
-          {% endif %}
-          <span class="pdf-badge blue">Top</span>
-        </div>
-
-        <div class="pdf-body">
-          <h3>{{ pdf.name }}</h3>
-
-          {% if pdf.category %}
-            <div style="font-size:.72rem;color:#1a3a8f;font-weight:600;margin-bottom:6px;">
-              {{ pdf.category.name }}
-            </div>
-          {% endif %}
-
-          {% if pdf.description %}
-            <div style="font-size:.74rem;color:#777;line-height:1.45;margin-bottom:8px;min-height:34px;">
-              {{ pdf.description|truncatechars:70 }}
-            </div>
-          {% endif %}
-
-          <div class="pdf-foot">
-            <div>
-              <span class="price-now">₹{{ pdf.current_price|floatformat:0 }}</span>
-              {% if pdf.original_price and pdf.original_price > pdf.current_price %}
-                <span class="price-old">₹{{ pdf.original_price|floatformat:0 }}</span>
-              {% endif %}
-            </div>
-            <div class="pdf-pages">PDF</div>
+      <a href="{% url 'elibrary_detail' pdf.id %}" class="pdf-card-link">
+        <div class="pdf-card">
+          <div class="pdf-thumb">
+            {% if pdf.thumbnail %}
+              <img src="{{ pdf.thumbnail.url }}" alt="{{ pdf.name }}">
+            {% else %}
+              📘
+            {% endif %}
+            <span class="pdf-badge blue">Top</span>
           </div>
 
-          <button class="buy-btn" onclick="addCart(this)">Buy Now</button>
+          <div class="pdf-body">
+            <h3>{{ pdf.name }}</h3>
+
+            {% if pdf.category %}
+              <div style="font-size:.72rem;color:#1a3a8f;font-weight:600;margin-bottom:6px;">
+                {{ pdf.category.name }}
+              </div>
+            {% endif %}
+
+            {% if pdf.description %}
+              <div style="font-size:.74rem;color:#777;line-height:1.45;margin-bottom:8px;min-height:34px;">
+                {{ pdf.description|truncatechars:70 }}
+              </div>
+            {% endif %}
+
+            <div class="pdf-foot">
+              <div>
+                <span class="price-now">₹{{ pdf.current_price|floatformat:0 }}</span>
+                {% if pdf.original_price and pdf.original_price > pdf.current_price %}
+                  <span class="price-old">₹{{ pdf.original_price|floatformat:0 }}</span>
+                {% endif %}
+              </div>
+              <div class="pdf-pages">PDF</div>
+            </div>
+
+            <button class="buy-btn" type="button">Buy Now</button>
+          </div>
         </div>
-      </div>
+      </a>
     {% empty %}
       <div class="pdf-card">
         <div class="pdf-thumb">📘 <span class="pdf-badge blue">Top</span></div>

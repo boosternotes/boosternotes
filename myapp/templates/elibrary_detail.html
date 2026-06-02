@@ -1,0 +1,89 @@
+{% extends "index.html" %}
+
+{% block content %}
+<section class="section">
+  <div class="pdf-card" style="max-width:900px;margin:0 auto;">
+    <div class="pdf-thumb" style="height:320px;overflow:hidden;">
+      {% if pdf.thumbnail %}
+        <img src="{{ pdf.thumbnail.url }}" alt="{{ pdf.name }}" style="width:100%;height:100%;object-fit:cover;">
+      {% else %}
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f7fa;color:#1a3a8f;font-size:3rem;font-weight:700;">
+          📘
+        </div>
+      {% endif %}
+      <span class="pdf-badge blue">Top</span>
+    </div>
+
+    <div class="pdf-body" style="padding:18px;">
+      <h3 style="font-size:1.2rem;margin-bottom:8px;">{{ pdf.name }}</h3>
+
+      {% if pdf.category %}
+        <div style="font-size:.78rem;color:#1a3a8f;font-weight:600;margin-bottom:10px;">
+          Category: {{ pdf.category.name }}
+        </div>
+      {% endif %}
+
+      {% if pdf.description %}
+        <p style="font-size:.92rem;color:#555;line-height:1.7;margin-bottom:14px;">
+          {{ pdf.description }}
+        </p>
+      {% else %}
+        <p style="font-size:.92rem;color:#777;line-height:1.7;margin-bottom:14px;">
+          No description added for this PDF yet.
+        </p>
+      {% endif %}
+
+      <div class="pdf-foot" style="margin-bottom:14px;">
+        <div>
+          <span class="price-now">₹{{ pdf.current_price|floatformat:0 }}</span>
+          {% if pdf.original_price %}
+            <span class="price-old">₹{{ pdf.original_price|floatformat:0 }}</span>
+          {% endif %}
+        </div>
+        <div class="pdf-pages">PDF Course</div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <h4 style="font-size:1rem;margin-bottom:10px;color:#1a1a2e;">Uploaded PDFs</h4>
+
+        {% if uploaded_pdfs %}
+          <div style="display:grid;gap:10px;">
+            {% for file in uploaded_pdfs %}
+              <div style="border:1px solid #e6e8f0;border-radius:12px;padding:14px;background:#fff;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                  <div>
+                    <div style="font-weight:700;color:#1a1a2e;">{{ file.pdf_name }}</div>
+                    <div style="font-size:.75rem;color:#888;margin-top:4px;">
+                      Uploaded at: {{ file.uploaded_at|date:"d M Y, h:i A" }}
+                    </div>
+                  </div>
+
+                  {% if file.pdf_file %}
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                      <a href="{{ file.pdf_file.url }}" target="_blank" class="view-all">Open PDF</a>
+                      <a href="{{ file.pdf_file.url }}" download class="buy-btn" style="width:auto;padding:10px 16px;">
+                        Download
+                      </a>
+                    </div>
+                  {% else %}
+                    <span style="font-size:.8rem;color:#c00;">No file attached</span>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="border:1px dashed #cfd6e6;border-radius:12px;padding:16px;background:#fafbff;color:#777;">
+            No PDF uploaded yet for this course.
+          </div>
+        {% endif %}
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+        <button class="buy-btn" onclick="addCart(this)" style="flex:1;">Buy Now</button>
+        <a href="" class="view-all" style="flex:1;text-align:center;">Back to Library</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}
