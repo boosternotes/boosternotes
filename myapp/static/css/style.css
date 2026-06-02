@@ -393,7 +393,11 @@
       opacity:0;transition:opacity .7s ease;pointer-events:none;
     }
     .banner-slide.active{opacity:1;pointer-events:auto}
-    .banner-slide img{width:100%;height:100%;object-fit:cover;display:block}
+    .banner-slide img{
+      width:100%;height:100%;object-fit:cover;display:block;
+      /* force browser decode off main thread */
+      content-visibility:auto;
+    }
 
     .stats-highlight-section{
       background:linear-gradient(180deg,#ffffff 0%, #f5f8ff 100%);
@@ -463,6 +467,7 @@
       color:#7a849a;
     }
 
+    /* ── Categories ── */
     .categories-section{
       background:#fff;
       padding:1.5rem 1rem;
@@ -481,9 +486,13 @@
       display:flex;
       gap:12px;
       overflow-x:auto;
-      padding-bottom:8px;
+      /* padding-bottom gives room so drop-shadow isn't clipped */
+      padding-bottom:12px;
+      padding-top:4px;
       scroll-snap-type:x mandatory;
       -webkit-overflow-scrolling:touch;
+      /* allow hover shadow to show */
+      overflow-y:visible;
     }
     .cat-scroll::-webkit-scrollbar{height:4px}
     .cat-scroll::-webkit-scrollbar-track{background:#f0f0f0;border-radius:2px}
@@ -492,10 +501,10 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      justify-content:center;
-      gap:8px;
+      justify-content:flex-start;
+      gap:6px;
       min-width:110px;
-      padding:16px 12px;
+      padding:14px 12px 12px;
       background:#f8f9ff;
       border:1.5px solid #e8eaf8;
       border-radius:14px;
@@ -504,12 +513,14 @@
       transition:all .2s ease;
       flex-shrink:0;
       text-align:center;
+      /* prevent hover translateY from being clipped */
+      will-change:transform;
     }
     .cat-card:hover{
       border-color:#1a3a8f;
       background:#eef2ff;
-      transform:translateY(-2px);
-      box-shadow:0 6px 20px rgba(26,58,143,0.1);
+      transform:translateY(-3px);
+      box-shadow:0 8px 22px rgba(26,58,143,0.13);
     }
     .cat-card.active{
       border-color:#1a3a8f;
@@ -517,6 +528,15 @@
       color:#fff;
     }
     .cat-card.active .cat-label{color:#fff}
+    /* keep image visible when card is active (tint overlay trick) */
+    .cat-card.active .cat-img-wrap{
+      background:rgba(255,255,255,0.18);
+      border-radius:12px;
+    }
+    .cat-card.active .cat-img-wrap img{
+      filter:brightness(1.1) saturate(0.8);
+      opacity:.9;
+    }
     .cat-icon{font-size:1.8rem;line-height:1}
     .cat-label{
       font-size:0.72rem;
@@ -538,6 +558,7 @@
       color:#fff;
     }
 
+    /* ── PDF / Book Sections ── */
     .section{
       padding:2rem 1rem;
       position:relative;
@@ -564,40 +585,89 @@
     .view-all:hover{background:#1a3a8f;color:#fff}
 
     .pdf-section{background:#f5f7fa}
+
+    /* FIX: overflow:visible so hover box-shadow / translateY isn't clipped */
     .pdf-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
       gap:1rem;
+      /* extra padding so translateY shadow shows */
+      padding-bottom:8px;
+      overflow:visible;
+      align-items:stretch;
     }
+
+    /* pdf-card-link wraps the card — must be flex column to stretch */
+    .pdf-card-link{
+      display:flex;
+      flex-direction:column;
+      text-decoration:none;
+      color:inherit;
+    }
+
     .pdf-card{
       background:#fff;border-radius:14px;overflow:hidden;
-      border:1px solid #eaecf4;transition:transform .2s, box-shadow .2s;
+      border:1px solid #eaecf4;
+      transition:transform .2s, box-shadow .2s;
       cursor:pointer;min-width:0;
+      /* stretch to fill link height */
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      will-change:transform;
     }
     .pdf-card:hover{
-      transform:translateY(-3px);
-      box-shadow:0 10px 28px rgba(26,58,143,0.12);
+      transform:translateY(-4px);
+      box-shadow:0 12px 30px rgba(26,58,143,0.13);
     }
     .pdf-thumb{
-      height:120px;display:flex;align-items:center;
-      justify-content:center;font-size:3rem;position:relative;
+      height:150px;
+      flex-shrink:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:3rem;
+      position:relative;
+      overflow:hidden;
+      background:#eef2ff;
+    }
+    .pdf-thumb img{
+      width:100%;height:100%;
+      object-fit:cover;display:block;
     }
     .pdf-badge{
       position:absolute;top:8px;right:8px;
       background:#e84444;color:#fff;font-size:.6rem;
       font-weight:700;padding:3px 7px;border-radius:20px;
       text-transform:uppercase;letter-spacing:.5px;
+      z-index:1;
     }
     .pdf-badge.green{background:#1d9e75}
     .pdf-badge.blue{background:#1a3a8f}
-    .pdf-body{padding:12px}
+
+    /* body grows to push buy-btn to bottom */
+    .pdf-body{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      flex:1;
+    }
     .pdf-body h3{
       font-size:.86rem;font-weight:600;color:#1a1a2e;
-      margin-bottom:8px;line-height:1.35;min-height:44px;
+      margin-bottom:6px;line-height:1.35;
+      /* no min-height — let flexbox handle alignment */
+    }
+    .pdf-body > div[style*="color:#1a3a8f"]{
+      font-size:.72rem;color:#1a3a8f;font-weight:600;margin-bottom:4px;
+    }
+    .pdf-body > div[style*="color:#777"]{
+      font-size:.74rem;color:#777;line-height:1.45;margin-bottom:8px;
+      flex:1; /* pushes buy-btn down */
     }
     .pdf-foot{
       display:flex;align-items:center;justify-content:space-between;
       gap:10px;margin-bottom:10px;flex-wrap:wrap;
+      margin-top:auto;
     }
     .price-now{font-size:1rem;font-weight:800;color:#1a3a8f}
     .price-old{font-size:.72rem;color:#aaa;text-decoration:line-through;margin-right:4px}
@@ -609,40 +679,70 @@
       color:#fff;padding:10px;border-radius:8px;
       font-size:.8rem;font-weight:600;border:none;cursor:pointer;
       font-family:'Poppins',sans-serif;width:100%;transition:opacity .15s;
+      margin-top:auto;
     }
     .buy-btn:hover{opacity:.88}
 
+    /* ── Books ── */
     .books-section{background:#fff}
     .book-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+      grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
       gap:1rem;
+      padding-bottom:8px;
+      overflow:visible;
+      align-items:stretch;
+    }
+    .book-card-link{
+      display:flex;
+      flex-direction:column;
+      text-decoration:none;
+      color:inherit;
     }
     .book-card{
       background:#f5f7fa;border-radius:14px;overflow:hidden;
-      border:1px solid #eaecf4;transition:transform .2s, box-shadow .2s;
+      border:1px solid #eaecf4;
+      transition:transform .2s, box-shadow .2s;
       cursor:pointer;text-align:center;min-width:0;
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      will-change:transform;
     }
     .book-card:hover{
-      transform:translateY(-3px);
-      box-shadow:0 10px 28px rgba(26,58,143,0.1);
+      transform:translateY(-4px);
+      box-shadow:0 12px 30px rgba(26,58,143,0.12);
     }
     .book-thumb{
-      height:140px;display:flex;align-items:center;
+      height:150px;
+      flex-shrink:0;
+      display:flex;align-items:center;
       justify-content:center;font-size:4rem;
-      border-radius:10px 10px 0 0;
+      overflow:hidden;
+      background:#eef2ff;
     }
-    .book-body{padding:12px}
+    .book-thumb img{
+      width:100%;height:100%;
+      object-fit:cover;display:block;
+    }
+    .book-body{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      flex:1;
+      gap:6px;
+    }
     .b-tag{
       display:inline-block;background:#e8f0fe;color:#1a3a8f;
       font-size:.66rem;padding:3px 8px;border-radius:10px;
-      font-weight:600;margin-bottom:6px;
+      font-weight:600;
     }
     .book-body h3{
       font-size:.82rem;font-weight:600;color:#1a1a2e;
-      margin-bottom:8px;line-height:1.35;min-height:42px;
+      line-height:1.35;
+      flex:1;
     }
-    .b-price{font-size:.95rem;font-weight:800;color:#1a3a8f;margin-bottom:8px}
+    .b-price{font-size:.95rem;font-weight:800;color:#1a3a8f}
     .b-price .b-orig{font-size:.7rem;color:#aaa;text-decoration:line-through;margin-right:4px;font-weight:400}
     .cart-btn{
       display:flex;align-items:center;justify-content:center;text-align:center;
@@ -650,8 +750,21 @@
       padding:10px;border-radius:8px;font-size:.78rem;font-weight:600;
       transition:all .15s;font-family:'Poppins',sans-serif;
       cursor:pointer;width:100%;
+      margin-top:auto;
     }
     .cart-btn:hover{background:#1a3a8f;color:#fff}
+
+    /* ── lazy image placeholder shimmer ── */
+    img.lazy{
+      background:linear-gradient(90deg,#e8ecf4 25%,#f0f3fa 50%,#e8ecf4 75%);
+      background-size:200% 100%;
+      animation:shimmer 1.4s infinite;
+    }
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    img.lazy.loaded{
+      background:none;
+      animation:none;
+    }
 
     .about-section{background:#f5f7fa;padding:2.5rem 1rem}
     .about-inner{
@@ -793,9 +906,9 @@
       .section{padding:1.5rem .9rem}
       .sec-head{align-items:flex-start;flex-direction:column}
       .view-all{align-self:flex-start}
-      .pdf-grid,.book-grid{grid-template-columns:1fr}
+      .pdf-grid,.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .pdf-thumb{height:110px}
-      .book-thumb{height:130px}
+      .book-thumb{height:120px}
       .a-stats{grid-template-columns:1fr 1fr}
       .footer-grid{grid-template-columns:1fr}
       .footer-bot{flex-direction:column;align-items:flex-start}
@@ -850,6 +963,7 @@
         padding:13px 14px;
         font-size:.9rem;
       }
+      .pdf-grid,.book-grid{grid-template-columns:1fr}
     }
 
     @media (hover:none){
@@ -919,5 +1033,3 @@
       .auth-actions{ gap:6px; }
       .auth-btn{ padding:8px 10px; font-size:0.68rem; letter-spacing:0; }
     }
-
-  
