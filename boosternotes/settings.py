@@ -64,8 +64,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
-                   # Your custom processor
-                'myapp.context_processors.site_settings',
+                # Global site settings: navbar, footer, stats available everywhere
+                'myapp.context_processors.global_settings',
             ],
         },
     },
@@ -119,8 +119,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-# Static files (CSS, JavaScript, Images)
-
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -131,17 +129,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DROPBOX_APP_KEY = "wgg2fsw5pf16x8q"
 DROPBOX_APP_SECRET = "38dg9gi6djz3zuu"
 DROPBOX_REFRESH_TOKEN = "Si57f7yXuB0AAAAAAAAAAZGrsYbd1YLQpvGHxlJES4DRvKr7mDfZo8xqLaJBTY_s"
-DROPBOX_FOLDER = '/elibrary'  # Folder in Dropbox to save files
+DROPBOX_FOLDER = '/elibrary'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-
 
 CSRF_TRUSTED_ORIGINS = [
     "https://www.boosternotes.in",
     "https://boosternotes-production.up.railway.app",
 ]
-
-STATICFILES_STORAGE = (
-    'whitenoise.storage.CompressedManifestStaticFilesStorage'
-)
