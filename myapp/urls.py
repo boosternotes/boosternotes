@@ -74,6 +74,7 @@ urlpatterns = [
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
     path('elibrary/<uuid:pk>/', views.elibrary_detail, name='elibrary_detail'),
     path('hard-books/<uuid:pk>/', views.hard_book_detail, name='hard_book_detail'),
+    path('category/<int:category_id>/courses/', views.category_courses_view, name='category_courses'),
     
 
     

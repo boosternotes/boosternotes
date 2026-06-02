@@ -494,7 +494,7 @@
     </div>
   </div>
 
-  {% if total_results > 0 %}
+{% if total_results > 0 %}
     {% if category_results %}
     <div class="search-result-group">
       <h3><i class="fa-solid fa-folder-open"></i> Categories <span>{{ category_results.count }}</span></h3>
@@ -503,8 +503,12 @@
         <div class="cat-card-search">
           <div class="cat-icon">{% if cat.image %}📚{% else %}🎯{% endif %}</div>
           <div class="cat-label">{{ cat.name }}</div>
-          <div class="cat-count">{% with course_count=cat.elibrary_courses.count %}{% if course_count %}{{ course_count }} PDFs{% else %}—{% endif %}{% endwith %}</div>
-          <a href="#" class="view-link">View →</a>
+          <div class="cat-count">
+            {% with course_count=cat.elibrary_courses.count %}
+              {% if course_count %}{{ course_count }} Courses {% else %}—{% endif %}
+            {% endwith %}
+          </div>
+          <a href="{% url 'category_courses' cat.id %}" class="view-link">View →</a>
         </div>
         {% endfor %}
       </div>

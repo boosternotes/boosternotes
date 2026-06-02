@@ -20,6 +20,27 @@ from .dropbox_utils import DropboxManager
 import os
 from django.core.files.base import ContentFile
 
+
+
+def category_courses_view(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    
+    # Get both elibrary and hardcopy courses for this category
+    elibrary_courses = category.elibrary_courses.all()
+    hardcopy_courses = category.hardcopy_courses.all() if hasattr(category, 'hardcopy_courses') else []
+    
+    # Combine counts
+    total_courses = elibrary_courses.count() + (hardcopy_courses.count() if hardcopy_courses else 0)
+    
+    context = {
+        'category': category,
+        'elibrary_courses': elibrary_courses,
+        'hardcopy_courses': hardcopy_courses,
+        'total_courses': total_courses,
+    }
+    
+    return render(request, 'category_courses.html', context)
+
 def search(request):
     query = request.GET.get('q', '').strip()
 

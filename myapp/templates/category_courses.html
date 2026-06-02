@@ -1,0 +1,421 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Courses{% endblock %}
+
+{% block content %}
+<div class="cat-page">
+  <div class="container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="{% url 'home' %}"><i class="fa-solid fa-home"></i> Home</a>
+      <i class="fa-solid fa-chevron-right sep"></i>
+      <a href="{% url 'search' %}">Search</a>
+      <i class="fa-solid fa-chevron-right sep"></i>
+      <span>{{ category.name }}</span>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-top">
+        <div class="hero-icon">
+          {% if category.image %}
+            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+          {% else %}
+            📚
+          {% endif %}
+        </div>
+        <div class="hero-text">
+          <h1>{{ category.name }}</h1>
+          <p>
+            {% if category.description %}{{ category.description }}
+            {% else %}Explore comprehensive courses in {{ category.name }}{% endif %}
+          </p>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-icon">📊</span>
+          <div>
+            <strong>{{ total_courses }}</strong>
+            <small>Total Courses</small>
+          </div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-icon">💻</span>
+          <div>
+            <strong>{{ elibrary_courses.count }}</strong>
+            <small>E-Library</small>
+          </div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-icon">📖</span>
+          <div>
+            <strong>{{ hardcopy_courses.count }}</strong>
+            <small>Hardcopy Books</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-Library Section -->
+    {% if elibrary_courses %}
+    <section class="section">
+      <div class="sec-head">
+        <div>
+          <h2>💻 E-Library <span>Courses</span></h2>
+          <p>Digital learning materials for {{ category.name }}</p>
+        </div>
+        <span class="badge">{{ elibrary_courses.count }} Available</span>
+      </div>
+
+      <div class="card-grid">
+        {% for course in elibrary_courses %}
+        <div class="card">
+          <div class="card-thumb elibrary-thumb">
+            {% if course.thumbnail %}
+              <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+            {% elif course.image %}
+              <img src="{{ course.image.url }}" alt="{{ course.title }}">
+            {% else %}
+              📄
+            {% endif %}
+            <span class="chip green">E-Library</span>
+          </div>
+          <div class="card-body">
+            <h3>{{ course.title|default:course.name|truncatewords:8 }}</h3>
+            <p class="meta-text">
+              {% if course.description %}{{ course.description|truncatewords:15 }}
+              {% else %}Digital course material available for instant access{% endif %}
+            </p>
+            <div class="card-foot">
+              <strong class="price">
+                {% if course.price %}₹{{ course.price }}{% else %}Free{% endif %}
+              </strong>
+              {% if course.pages %}
+                <span class="pages"><i class="fa-solid fa-file-pdf"></i> {{ course.pages }}p</span>
+              {% endif %}
+            </div>
+            <a href="{% url 'elibrary_detail' course.pk %}" class="btn">
+              <i class="fa-solid fa-eye"></i> View Details
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Hardcopy Books Section -->
+    {% if hardcopy_courses %}
+    <section class="section">
+      <div class="sec-head">
+        <div>
+          <h2>📚 Hardcopy <span>Books</span></h2>
+          <p>Physical books delivered to your doorstep</p>
+        </div>
+        <span class="badge">{{ hardcopy_courses.count }} Available</span>
+      </div>
+
+      <div class="card-grid">
+        {% for course in hardcopy_courses %}
+        <div class="card">
+          <div class="card-thumb hardcopy-thumb">
+            {% if course.thumbnail %}
+              <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+            {% elif course.image %}
+              <img src="{{ course.image.url }}" alt="{{ course.title }}">
+            {% else %}
+              📚
+            {% endif %}
+            <span class="chip pink">Hardcopy</span>
+          </div>
+          <div class="card-body">
+            <h3>{{ course.title|default:course.name|truncatewords:6 }}</h3>
+            <p class="meta-text">
+              {% if course.author %}<i class="fa-solid fa-user"></i> {{ course.author }}<br>{% endif %}
+              {% if course.publisher %}<i class="fa-solid fa-building"></i> {{ course.publisher }}{% endif %}
+              {% if not course.author and not course.publisher %}Physical book available for delivery{% endif %}
+            </p>
+            <div class="card-foot">
+              <strong class="price">
+                {% if course.price %}₹{{ course.price }}{% else %}Free{% endif %}
+              </strong>
+            </div>
+            <a href="{% url 'hard_book_detail' course.pk %}" class="btn btn-cart">
+              <i class="fa-solid fa-shopping-cart"></i> View Details
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not elibrary_courses and not hardcopy_courses %}
+    <div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3>No Courses Available</h3>
+      <p>We currently don't have any courses in <strong>{{ category.name }}</strong>. Check back soon!</p>
+      <div class="empty-actions">
+        <a href="{% url 'home' %}" class="btn"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+        <a href="{% url 'search' %}" class="btn btn-cart"><i class="fa-solid fa-search"></i> Search Courses</a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Variables ─────────────────────────────── */
+:root {
+  --navy: #1a3a8f;
+  --navy-dark: #0d2060;
+  --gold: #e8b400;
+  --bg: #f5f7fa;
+  --card-bg: #fff;
+  --text: #1a1a2e;
+  --muted: #666;
+  --border: #e2e8f0;
+  --radius: 14px;
+  --shadow: 0 4px 20px rgba(26,58,143,.08);
+  --transition: .25s ease;
+}
+
+/* ── Page ──────────────────────────────────── */
+.cat-page {
+  background: var(--bg);
+  min-height: calc(100vh - var(--nav-h));
+  padding-bottom: 3rem;
+}
+
+/* ── Breadcrumb ────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 1.2rem 0 .8rem;
+  font-size: .82rem;
+  color: var(--muted);
+}
+.breadcrumb a { color: var(--navy); font-weight: 600; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb span { color: var(--text); font-weight: 700; }
+.sep { font-size: .65rem; color: #bbb; }
+
+/* ── Hero ──────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, var(--navy), var(--navy-dark));
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 40px rgba(26,58,143,.22);
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 50%, rgba(232,180,0,.12), transparent 60%);
+  pointer-events: none;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+.hero-icon {
+  width: 72px; height: 72px; flex-shrink: 0;
+  background: rgba(255,255,255,.14);
+  border: 2px solid rgba(232,180,0,.45);
+  border-radius: 18px;
+  display: grid; place-items: center;
+  font-size: 2.2rem;
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+.hero-icon img { width: 100%; height: 100%; object-fit: cover; }
+.hero-text h1 {
+  font-family: 'Baloo 2', cursive;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: .4rem;
+}
+.hero-text p { color: rgba(255,255,255,.82); font-size: .92rem; line-height: 1.6; }
+
+/* ── Stats Row ─────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .9rem;
+  position: relative; z-index: 1;
+}
+.stat-box {
+  background: rgba(255,255,255,.11);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  transition: background var(--transition);
+}
+.stat-box:hover { background: rgba(255,255,255,.17); }
+.stat-icon { font-size: 1.8rem; line-height: 1; }
+.stat-box strong { display: block; font-size: 1.7rem; font-weight: 800; color: #fff; line-height: 1; }
+.stat-box small  { font-size: .74rem; color: rgba(255,255,255,.72); font-weight: 500; }
+
+/* ── Section ───────────────────────────────── */
+.section { margin-bottom: 2.5rem; }
+.sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.sec-head h2 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin-bottom: .2rem; }
+.sec-head h2 span { color: var(--navy); }
+.sec-head p { font-size: .82rem; color: var(--muted); }
+.badge {
+  background: linear-gradient(135deg, var(--navy), var(--navy-dark));
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: .76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(26,58,143,.2);
+}
+
+/* ── Card Grid ─────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.2rem;
+}
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(26,58,143,.13); }
+
+.card-thumb {
+  position: relative;
+  height: 100px;
+  display: grid; place-items: center;
+  font-size: 1.8rem;
+  overflow: hidden;
+}
+.elibrary-thumb { background: linear-gradient(135deg, #667eea, #764ba2); }
+.hardcopy-thumb { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.card-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.chip {
+  position: absolute; top: 10px; left: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+}
+.green  { background: rgba(16,185,129,.9); color: #fff; }
+.pink   { background: rgba(245,87,108,.9); color: #fff; }
+
+/* ── Card Body ─────────────────────────────── */
+.card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: .4rem;
+}
+.card-body h3 {
+  font-size: .92rem; font-weight: 700; color: var(--text);
+  line-height: 1.35; margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.meta-text {
+  font-size: .76rem; color: var(--muted); line-height: 1.5;
+  flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.meta-text i { color: var(--navy); margin-right: 3px; }
+
+.card-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: .4rem; border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.price { font-size: 1rem; font-weight: 800; color: var(--navy); }
+.pages { font-size: .72rem; color: var(--muted); }
+
+/* ── Buttons ───────────────────────────────── */
+.btn, .btn-cart {
+  display: flex; align-items: center; justify-content: center;
+  gap: 7px; width: 100%; padding: .6rem;
+  border-radius: 8px; font-size: .82rem; font-weight: 700;
+  margin-top: .6rem;
+  transition: opacity var(--transition), transform var(--transition);
+  text-decoration: none;
+}
+.btn      { background: var(--navy); color: #fff; }
+.btn-cart { background: #0d2060; color: #fff; }
+.btn:hover, .btn-cart:hover { opacity: .88; transform: scale(.98); }
+
+/* ── Empty State ───────────────────────────── */
+.empty-state {
+  text-align: center;
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 2px dashed var(--border);
+  padding: 4rem 2rem;
+  margin: 2rem 0;
+}
+.empty-icon  { font-size: 4rem; opacity: .55; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: .6rem; }
+.empty-state p  { color: var(--muted); font-size: .92rem; margin-bottom: 1.5rem; }
+.empty-state p strong { color: var(--navy); }
+.empty-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── Responsive ────────────────────────────── */
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: 1fr 1fr 1fr; gap: .6rem; }
+  .stat-box  { padding: .8rem; gap: .6rem; }
+  .stat-box strong { font-size: 1.4rem; }
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+
+@media (max-width: 540px) {
+  .hero { padding: 1.25rem; border-radius: 16px; }
+  .hero-top { gap: 1rem; }
+  .hero-icon { width: 56px; height: 56px; font-size: 1.8rem; border-radius: 14px; }
+  .hero-text h1 { font-size: 1.4rem; }
+  .stats-row { grid-template-columns: 1fr; }
+  .sec-head { flex-direction: column; align-items: flex-start; }
+  .card-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 360px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
