@@ -80,7 +80,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ── Caching (required by views.py cache.get / cache.set calls) ──
+# ── Auth ─────────────────────────────────────────────────────────────────────
+# Redirect to your custom login page (not Django's default /accounts/login/)
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+# ── Caching ───────────────────────────────────────────────────────────────────
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -88,14 +94,13 @@ CACHES = {
     }
 }
 
-# ── Razorpay (Test Mode) ──
-# Replace with your actual keys from https://dashboard.razorpay.com
+# ── Razorpay (Test Mode) ──────────────────────────────────────────────────────
 RAZORPAY_KEY_ID     = 'rzp_test_REPLACE_WITH_YOUR_KEY_ID'
 RAZORPAY_KEY_SECRET = 'REPLACE_WITH_YOUR_KEY_SECRET'
 
-# ── Dropbox ──
-DROPBOX_APP_KEY      = "wgg2fsw5pf16x8q"
-DROPBOX_APP_SECRET   = "38dg9gi6djz3zuu"
+# ── Dropbox ───────────────────────────────────────────────────────────────────
+DROPBOX_APP_KEY       = "wgg2fsw5pf16x8q"
+DROPBOX_APP_SECRET    = "38dg9gi6djz3zuu"
 DROPBOX_REFRESH_TOKEN = "Si57f7yXuB0AAAAAAAAAAZGrsYbd1YLQpvGHxlJES4DRvKr7mDfZo8xqLaJBTY_s"
 DROPBOX_FOLDER = '/elibrary'
 

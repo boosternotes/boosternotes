@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Error | BoosterNotes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      border-radius: 20px;
+      padding: 60px 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+    .error-code {
+      font-size: 96px;
+      font-weight: 800;
+      color: #dc3545;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    .emoji { font-size: 48px; margin-bottom: 16px; }
+    h1 {
+      font-size: 24px;
+      color: #1a1a2e;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #666;
+      font-size: 15px;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .btn {
+      display: inline-block;
+      background: #1a3a8f;
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      margin: 6px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #142d70; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="emoji">⚙️</div>
+    <div class="error-code">500</div>
+    <h1>Something Went Wrong</h1>
+    <p>We're experiencing a server error. Please try again in a moment.</p>
+    <a href="/" class="btn">🏠 Go Home</a>
+  </div>
+</body>
+</html>
