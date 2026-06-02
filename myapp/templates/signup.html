@@ -1,360 +1,355 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - BoosterNotes</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends "index.html" %}
+{% block content %}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a3a8f 0%, #0d2461 50%, #1a1a2e 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+<style>
+  .auth-page{
+    min-height:calc(100vh - var(--nav-h));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:2rem 1rem;
+    background:linear-gradient(135deg,#f0f4ff 0%,#f5f7fa 100%);
+  }
 
-        .signup-container {
-            background: white;
-            border-radius: 20px;
-            padding: 45px 40px;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.4s ease;
-        }
+  .auth-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:2.4rem 2rem;
+    width:100%;
+    max-width:420px;
+    box-shadow:0 20px 60px rgba(26,58,143,0.1);
+    position:relative;
+  }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+  .auth-card-logo{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:1.6rem;
+  }
 
-        .brand {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+  .auth-card-logo .logo-circle{
+    width:46px;
+    height:46px;
+    font-size:20px;
+  }
 
-        .brand-logo {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #1a3a8f, #2196F3);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 26px;
-            color: white;
-        }
+  .auth-card-logo .brand{
+    font-family:'Baloo 2',cursive;
+    font-size:1.3rem;
+    font-weight:800;
+    color:var(--primary);
+    line-height:1;
+  }
 
-        .brand h1 {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1a3a8f;
-            letter-spacing: -0.5px;
-        }
+  .auth-card-logo .sub{
+    font-size:0.6rem;
+    color:var(--gold);
+    font-weight:600;
+    letter-spacing:0.5px;
+  }
 
-        .brand p {
-            font-size: 13px;
-            color: #888;
-            margin-top: 4px;
-        }
+  .auth-heading{
+    text-align:center;
+    margin-bottom:1.8rem;
+  }
 
-        .page-title {
-            text-align: center;
-            margin-bottom: 28px;
-        }
+  .auth-heading h2{
+    font-size:1.35rem;
+    font-weight:800;
+    color:#1a1a2e;
+    margin-bottom:4px;
+  }
 
-        .page-title h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a2e;
-        }
+  .auth-heading p{
+    font-size:0.82rem;
+    color:var(--muted);
+  }
 
-        .page-title p {
-            font-size: 13px;
-            color: #999;
-            margin-top: 4px;
-        }
+  .form-group{
+    margin-bottom:1.1rem;
+  }
 
-        /* Django Messages */
-        .messages {
-            list-style: none;
-            margin-bottom: 20px;
-        }
+  .form-group label{
+    display:block;
+    font-size:0.8rem;
+    font-weight:600;
+    color:#444;
+    margin-bottom:6px;
+  }
 
-        .messages li {
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
+  .form-group .input-wrap{
+    position:relative;
+    display:flex;
+    align-items:center;
+  }
 
-        .messages li.error {
-            background: #fef2f2;
-            color: #dc2626;
-            border-left: 3px solid #dc2626;
-        }
+  .form-group .input-wrap .input-icon{
+    position:absolute;
+    left:14px;
+    font-size:15px;
+    pointer-events:none;
+    color:#aaa;
+  }
 
-        .messages li.success {
-            background: #f0fdf4;
-            color: #16a34a;
-            border-left: 3px solid #16a34a;
-        }
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="password"]{
+    width:100%;
+    padding:11px 14px 11px 40px;
+    border:1.5px solid var(--soft-border);
+    border-radius:10px;
+    font-size:0.88rem;
+    color:#222;
+    background:#f8f9ff;
+    outline:none;
+    transition:border-color .18s, box-shadow .18s;
+    font-family:'Poppins',sans-serif;
+  }
 
-        .form-group {
-            margin-bottom: 18px;
-        }
+  .form-group input:focus{
+    border-color:var(--primary);
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(26,58,143,0.08);
+  }
 
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 7px;
-        }
+  .form-group input::placeholder{color:#bbb}
 
-        .input-wrapper {
-            position: relative;
-        }
+  .auth-submit-btn{
+    width:100%;
+    padding:13px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    font-size:0.92rem;
+    font-weight:700;
+    cursor:pointer;
+    font-family:'Poppins',sans-serif;
+    transition:all .2s ease;
+    box-shadow:0 8px 20px rgba(26,58,143,0.18);
+    letter-spacing:0.2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:48px;
+    margin-bottom:1.2rem;
+    margin-top:0.6rem;
+  }
 
-        .input-wrapper i {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            font-size: 15px;
-        }
+  .auth-submit-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px rgba(26,58,143,0.22);
+    filter:brightness(1.05);
+  }
 
-        .form-group input {
-            width: 100%;
-            padding: 12px 14px 12px 42px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #1f2937;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            outline: none;
-        }
+  .auth-submit-btn:disabled{
+    opacity:.75;
+    cursor:not-allowed;
+    transform:none;
+  }
 
-        .form-group input:focus {
-            border-color: #1a3a8f;
-            box-shadow: 0 0 0 3px rgba(26, 58, 143, 0.1);
-        }
+  .auth-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:1.1rem;
+  }
 
-        .form-group input::placeholder {
-            color: #9ca3af;
-        }
+  .auth-divider span{
+    flex:1;
+    height:1px;
+    background:var(--border);
+  }
 
-        .password-toggle {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #9ca3af;
-            font-size: 15px;
-            background: none;
-            border: none;
-            padding: 0;
-        }
+  .auth-divider p{
+    font-size:0.74rem;
+    color:#bbb;
+    white-space:nowrap;
+  }
 
-        .password-toggle:hover { color: #1a3a8f; }
+  .auth-alt-link{
+    text-align:center;
+    font-size:0.82rem;
+    color:var(--muted);
+  }
 
-        .btn-signup {
-            width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, #1a3a8f, #2563eb);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 8px;
-            letter-spacing: 0.3px;
-        }
+  .auth-alt-link a{
+    color:var(--primary);
+    font-weight:700;
+    margin-left:4px;
+  }
 
-        .btn-signup:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(26, 58, 143, 0.35);
-        }
+  .auth-alt-link a:hover{text-decoration:underline}
 
-        .btn-signup:active { transform: translateY(0); }
+  .form-error{
+    background:#fff0f0;
+    border:1px solid #ffd0d0;
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:0.8rem;
+    color:var(--danger);
+    margin-bottom:1.1rem;
+    display:flex;
+    align-items:flex-start;
+    gap:7px;
+  }
 
-        .divider {
-            text-align: center;
-            margin: 22px 0;
-            position: relative;
-        }
+  .loader-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,0.72);
+    backdrop-filter:blur(3px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  }
 
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e5e7eb;
-        }
+  .loader-box{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:22px 24px;
+    box-shadow:0 16px 50px rgba(0,0,0,0.12);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#1a1a2e;
+    font-weight:700;
+    font-size:0.9rem;
+  }
 
-        .divider span {
-            background: white;
-            padding: 0 12px;
-            font-size: 12px;
-            color: #9ca3af;
-            position: relative;
-        }
+  .spinner{
+    width:22px;
+    height:22px;
+    border:3px solid #dbe4fb;
+    border-top-color:var(--primary);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+  }
 
-        .login-link {
-            text-align: center;
-            font-size: 13.5px;
-            color: #6b7280;
-        }
+  @keyframes spin{
+    to{transform:rotate(360deg)}
+  }
 
-        .login-link a {
-            color: #1a3a8f;
-            font-weight: 700;
-            text-decoration: none;
-        }
+  @media (max-width:480px){
+    .auth-card{padding:1.8rem 1.2rem;border-radius:18px}
+    .auth-heading h2{font-size:1.15rem}
+    .loader-box{padding:18px 16px;font-size:0.82rem}
+  }
+</style>
 
-        .login-link a:hover { text-decoration: underline; }
+<div class="loader-overlay" id="loaderOverlay">
+  <div class="loader-box">
+    <div class="spinner"></div>
+    <div>Creating your account...</div>
+  </div>
+</div>
 
-        .terms {
-            text-align: center;
-            font-size: 11.5px;
-            color: #9ca3af;
-            margin-top: 18px;
-            line-height: 1.5;
-        }
+<div class="auth-page">
+  <div class="auth-card">
 
-        @media (max-width: 480px) {
-            .signup-container { padding: 35px 24px; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="signup-container">
-
-    <!-- Brand -->
-    <div class="brand">
-        <div class="brand-logo">
-            <i class="fa-solid fa-book-open"></i>
-        </div>
-        <h1>BoosterNotes</h1>
-        <p>Smart Notes. Smart Rank.</p>
+    <div class="auth-card-logo">
+      <div class="logo-circle">🚀</div>
+      <div class="logo-text-block">
+        <div class="brand">BoosterNotes</div>
+        <div class="sub">Smart Notes. Smart Rank</div>
+      </div>
     </div>
 
-    <!-- Title -->
-    <div class="page-title">
-        <h2>Create your account</h2>
-        <p>Join thousands of students preparing smarter</p>
+    <div class="auth-heading">
+      <h2>Create your account 🎉</h2>
+      <p>Join students preparing smarter across India</p>
     </div>
 
-    <!-- Django Messages -->
     {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li class="{{ message.tags }}">
-            {% if message.tags == 'error' %}<i class="fa-solid fa-circle-exclamation"></i>{% endif %}
-            {% if message.tags == 'success' %}<i class="fa-solid fa-circle-check"></i>{% endif %}
-            &nbsp;{{ message }}
-        </li>
-        {% endfor %}
-    </ul>
+      {% for message in messages %}
+      <div class="form-error" style="{% if message.tags == 'success' %}background:#f0fff8;border-color:#b2f0d8;color:#1d9e75;{% endif %}">
+        <span>{% if message.tags == 'success' %}✅{% else %}⚠️{% endif %}</span>
+        <div>{{ message }}</div>
+      </div>
+      {% endfor %}
     {% endif %}
 
-    <!-- Signup Form -->
-    <form method="POST" action="{% url 'signup' %}">
-        {% csrf_token %}
+    <form method="POST" action="{% url 'signup' %}" id="signupForm">
+      {% csrf_token %}
 
-        <div class="form-group">
-            <label for="name">Full Name</label>
-            <div class="input-wrapper">
-                <i class="fa-solid fa-user"></i>
-                <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    placeholder="Enter your full name"
-                    required
-                    autocomplete="name"
-                >
-            </div>
+      <div class="form-group">
+        <label for="id_name">Full Name</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input
+            type="text"
+            id="id_name"
+            name="name"
+            placeholder="Enter your full name"
+            autocomplete="name"
+            required
+          >
         </div>
+      </div>
 
-        <div class="form-group">
-            <label for="email">Email Address</label>
-            <div class="input-wrapper">
-                <i class="fa-solid fa-envelope"></i>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    required
-                    autocomplete="email"
-                >
-            </div>
+      <div class="form-group">
+        <label for="id_email">Email Address</label>
+        <div class="input-wrap">
+          <span class="input-icon">📧</span>
+          <input
+            type="email"
+            id="id_email"
+            name="email"
+            placeholder="Enter your email"
+            autocomplete="email"
+            required
+          >
         </div>
+      </div>
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <div class="input-wrapper">
-                <i class="fa-solid fa-lock"></i>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Create a strong password"
-                    required
-                    autocomplete="new-password"
-                >
-                <button type="button" class="password-toggle" onclick="togglePassword()">
-                    <i class="fa-solid fa-eye" id="toggleIcon"></i>
-                </button>
-            </div>
+      <div class="form-group">
+        <label for="id_password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input
+            type="password"
+            id="id_password"
+            name="password"
+            placeholder="Create a strong password"
+            autocomplete="new-password"
+            required
+          >
         </div>
+      </div>
 
-        <button type="submit" class="btn-signup">
-            <i class="fa-solid fa-user-plus"></i>&nbsp; Create Account
-        </button>
+      <button type="submit" class="auth-submit-btn" id="signupBtn">
+        🎯 Create Account
+      </button>
     </form>
 
-    <div class="divider"><span>Already have an account?</span></div>
-
-    <div class="login-link">
-        <a href="{% url 'login' %}"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign in to your account</a>
+    <div class="auth-divider">
+      <span></span><p>Already have an account?</p><span></span>
     </div>
 
-    <p class="terms">By creating an account, you agree to our Terms of Service and Privacy Policy.</p>
+    <div class="auth-alt-link">
+      Already a member?
+      <a href="{% url 'login' %}">Login here →</a>
+    </div>
 
+  </div>
 </div>
 
 <script>
-    function togglePassword() {
-        const input = document.getElementById('password');
-        const icon  = document.getElementById('toggleIcon');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.replace('fa-eye', 'fa-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.replace('fa-eye-slash', 'fa-eye');
-        }
-    }
+  const signupForm = document.getElementById('signupForm');
+  const loaderOverlay = document.getElementById('loaderOverlay');
+  const signupBtn = document.getElementById('signupBtn');
+
+  signupForm.addEventListener('submit', function () {
+    signupBtn.disabled = true;
+    signupBtn.innerHTML = '⏳ Creating account...';
+    loaderOverlay.style.display = 'flex';
+  });
 </script>
 
-</body>
-</html>
+{% endblock content %}
