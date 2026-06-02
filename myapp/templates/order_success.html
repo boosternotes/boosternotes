@@ -1,0 +1,30 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  .success-page { min-height:65vh; background:#f5f7fb; display:flex; align-items:center; justify-content:center; padding:60px 16px; }
+  .success-card { background:#fff; border-radius:20px; box-shadow:0 8px 36px rgba(26,58,143,.1); padding:50px 40px; max-width:480px; width:100%; text-align:center; }
+  .success-icon { font-size:4rem; margin-bottom:16px; }
+  .success-card h2 { font-size:1.4rem; font-weight:800; color:#1a3a8f; margin:0 0 8px; }
+  .success-card p { font-size:.85rem; color:#777; line-height:1.65; margin:0 0 24px; }
+  .order-ref { background:#f0f4ff; border-radius:10px; padding:12px 18px; font-size:.82rem; font-weight:700; color:#1a3a8f; margin:0 0 24px; display:inline-block; }
+  .success-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .btn-primary { background:linear-gradient(135deg,#1a3a8f,#0d6efd); color:#fff; padding:12px 26px; border-radius:10px; font-weight:700; font-size:.88rem; text-decoration:none; }
+  .btn-outline { border:2px solid #1a3a8f; color:#1a3a8f; padding:10px 26px; border-radius:10px; font-weight:700; font-size:.88rem; text-decoration:none; }
+  @media(max-width:480px){ .success-card{ padding:36px 20px; } }
+</style>
+
+<div class="success-page">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <h2>Order Placed Successfully!</h2>
+    <p>Thank you for your purchase. We've received your order and will process it shortly. You'll receive a confirmation on WhatsApp/Email.</p>
+    {% if order_ref %}<div class="order-ref">Order Ref: #{{ order_ref }}</div>{% endif %}
+    <div class="success-actions">
+      <a href="{% url 'my_purchases' %}" class="btn-primary">My Purchases</a>
+      <a href="{% url 'home' %}" class="btn-outline">Continue Shopping</a>
+    </div>
+  </div>
+</div>
+{% endblock content %}

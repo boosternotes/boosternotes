@@ -18,9 +18,18 @@ urlpatterns = [
         name='logout'
     ),
 
-    # ── User profile pages ──
+    # ── User profile ──
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('profile/purchases/', views.my_purchases, name='my_purchases'),
+
+    # ── Cart & Checkout ──
+    path('cart/', views.cart_view, name='cart'),
+    path('cart/add/', views.add_to_cart, name='add_to_cart'),
+    path('cart/remove/<str:item_key>/', views.remove_from_cart, name='remove_from_cart'),
+    path('cart/apply-coupon/', views.apply_cart_coupon, name='apply_cart_coupon'),
+    path('cart/remove-coupon/', views.remove_cart_coupon, name='remove_cart_coupon'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('checkout/place-order/', views.place_order, name='place_order'),
 
     # user management
     path('users/add/', views.add_user, name='add_user'),
@@ -39,21 +48,14 @@ urlpatterns = [
 
     # Category
     path('category_list', views.category_list, name='category_list'),
-    path('delete/<int:pk>/', views.category_delete, name='category_delete'),
-    path('toggle/<int:pk>/', views.coupon_toggle_active, name='category_toggle_active'),
+    path('category/delete/<int:pk>/', views.category_delete, name='category_delete'),
 
-    # Navbar
+    # Navbar / Banner / Stats / About / Footer
     path('navbar/', views.navbar_custom, name='navbar_custom'),
-
-    # Banner
     path('banner/', views.banner_custom, name='banner_custom'),
-
-    # Stats
     path('stats/', views.stats_custom, name='stats_custom'),
     path('stats/edit/<int:pk>/', views.stats_edit, name='stats_edit'),
     path('stats/delete/<int:pk>/', views.stats_delete, name='stats_delete'),
-
-    # About
     path('about/', views.about_custom, name='about_custom'),
     path('footer/', views.footer_custom, name='footer_custom'),
 
@@ -65,14 +67,14 @@ urlpatterns = [
     path('elibrary/<uuid:pk>/upload-pdf/', views.elibrary_upload_pdf, name='elibrary_upload_pdf'),
     path('elibrary/pdf/delete/<uuid:pk>/', views.elibrary_pdf_delete, name='elibrary_pdf_delete'),
 
+    # Hard Books
     path('hard-books/', views.hard_books_list, name='hard_books_list'),
     path('hard-books/add/', views.hard_book_add, name='hard_book_add'),
     path('hard-books/edit/<uuid:pk>/', views.hard_book_edit, name='hard_book_edit'),
     path('hard-books/delete/<uuid:pk>/', views.hard_book_delete, name='hard_book_delete'),
     path('hard-books/image-delete/<uuid:pk>/', views.hard_book_image_delete, name='hard_book_image_delete'),
-    path('search/', views.search, name='search'),
 
-    # Coupon apply
+    path('search/', views.search, name='search'),
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
 
     path('elibrary/<uuid:pk>/', views.elibrary_detail, name='elibrary_detail'),

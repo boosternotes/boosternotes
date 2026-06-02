@@ -1,0 +1,185 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  .checkout-page { min-height:65vh; background:#f5f7fb; padding:44px 16px 80px; }
+  .checkout-inner { max-width:960px; margin:0 auto; }
+  .checkout-inner .pg-icon { font-size:2rem; }
+  .checkout-inner h2 { font-size:1.4rem; font-weight:800; color:#1a3a8f; margin:4px 0 2px; }
+  .checkout-inner .sub { font-size:.78rem; color:#aaa; margin-bottom:28px; }
+
+  .co-layout { display:grid; grid-template-columns:1fr 320px; gap:24px; align-items:start; }
+  @media(max-width:760px){ .co-layout{ grid-template-columns:1fr; } }
+
+  /* Form card */
+  .co-form-card { background:#fff; border-radius:16px; border:1px solid #eaecf4; padding:26px; }
+  .co-section-title { font-size:.72rem; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:.5px; margin:0 0 14px; }
+  .co-form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .co-form-group { margin-bottom:14px; }
+  .co-form-group label { display:block; font-size:.75rem; font-weight:600; color:#555; margin-bottom:5px; }
+  .co-form-group input, .co-form-group select, .co-form-group textarea {
+    width:100%; padding:10px 12px; border:1.5px solid #e0e4f0; border-radius:9px;
+    font-size:.85rem; font-family:inherit; color:#222; outline:none; box-sizing:border-box;
+    transition:border .15s;
+  }
+  .co-form-group input:focus, .co-form-group select:focus { border-color:#1a3a8f; box-shadow:0 0 0 3px rgba(26,58,143,.07); }
+  .co-divider { border:none; border-top:1px solid #f0f0f0; margin:20px 0; }
+
+  /* Payment methods */
+  .pay-methods { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .pay-option { display:flex; align-items:center; gap:12px; padding:13px 16px; border:1.5px solid #e0e4f0; border-radius:11px; cursor:pointer; transition:border .15s; }
+  .pay-option:has(input:checked) { border-color:#1a3a8f; background:#f0f4ff; }
+  .pay-option input[type=radio] { accent-color:#1a3a8f; width:16px; height:16px; flex-shrink:0; }
+  .pay-option .pm-icon { font-size:1.4rem; flex-shrink:0; }
+  .pay-option .pm-label { font-size:.85rem; font-weight:600; color:#222; }
+  .pay-option .pm-sub { font-size:.7rem; color:#aaa; }
+
+  /* UPI field */
+  #upiField { display:none; margin-top:12px; }
+  #upiField input { width:100%; padding:10px 12px; border:1.5px solid #e0e4f0; border-radius:9px; font-size:.85rem; font-family:inherit; outline:none; box-sizing:border-box; }
+  #upiField input:focus { border-color:#1a3a8f; }
+
+  /* Order summary panel */
+  .co-summary { background:#fff; border-radius:16px; border:1px solid #eaecf4; padding:22px; position:sticky; top:90px; }
+  .co-summary h3 { font-size:1rem; font-weight:800; color:#1a3a8f; margin:0 0 16px; }
+  .co-item-row { display:flex; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid #f8f8f8; }
+  .co-item-row:last-of-type { border-bottom:none; }
+  .co-ithumb { width:44px; height:44px; border-radius:8px; background:#eef2ff; display:flex; align-items:center; justify-content:center; font-size:1.4rem; overflow:hidden; flex-shrink:0; }
+  .co-ithumb img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+  .co-iname { flex:1; font-size:.78rem; font-weight:600; color:#333; line-height:1.35; }
+  .co-iprice { font-size:.82rem; font-weight:700; color:#1a3a8f; flex-shrink:0; }
+  .co-sum-row { display:flex; justify-content:space-between; font-size:.8rem; color:#555; margin:8px 0; }
+  .co-sum-row.total { font-size:.98rem; font-weight:800; color:#1a3a8f; border-top:1px solid #f0f0f0; padding-top:12px; margin-top:6px; }
+  .co-sum-row.discount { color:#1d9e75; font-weight:600; }
+
+  .place-order-btn { display:block; width:100%; padding:14px; background:linear-gradient(135deg,#1a3a8f,#0d6efd); color:#fff; border:none; border-radius:12px; font-size:.95rem; font-weight:800; text-align:center; cursor:pointer; font-family:inherit; margin-top:18px; transition:opacity .15s; letter-spacing:.3px; }
+  .place-order-btn:hover { opacity:.88; }
+  .safe-note { text-align:center; font-size:.7rem; color:#aaa; margin-top:8px; }
+  @media(max-width:540px){ .co-form-row{ grid-template-columns:1fr; } }
+</style>
+
+<div class="checkout-page">
+  <div class="checkout-inner">
+    <div class="pg-icon">💳</div>
+    <h2>Checkout</h2>
+    <div class="sub">Complete your order below</div>
+
+    <form method="post" action="{% url 'place_order' %}" id="checkoutForm">
+      {% csrf_token %}
+      <div class="co-layout">
+
+        <!-- Left: Details + Payment -->
+        <div>
+          <div class="co-form-card">
+            <div class="co-section-title">📋 Contact Details</div>
+            <div class="co-form-row">
+              <div class="co-form-group">
+                <label>Full Name *</label>
+                <input type="text" name="full_name" value="{{ request.user.get_full_name }}" placeholder="Your full name" required>
+              </div>
+              <div class="co-form-group">
+                <label>Mobile Number *</label>
+                <input type="tel" name="mobile" placeholder="10-digit mobile" maxlength="10" required>
+              </div>
+            </div>
+            <div class="co-form-group">
+              <label>Email Address *</label>
+              <input type="email" name="email" value="{{ request.user.email }}" placeholder="your@email.com" required>
+            </div>
+
+            <hr class="co-divider">
+            <div class="co-section-title">🏠 Delivery Address <span style="font-weight:400;color:#bbb;">(for physical books only)</span></div>
+            <div class="co-form-group">
+              <label>Street Address</label>
+              <input type="text" name="address" placeholder="House no., Street, Area">
+            </div>
+            <div class="co-form-row">
+              <div class="co-form-group">
+                <label>City</label>
+                <input type="text" name="city" placeholder="City">
+              </div>
+              <div class="co-form-group">
+                <label>PIN Code</label>
+                <input type="text" name="pincode" placeholder="6-digit PIN" maxlength="6">
+              </div>
+            </div>
+            <div class="co-form-row">
+              <div class="co-form-group">
+                <label>State</label>
+                <input type="text" name="state" placeholder="State">
+              </div>
+              <div class="co-form-group">
+                <label>Country</label>
+                <input type="text" name="country" value="India" placeholder="Country">
+              </div>
+            </div>
+
+            <hr class="co-divider">
+            <div class="co-section-title">💰 Payment Method</div>
+            <div class="pay-methods">
+              <label class="pay-option">
+                <input type="radio" name="payment_method" value="upi" checked onchange="toggleUPI(this)">
+                <span class="pm-icon">📱</span>
+                <div><div class="pm-label">UPI</div><div class="pm-sub">Google Pay, PhonePe, Paytm, etc.</div></div>
+              </label>
+              <label class="pay-option">
+                <input type="radio" name="payment_method" value="netbanking" onchange="toggleUPI(this)">
+                <span class="pm-icon">🏦</span>
+                <div><div class="pm-label">Net Banking</div><div class="pm-sub">All major Indian banks supported</div></div>
+              </label>
+              <label class="pay-option">
+                <input type="radio" name="payment_method" value="cod" onchange="toggleUPI(this)">
+                <span class="pm-icon">💵</span>
+                <div><div class="pm-label">Cash on Delivery</div><div class="pm-sub">Pay when you receive (books only)</div></div>
+              </label>
+            </div>
+
+            <div id="upiField">
+              <label style="font-size:.75rem;font-weight:600;color:#555;display:block;margin-bottom:5px;">UPI ID</label>
+              <input type="text" name="upi_id" placeholder="yourname@upi">
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Summary -->
+        <div class="co-summary">
+          <h3>🧾 Order Summary</h3>
+          {% for item in cart_items %}
+          <div class="co-item-row">
+            <div class="co-ithumb">
+              {% if item.thumbnail %}<img src="{{ item.thumbnail }}" alt="{{ item.name }}">{% else %}📘{% endif %}
+            </div>
+            <div class="co-iname">{{ item.name }}</div>
+            <div class="co-iprice">₹{{ item.price }}</div>
+          </div>
+          {% endfor %}
+
+          <div style="margin-top:14px;">
+            <div class="co-sum-row"><span>Subtotal</span><span>₹{{ subtotal }}</span></div>
+            {% if applied_coupon %}
+            <div class="co-sum-row discount"><span>🎟️ Discount</span><span>-₹{{ applied_coupon.amount }}</span></div>
+            {% endif %}
+            <div class="co-sum-row total"><span>Total Payable</span><span>₹{{ grand_total }}</span></div>
+          </div>
+
+          <button type="submit" class="place-order-btn">✅ Place Order</button>
+          <div class="safe-note">🔒 100% Secure & Encrypted</div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleUPI(radio) {
+    document.getElementById('upiField').style.display = radio.value === 'upi' ? 'block' : 'none';
+  }
+  // Show UPI field by default
+  document.addEventListener('DOMContentLoaded', function(){
+    const upi = document.querySelector('input[value="upi"]');
+    if(upi && upi.checked) document.getElementById('upiField').style.display = 'block';
+  });
+</script>
+{% endblock content %}

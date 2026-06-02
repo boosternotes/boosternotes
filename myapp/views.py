@@ -13,6 +13,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.timesince import timesince
 from django.core.files.storage import default_storage
+import uuid
 
 from .models import *
 from .forms import *
@@ -22,7 +23,7 @@ import os
 from django.core.files.base import ContentFile
 
 
-# ── Notifications API (bell icon) ──────────────────────────────────────────────
+# ── Notifications API ──────────────────────────────────────────────────────────────
 def notifications_api(request):
     notifs = Notification.objects.order_by('-sent_at')[:10]
     data = []
@@ -41,50 +42,213 @@ def notifications_api(request):
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
-        username       = request.POST.get('username', '').strip()
-        email          = request.POST.get('email', '').strip()
-        first_name     = request.POST.get('first_name', '').strip()
-        last_name      = request.POST.get('last_name', '').strip()
-        password       = request.POST.get('password', '').strip()
+        username         = request.POST.get('username', '').strip()
+        email            = request.POST.get('email', '').strip()
+        first_name       = request.POST.get('first_name', '').strip()
+        last_name        = request.POST.get('last_name', '').strip()
+        password         = request.POST.get('password', '').strip()
         password_confirm = request.POST.get('password_confirm', '').strip()
-
         user = request.user
-
-        # Username uniqueness check
         if username and username != user.username:
             if User.objects.filter(username=username).exclude(pk=user.pk).exists():
-                messages.error(request, 'That username is already taken. Please choose another.')
+                messages.error(request, 'That username is already taken.')
                 return redirect('edit_profile')
-
         if username:
             user.username   = username
         user.email          = email
         user.first_name     = first_name
         user.last_name      = last_name
-
-        # Password change
         if password:
             if password != password_confirm:
-                messages.error(request, 'Passwords do not match. Please try again.')
+                messages.error(request, 'Passwords do not match.')
                 return redirect('edit_profile')
             user.set_password(password)
             user.save()
-            update_session_auth_hash(request, user)  # keep user logged in
+            update_session_auth_hash(request, user)
         else:
             user.save()
-
         messages.success(request, 'Profile updated successfully!')
         return redirect('edit_profile')
-
     return render(request, 'edit_profile.html')
 
 
 # ── My Purchases ──────────────────────────────────────────────────────────────
 @login_required
 def my_purchases(request):
-    # Placeholder — update when purchase model is ready
     purchases = []
     return render(request, 'my_purchases.html', {'purchases': purchases})
+
+
+# ── Cart helpers ──────────────────────────────────────────────────────────────
+def _get_cart(request):
+    return request.session.get('cart', {})
+
+def _save_cart(request, cart):
+    request.session['cart'] = cart
+    request.session.modified = True
+
+def _build_cart_items(cart):
+    """Resolve cart session dict into rich item list."""
+    items = []
+    for key, data in cart.items():
+        item_type = data.get('type')
+        try:
+            if item_type == 'pdf':
+                obj = ELibraryModel.objects.get(id=data['id'])
+                thumb = obj.thumbnail.url if obj.thumbnail else None
+                items.append({
+                    'id':             key,
+                    'item_type':      'PDF Course',
+                    'name':           obj.name,
+                    'thumbnail':      thumb,
+                    'category':       obj.category.name if obj.category else '',
+                    'price':          obj.current_price,
+                    'original_price': obj.original_price,
+                })
+            elif item_type == 'book':
+                obj = HardBook.objects.get(id=data['id'])
+                first_img = obj.images.first()
+                thumb = first_img.image.url if first_img and first_img.image else None
+                items.append({
+                    'id':             key,
+                    'item_type':      'Physical Book',
+                    'name':           obj.title,
+                    'thumbnail':      thumb,
+                    'category':       '',
+                    'price':          obj.price,
+                    'original_price': obj.original_price,
+                })
+        except Exception:
+            pass
+    return items
+
+
+# ── Add to Cart ──────────────────────────────────────────────────────────────
+@require_POST
+def add_to_cart(request):
+    item_id   = request.POST.get('item_id', '').strip()
+    item_type = request.POST.get('item_type', '').strip()  # 'pdf' or 'book'
+    redirect_back = request.META.get('HTTP_REFERER', '/')
+    if not item_id or item_type not in ('pdf', 'book'):
+        messages.error(request, 'Invalid item.')
+        return redirect(redirect_back)
+    cart = _get_cart(request)
+    key  = f"{item_type}_{item_id}"
+    if key in cart:
+        messages.info(request, 'Item is already in your cart.')
+    else:
+        cart[key] = {'id': item_id, 'type': item_type}
+        _save_cart(request, cart)
+        messages.success(request, '✅ Added to cart!')
+    return redirect(redirect_back)
+
+
+# ── Remove from Cart ──────────────────────────────────────────────────────────────
+@require_POST
+def remove_from_cart(request, item_key):
+    cart = _get_cart(request)
+    cart.pop(item_key, None)
+    _save_cart(request, cart)
+    messages.success(request, 'Item removed from cart.')
+    return redirect('cart')
+
+
+# ── Cart Page ──────────────────────────────────────────────────────────────
+def cart_view(request):
+    cart       = _get_cart(request)
+    cart_items = _build_cart_items(cart)
+    subtotal   = sum(item['price'] for item in cart_items)
+    applied    = None
+    coupon_id  = request.session.get('applied_coupon_id')
+    if coupon_id:
+        try:
+            applied = Coupon.objects.get(id=coupon_id, is_active=True)
+        except Coupon.DoesNotExist:
+            request.session.pop('applied_coupon_id', None)
+    discount    = applied.amount if applied else 0
+    grand_total = max(0, subtotal - discount)
+    return render(request, 'cart.html', {
+        'cart_items':    cart_items,
+        'subtotal':      subtotal,
+        'applied_coupon': applied,
+        'grand_total':   grand_total,
+    })
+
+
+# ── Apply Coupon (cart page) ──────────────────────────────────────────────────────────────
+@require_POST
+def apply_cart_coupon(request):
+    code = request.POST.get('code', '').strip().upper()
+    if not code:
+        messages.error(request, 'Enter a coupon code.')
+        return redirect('cart')
+    try:
+        coupon = Coupon.objects.get(code__iexact=code, is_active=True)
+    except Coupon.DoesNotExist:
+        messages.error(request, '❌ Invalid or expired coupon.')
+        return redirect('cart')
+    if coupon.is_expired:
+        messages.error(request, '❌ Coupon has expired.')
+        return redirect('cart')
+    if coupon.remaining_uses <= 0:
+        messages.error(request, '❌ Coupon usage limit reached.')
+        return redirect('cart')
+    request.session['applied_coupon_id']     = coupon.id
+    request.session['applied_coupon_code']   = coupon.code
+    request.session['applied_coupon_amount'] = str(coupon.amount)
+    messages.success(request, f'✅ Coupon \'{coupon.code}\' applied! Save ₹{coupon.amount}')
+    return redirect('cart')
+
+
+# ── Remove Cart Coupon ──────────────────────────────────────────────────────────────
+@require_POST
+def remove_cart_coupon(request):
+    for key in ('applied_coupon_id', 'applied_coupon_code', 'applied_coupon_amount'):
+        request.session.pop(key, None)
+    messages.info(request, 'Coupon removed.')
+    return redirect('cart')
+
+
+# ── Checkout Page ──────────────────────────────────────────────────────────────
+@login_required
+def checkout(request):
+    cart       = _get_cart(request)
+    if not cart:
+        messages.warning(request, 'Your cart is empty.')
+        return redirect('cart')
+    cart_items = _build_cart_items(cart)
+    subtotal   = sum(item['price'] for item in cart_items)
+    applied    = None
+    coupon_id  = request.session.get('applied_coupon_id')
+    if coupon_id:
+        try:
+            applied = Coupon.objects.get(id=coupon_id, is_active=True)
+        except Coupon.DoesNotExist:
+            pass
+    discount    = applied.amount if applied else 0
+    grand_total = max(0, subtotal - discount)
+    return render(request, 'checkout.html', {
+        'cart_items':     cart_items,
+        'subtotal':       subtotal,
+        'applied_coupon': applied,
+        'grand_total':    grand_total,
+    })
+
+
+# ── Place Order ──────────────────────────────────────────────────────────────
+@login_required
+@require_POST
+def place_order(request):
+    cart = _get_cart(request)
+    if not cart:
+        messages.warning(request, 'Your cart is empty.')
+        return redirect('cart')
+    # Clear cart + coupon after order
+    request.session.pop('cart', None)
+    for key in ('applied_coupon_id', 'applied_coupon_code', 'applied_coupon_amount'):
+        request.session.pop(key, None)
+    order_ref = str(uuid.uuid4())[:8].upper()
+    return render(request, 'order_success.html', {'order_ref': order_ref})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -406,8 +570,8 @@ def about_custom(request):
     if not setting:
         setting = AboutSetting.objects.create(
             heading="About BoosterNotes",
-            text1="BoosterNotes provides exam-focused PDFs, revision notes, and physical books for students preparing for competitive exams across India.",
-            text2="Our material is organized by category, updated regularly, and designed for quick revision and better results.",
+            text1="BoosterNotes provides exam-focused PDFs.",
+            text2="",
             pdf_count="343+", books_count="500+", users_count="2456+", categories_count="10+",
             feature1_icon="fa-solid fa-bolt",     feature1_icon_color="#1a3a8f",
             feature1_title="Fast Download",        feature1_desc="Get instant access to PDF study material after purchase.",
@@ -435,19 +599,14 @@ def footer_custom(request):
     if not setting:
         setting = FooterSetting.objects.create(
             brand_name="BoosterNotes", tagline="Smart Notes. Smart Rank.",
-            description="Reliable study resources for competitive exams.",
-            quick_links_title="Quick Links", support_title="Support", contact_title="Contact",
-            whatsapp_contact="WhatsApp: 6350331916", hours_contact="10 AM - 7 PM",
-            copyright_text="\u00a9 2026 BoosterNotes. All rights reserved.",
-            social_facebook="", social_linkedin="", social_instagram="", social_youtube="",
-            social_facebook_color="#1877f2", social_linkedin_color="#0a66c2",
-            social_instagram_color="#e4405f", social_youtube_color="#ff0000"
+            description="Reliable study resources.",
+            copyright_text="\u00a9 2026 BoosterNotes."
         )
     if request.method == 'POST':
         form = FooterSettingForm(request.POST, instance=setting)
         if form.is_valid():
             form.save()
-            messages.success(request, "Footer section updated successfully!")
+            messages.success(request, "Footer updated!")
             return redirect('footer_custom')
         else:
             messages.error(request, "Please correct the errors below.")
@@ -463,7 +622,7 @@ def category_list(request):
         form = CategoryForm(request.POST, request.FILES)
         if form.is_valid():
             category = form.save()
-            messages.success(request, f"Category '{category.name}' created successfully!")
+            messages.success(request, f"Category '{category.name}' created!")
             return redirect('category_list')
         else:
             messages.error(request, "Please correct the errors below.")
@@ -479,7 +638,7 @@ def category_delete(request, pk):
         if category.image and default_storage.exists(category.image.name):
             default_storage.delete(category.image.name)
         category.delete()
-        messages.success(request, "Category deleted successfully!")
+        messages.success(request, "Category deleted!")
         return redirect('category_list')
     return render(request, 'category_confirm_delete.html', {'category': category})
 
@@ -491,7 +650,7 @@ def coupon_list(request):
         form = CouponForm(request.POST)
         if form.is_valid():
             coupon = form.save()
-            messages.success(request, f"Coupon '{coupon.code}' created successfully!")
+            messages.success(request, f"Coupon '{coupon.code}' created!")
             return redirect('coupon_list')
         else:
             messages.error(request, "Please correct the errors below.")
@@ -505,7 +664,7 @@ def coupon_delete(request, pk):
     coupon = get_object_or_404(Coupon, pk=pk)
     if request.method == 'POST':
         coupon.delete()
-        messages.success(request, "Coupon deleted successfully!")
+        messages.success(request, "Coupon deleted!")
         return redirect('dashboard')
     return redirect('dashboard')
 
@@ -515,8 +674,7 @@ def coupon_toggle_active(request, pk):
     coupon = get_object_or_404(Coupon, pk=pk)
     new_status = not coupon.is_active
     Coupon.objects.filter(pk=pk).update(is_active=new_status)
-    status = "activated" if new_status else "deactivated"
-    messages.success(request, f"Coupon '{coupon.code}' {status}!")
+    messages.success(request, f"Coupon '{coupon.code}' {'activated' if new_status else 'deactivated'}!")
     return redirect('coupon_list')
 
 
@@ -533,7 +691,7 @@ def notifications_section(request):
             notification = form.save(commit=False)
             notification.sent_at = timezone.now()
             notification.save()
-            messages.success(request, 'Notification sent successfully!')
+            messages.success(request, 'Notification sent!')
             return redirect('notifications_section')
     else:
         form = NotificationForm()
@@ -554,7 +712,7 @@ def delete_notification(request, notification_id):
     notification = get_object_or_404(Notification, id=notification_id)
     if request.method == 'POST':
         notification.delete()
-        messages.success(request, 'Notification deleted successfully!')
+        messages.success(request, 'Notification deleted!')
         return redirect('notifications_section')
     return render(request, 'admin/confirm_delete.html', {
         'object': notification, 'action': 'delete notification', 'next_url': 'notifications_section'
@@ -566,7 +724,7 @@ def add_user(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'User created successfully!')
+            messages.success(request, 'User created!')
             return redirect('dashboard')
     else:
         form = CustomUserCreationForm()
@@ -579,7 +737,7 @@ def edit_user(request, user_id):
         form = CustomUserChangeForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            messages.success(request, f'User {user.username} updated successfully!')
+            messages.success(request, f'User {user.username} updated!')
             return redirect('dashboard')
     else:
         form = CustomUserChangeForm(instance=user)
@@ -592,7 +750,7 @@ def delete_user(request, user_id):
     if request.method == 'POST':
         username = user.username
         user.delete()
-        messages.success(request, f'User {username} deleted successfully!')
+        messages.success(request, f'User {username} deleted!')
         return redirect('users_section')
     return redirect('dashboard')
 
@@ -606,44 +764,17 @@ def home(request):
             whatsapp_number="6350331916", whatsapp_hours="10 AM to 7 PM",
             coupon_text="\U0001f39f\ufe0f Apply Coupon"
         )
-
     desktop_banners = BannerSetting.objects.filter(is_active=True, banner_type='desktop').order_by('order')
     mobile_banners  = BannerSetting.objects.filter(is_active=True, banner_type='mobile').order_by('order')
-
     if not desktop_banners.exists():
         BannerSetting.objects.create(banner_type='desktop', order=1, is_active=True)
         desktop_banners = BannerSetting.objects.filter(is_active=True, banner_type='desktop').order_by('order')
-
     if not mobile_banners.exists():
         BannerSetting.objects.create(banner_type='mobile', order=1, is_active=True)
         mobile_banners = BannerSetting.objects.filter(is_active=True, banner_type='mobile').order_by('order')
-
     stats = StatsSetting.objects.filter(is_active=True).order_by('display_order')
-    if not stats.exists():
-        StatsSetting.objects.bulk_create([
-            StatsSetting(icon="\U0001f4da", value="343",   title="E-Library Courses", note="Exam-ready PDFs",               display_order=1),
-            StatsSetting(icon="\U0001f4e6", value="500+", title="Physical Books",   note="Delivered to students",          display_order=2),
-            StatsSetting(icon="\U0001f465", value="2456+",title="Active Users",    note="Trusted by learners across India", display_order=3),
-        ])
-        stats = StatsSetting.objects.filter(is_active=True).order_by('display_order')
-
     about = AboutSetting.objects.first()
-    if not about:
-        about = AboutSetting.objects.create(
-            heading="About BoosterNotes",
-            text1="BoosterNotes provides exam-focused PDFs, revision notes, and physical books for students preparing for competitive exams across India.",
-            text2="Our material is organized by category, updated regularly, and designed for quick revision and better results.",
-            pdf_count="343+", books_count="500+", users_count="2456+", categories_count="10+"
-        )
-
     footer = FooterSetting.objects.first()
-    if not footer:
-        footer = FooterSetting.objects.create(
-            brand_name="BoosterNotes", tagline="Smart Notes. Smart Rank.",
-            description="Reliable study resources for competitive exams.",
-            copyright_text="\u00a9 2026 BoosterNotes. All rights reserved."
-        )
-
     if request.user.is_authenticated:
         used_coupon_ids = CouponUsage.objects.filter(user=request.user).values_list('coupon_id', flat=True)
         active_coupons = Coupon.objects.filter(
@@ -657,24 +788,19 @@ def home(request):
         ).annotate(
             remaining=F('usage_limit') - F('times_used')
         ).filter(remaining__gt=0).order_by('-created_at')[:6]
-
     categories   = Category.objects.annotate(pdf_count=Count('elibrary_courses')).order_by('name')[:10]
     popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').order_by('-created_at')[:8]
     hard_books   = HardBook.objects.filter(is_active=True).prefetch_related('images').order_by('-created_at')[:8]
     site_settings = NavbarSetting.objects.first()
-
+    # Cart count badge
+    cart_count = len(request.session.get('cart', {}))
     context = {
-        'navbar': navbar,
-        'site_settings': site_settings,
-        'desktop_banners': desktop_banners,
-        'mobile_banners': mobile_banners,
-        'stats': stats,
-        'about': about,
-        'footer': footer,
-        'categories': categories,
-        'active_coupons': active_coupons,
-        'popular_pdfs': popular_pdfs,
-        'hard_books': hard_books,
+        'navbar': navbar, 'site_settings': site_settings,
+        'desktop_banners': desktop_banners, 'mobile_banners': mobile_banners,
+        'stats': stats, 'about': about, 'footer': footer,
+        'categories': categories, 'active_coupons': active_coupons,
+        'popular_pdfs': popular_pdfs, 'hard_books': hard_books,
+        'cart_count': cart_count,
     }
     return render(request, 'index.html', context)
 
@@ -697,61 +823,47 @@ def elibrary_detail(request, pk):
 def apply_coupon(request):
     code = request.POST.get("code", "").strip().upper()
     redirect_url = request.META.get("HTTP_REFERER", "/")
-
     if not code:
         messages.error(request, "Please enter a coupon code.")
         return redirect(redirect_url)
-
     try:
         coupon = Coupon.objects.get(code__iexact=code)
     except Coupon.DoesNotExist:
         messages.error(request, "\u274c Invalid coupon code.")
         return redirect(redirect_url)
-
     if not coupon.is_active:
         messages.error(request, "\u274c This coupon is no longer active.")
         return redirect(redirect_url)
-
     if coupon.is_expired:
         messages.error(request, "\u274c This coupon has expired.")
         return redirect(redirect_url)
-
     if CouponUsage.objects.filter(user=request.user, coupon=coupon).exists():
         messages.warning(request, "\u26a0\ufe0f You have already used this coupon.")
         return redirect(redirect_url)
-
     if coupon.remaining_uses <= 0:
         messages.error(request, "\u274c This coupon has reached its usage limit.")
         return redirect(redirect_url)
-
     try:
         with transaction.atomic():
-            CouponUsage.objects.create(
-                user=request.user,
-                coupon=coupon,
-                discount_applied=coupon.amount
-            )
+            CouponUsage.objects.create(user=request.user, coupon=coupon, discount_applied=coupon.amount)
             new_times_used = coupon.times_used + 1
             update_fields  = {'times_used': new_times_used}
             if new_times_used >= coupon.usage_limit:
                 update_fields['is_active'] = False
             Coupon.objects.filter(pk=coupon.pk).update(**update_fields)
-
         request.session['applied_coupon_id']     = coupon.id
         request.session['applied_coupon_code']   = coupon.code
         request.session['applied_coupon_amount'] = str(coupon.amount)
         messages.success(request, f"\u2705 Coupon '{coupon.code}' applied! You saved \u20b9{coupon.amount}")
-
     except Exception:
-        messages.error(request, "Something went wrong applying the coupon. Please try again.")
-
+        messages.error(request, "Something went wrong. Please try again.")
     return redirect(redirect_url)
 
 
 @login_required
 def dashboard(request):
     if not request.user.is_staff and not request.user.is_superuser:
-        messages.error(request, "You don't have permission to access the dashboard.")
+        messages.error(request, "You don't have permission.")
         return redirect('home')
     users          = User.objects.all().order_by('-date_joined')
     total_users    = users.count()

@@ -1,0 +1,142 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  .cart-page { min-height:65vh; background:#f5f7fb; padding:44px 16px 80px; }
+  .cart-inner { max-width:980px; margin:0 auto; }
+  .cart-inner .pg-icon { font-size:2rem; }
+  .cart-inner h2 { font-size:1.4rem; font-weight:800; color:#1a3a8f; margin:4px 0 2px; }
+  .cart-inner .sub { font-size:.78rem; color:#aaa; margin-bottom:28px; }
+
+  .cart-layout { display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
+  @media(max-width:780px){ .cart-layout{ grid-template-columns:1fr; } }
+
+  /* Items list */
+  .cart-items-box { background:#fff; border-radius:16px; border:1px solid #eaecf4; overflow:hidden; }
+  .cart-items-head { padding:16px 20px; border-bottom:1px solid #f0f0f0; font-size:.8rem; font-weight:700; color:#aaa; letter-spacing:.4px; text-transform:uppercase; }
+  .cart-item { display:flex; gap:14px; padding:16px 20px; border-bottom:1px solid #f8f8f8; align-items:center; }
+  .cart-item:last-child { border-bottom:none; }
+  .ci-thumb { width:64px; height:64px; border-radius:10px; background:#eef2ff; display:flex; align-items:center; justify-content:center; font-size:2rem; flex-shrink:0; overflow:hidden; }
+  .ci-thumb img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
+  .ci-info { flex:1; min-width:0; }
+  .ci-info .ci-type { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#1a3a8f; background:#e8f0fe; padding:2px 7px; border-radius:6px; display:inline-block; margin-bottom:4px; }
+  .ci-info h4 { font-size:.85rem; font-weight:700; color:#222; margin:0 0 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ci-info .ci-cat { font-size:.72rem; color:#aaa; }
+  .ci-price { font-size:.95rem; font-weight:800; color:#1a3a8f; flex-shrink:0; min-width:70px; text-align:right; }
+  .ci-price .ci-orig { display:block; font-size:.7rem; color:#ccc; text-decoration:line-through; font-weight:400; }
+  .ci-remove { background:none; border:none; color:#e74c3c; font-size:1.1rem; cursor:pointer; padding:4px 8px; border-radius:6px; transition:background .15s; flex-shrink:0; }
+  .ci-remove:hover { background:#fff0f0; }
+
+  /* Empty state */
+  .cart-empty { padding:60px 24px; text-align:center; }
+  .cart-empty .ei { font-size:4rem; margin-bottom:14px; }
+  .cart-empty h3 { font-size:1.1rem; font-weight:700; color:#333; margin:0 0 6px; }
+  .cart-empty p { font-size:.82rem; color:#aaa; margin:0 0 22px; }
+  .cart-empty a { display:inline-block; background:linear-gradient(135deg,#1a3a8f,#0d6efd); color:#fff; padding:12px 28px; border-radius:10px; font-weight:700; font-size:.88rem; text-decoration:none; }
+
+  /* Summary box */
+  .cart-summary { background:#fff; border-radius:16px; border:1px solid #eaecf4; padding:22px; position:sticky; top:90px; }
+  .cart-summary h3 { font-size:1rem; font-weight:800; color:#1a3a8f; margin:0 0 18px; }
+  .sum-row { display:flex; justify-content:space-between; font-size:.82rem; color:#555; margin-bottom:10px; }
+  .sum-row.total { font-size:1rem; font-weight:800; color:#1a3a8f; border-top:1px solid #f0f0f0; padding-top:12px; margin-top:4px; }
+  .sum-row.discount { color:#1d9e75; font-weight:600; }
+
+  /* Coupon strip */
+  .coupon-strip { background:#f5f7fb; border-radius:10px; padding:10px 12px; margin:14px 0 18px; }
+  .coupon-strip label { font-size:.72rem; font-weight:700; color:#888; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.3px; }
+  .coupon-strip .ci-row { display:flex; gap:8px; }
+  .coupon-strip input { flex:1; padding:8px 10px; border:1.5px solid #e0e4f0; border-radius:8px; font-size:.8rem; font-family:inherit; outline:none; }
+  .coupon-strip input:focus { border-color:#1a3a8f; }
+  .coupon-strip button { background:#1a3a8f; color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .coupon-applied { background:#e6f9f1; border-radius:8px; padding:8px 12px; font-size:.78rem; font-weight:600; color:#1a8a5a; display:flex; justify-content:space-between; align-items:center; margin:14px 0 18px; }
+  .coupon-applied button { background:none; border:none; color:#e74c3c; cursor:pointer; font-size:.85rem; padding:0; }
+
+  .checkout-btn { display:block; width:100%; padding:14px; background:linear-gradient(135deg,#1a3a8f,#0d6efd); color:#fff; border:none; border-radius:12px; font-size:.95rem; font-weight:800; text-align:center; cursor:pointer; font-family:inherit; text-decoration:none; transition:opacity .15s; letter-spacing:.3px; }
+  .checkout-btn:hover { opacity:.88; }
+  .checkout-btn:disabled { opacity:.5; cursor:not-allowed; }
+  .safe-badge { text-align:center; font-size:.7rem; color:#aaa; margin-top:10px; }
+</style>
+
+<div class="cart-page">
+  <div class="cart-inner">
+    <div class="pg-icon">🛒</div>
+    <h2>My Cart</h2>
+    <div class="sub">Review your items before checkout</div>
+
+    {% if cart_items %}
+    <div class="cart-layout">
+      <!-- Items -->
+      <div class="cart-items-box">
+        <div class="cart-items-head">{{ cart_items|length }} Item{{ cart_items|length|pluralize }} in Cart</div>
+        {% for item in cart_items %}
+        <div class="cart-item" id="ci-{{ item.id }}">
+          <div class="ci-thumb">
+            {% if item.thumbnail %}
+              <img src="{{ item.thumbnail }}" alt="{{ item.name }}">
+            {% else %}📘{% endif %}
+          </div>
+          <div class="ci-info">
+            <span class="ci-type">{{ item.item_type }}</span>
+            <h4>{{ item.name }}</h4>
+            <div class="ci-cat">{{ item.category|default:"" }}</div>
+          </div>
+          <div class="ci-price">
+            ₹{{ item.price }}
+            {% if item.original_price %}<span class="ci-orig">₹{{ item.original_price }}</span>{% endif %}
+          </div>
+          <form method="post" action="{% url 'remove_from_cart' item.id %}" style="margin:0;display:inline;">
+            {% csrf_token %}
+            <button class="ci-remove" type="submit" title="Remove">🗑️</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Summary -->
+      <div class="cart-summary">
+        <h3>Order Summary</h3>
+        <div class="sum-row"><span>Subtotal</span><span>₹{{ subtotal }}</span></div>
+
+        {% if applied_coupon %}
+          <div class="coupon-applied">
+            <span>🎟️ {{ applied_coupon.code }} (-₹{{ applied_coupon.amount }})</span>
+            <form method="post" action="{% url 'remove_cart_coupon' %}" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit">✕</button>
+            </form>
+          </div>
+          <div class="sum-row discount"><span>Coupon Discount</span><span>-₹{{ applied_coupon.amount }}</span></div>
+        {% else %}
+          <div class="coupon-strip">
+            <label>Have a coupon?</label>
+            <form method="post" action="{% url 'apply_cart_coupon' %}" style="margin:0;">
+              {% csrf_token %}
+              <div class="ci-row">
+                <input type="text" name="code" placeholder="Enter code" maxlength="50">
+                <button type="submit">Apply</button>
+              </div>
+            </form>
+          </div>
+        {% endif %}
+
+        <div class="sum-row total"><span>Total</span><span>₹{{ grand_total }}</span></div>
+
+        <a href="{% url 'checkout' %}" class="checkout-btn">Proceed to Checkout →</a>
+        <div class="safe-badge">🔒 Secure checkout</div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="cart-items-box">
+      <div class="cart-empty">
+        <div class="ei">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Browse our PDF courses and books and add something to get started!</p>
+        <a href="{% url 'home' %}">Explore Courses →</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
