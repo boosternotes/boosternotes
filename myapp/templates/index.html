@@ -203,14 +203,14 @@
     </div>
   </div>
 
+  <!-- ── Mobile avatar dropdown ── -->
   <div class="mob-profile-wrap" id="mobProfileWrap">
     <button class="mob-avatar-btn" onclick="toggleMobProfile(event)" type="button" aria-label="Profile menu">
       {{ user.username|slice:":2"|upper }}
     </button>
     <div class="mob-profile-drop" id="mobProfileDrop">
-      <a href="#"><span class="drop-icon">✏️</span>Edit Profile</a>
-      <a href="#"><span class="drop-icon">🛒</span>My Purchases</a>
-      <a href="#"><span class="drop-icon">🎟️</span>My Coupons</a>
+      <a href="{% url 'edit_profile' %}"><span class="drop-icon">✏️</span>Edit Profile</a>
+      <a href="{% url 'my_purchases' %}"><span class="drop-icon">🛒</span>My Purchases</a>
       <a href="{% url 'dashboard' %}"><span class="drop-icon">📊</span>Admin Dashboard</a>
       <hr>
       <form method="post" action="{% url 'logout' %}" style="margin:0;">
@@ -220,14 +220,14 @@
     </div>
   </div>
 
+  <!-- ── Desktop profile dropdown ── -->
   <div class="has-drop profile-pill">
     <div class="avatar">{{ user.username|slice:":2"|upper }}</div>
     <span class="name-text">Welcome, {{ user.username }}</span>
     <span class="caret">▾</span>
     <div class="drop-menu">
-      <a href="#"><span class="icon">✏️</span>Edit Profile</a>
-      <a href="#"><span class="icon">🛒</span>My Purchases</a>
-      <a href="#"><span class="icon">🎟️</span>My Coupons</a>
+      <a href="{% url 'edit_profile' %}"><span class="icon">✏️</span>Edit Profile</a>
+      <a href="{% url 'my_purchases' %}"><span class="icon">🛒</span>My Purchases</a>
       <a href="{% url 'dashboard' %}"><span class="icon">📊</span>Admin Dashboard</a>
       <hr>
       <form method="post" action="{% url 'logout' %}" style="margin:0;">
@@ -259,10 +259,9 @@
   <div class="mob-section">
     <h5>Account</h5>
     {% if user.is_authenticated %}
-      <div class="mob-link"><span class="icon">✏️</span>Edit Profile</div>
-      <div class="mob-link"><span class="icon">🛒</span>My Purchases</div>
-      <div class="mob-link"><span class="icon">🎟️</span>My Coupons</div>
-      <div class="mob-link"><span class="icon">📊</span>Admin Dashboard</div>
+      <a class="mob-link" href="{% url 'edit_profile' %}"><span class="icon">✏️</span>Edit Profile</a>
+      <a class="mob-link" href="{% url 'my_purchases' %}"><span class="icon">🛒</span>My Purchases</a>
+      <a class="mob-link" href="{% url 'dashboard' %}"><span class="icon">📊</span>Admin Dashboard</a>
       <form method="post" action="{% url 'logout' %}" style="margin:0;">
         {% csrf_token %}
         <button type="submit" class="mob-link" style="width:100%;background:none;border:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;align-items:center;gap:8px;">
