@@ -46,11 +46,15 @@ urlpatterns = [
     path('delete/<int:pk>/', views.coupon_delete, name='coupon_delete'),
     path('toggle/<int:pk>/', views.coupon_toggle_active, name='coupon_toggle_active'),
 
-    # Category
+    # Category ─ admin
     path('category_list', views.category_list, name='category_list'),
     path('category/edit/<int:pk>/', views.category_edit, name='category_edit'),
     path('category/delete/<int:pk>/', views.category_delete, name='category_delete'),
     path('category/toggle/<int:pk>/', views.category_toggle_active, name='category_toggle_active'),
+
+    # Category ─ public
+    path('categories/', views.all_categories, name='all_categories'),
+    path('category/<int:category_id>/courses/', views.category_courses_view, name='category_courses'),
 
     # Navbar / Banner / Stats / About / Footer
     path('navbar/', views.navbar_custom, name='navbar_custom'),
@@ -81,7 +85,6 @@ urlpatterns = [
 
     path('elibrary/<uuid:pk>/', views.elibrary_detail, name='elibrary_detail'),
     path('hard-books/<uuid:pk>/', views.hard_book_detail, name='hard_book_detail'),
-    path('category/<int:category_id>/courses/', views.category_courses_view, name='category_courses'),
 ]
 
 if settings.DEBUG:

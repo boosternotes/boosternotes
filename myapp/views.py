@@ -226,8 +226,7 @@ def checkout(request):
         except Coupon.DoesNotExist:
             pass
     discount    = applied.amount if applied else 0
-    grand_total = max(0, subtotal - discount)\
-    
+    grand_total = max(0, subtotal - discount)
     return render(request, 'checkout.html', {
         'cart_items':     cart_items,
         'subtotal':       subtotal,
@@ -244,7 +243,6 @@ def place_order(request):
     if not cart:
         messages.warning(request, 'Your cart is empty.')
         return redirect('cart')
-    # Clear cart + coupon after order
     request.session.pop('cart', None)
     for key in ('applied_coupon_id', 'applied_coupon_code', 'applied_coupon_amount'):
         request.session.pop(key, None)
@@ -254,16 +252,43 @@ def place_order(request):
 
 # ─────────────────────────────────────────────────────────────────────────────
 
+def all_categories(request):
+    """Public page listing all active categories."""
+    categories = Category.objects.filter(is_active=True).annotate(
+        pdf_count=Count('elibrary_courses')
+    ).order_by('name')
+    total_categories = categories.count()
+    total_courses = ELibraryModel.objects.filter(is_active=True).count() + \
+                    HardBook.objects.filter(is_active=True).count()
+    navbar  = NavbarSetting.objects.first()
+    footer  = FooterSetting.objects.first()
+    cart_count = len(request.session.get('cart', {}))
+    return render(request, 'all_categories.html', {
+        'categories':       categories,
+        'total_categories': total_categories,
+        'total_courses':    total_courses,
+        'navbar':           navbar,
+        'footer':           footer,
+        'cart_count':       cart_count,
+    })
+
+
 def category_courses_view(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    elibrary_courses = category.elibrary_courses.all()
-    hardcopy_courses = category.hardcopy_courses.all() if hasattr(category, 'hardcopy_courses') else []
-    total_courses = elibrary_courses.count() + (hardcopy_courses.count() if hardcopy_courses else 0)
+    elibrary_courses = category.elibrary_courses.filter(is_active=True)
+    hardcopy_courses = category.hardcopy_courses.filter(is_active=True) if hasattr(category, 'hardcopy_courses') else []
+    total_courses = elibrary_courses.count() + (hardcopy_courses.count() if hasattr(hardcopy_courses, 'count') else 0)
+    navbar  = NavbarSetting.objects.first()
+    footer  = FooterSetting.objects.first()
+    cart_count = len(request.session.get('cart', {}))
     context = {
-        'category': category,
+        'category':        category,
         'elibrary_courses': elibrary_courses,
         'hardcopy_courses': hardcopy_courses,
-        'total_courses': total_courses,
+        'total_courses':   total_courses,
+        'navbar':          navbar,
+        'footer':          footer,
+        'cart_count':      cart_count,
     }
     return render(request, 'category_courses.html', context)
 
@@ -644,7 +669,6 @@ def category_edit(request, pk):
             category.description = description
             category.is_active   = is_active
             if 'image' in request.FILES:
-                # delete old image if exists
                 if category.image and default_storage.exists(category.image.name):
                     default_storage.delete(category.image.name)
                 category.image = request.FILES['image']
@@ -823,7 +847,7 @@ def home(request):
         ).annotate(
             remaining=F('usage_limit') - F('times_used')
         ).filter(remaining__gt=0).order_by('-created_at')[:6]
-    categories   = Category.objects.annotate(pdf_count=Count('elibrary_courses')).order_by('name')[:10]
+    categories   = Category.objects.filter(is_active=True).annotate(pdf_count=Count('elibrary_courses')).order_by('name')[:10]
     popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').order_by('-created_at')[:8]
     hard_books   = HardBook.objects.filter(is_active=True).prefetch_related('images').order_by('-created_at')[:8]
     site_settings = NavbarSetting.objects.first()
