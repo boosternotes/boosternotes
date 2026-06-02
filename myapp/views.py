@@ -226,7 +226,8 @@ def checkout(request):
         except Coupon.DoesNotExist:
             pass
     discount    = applied.amount if applied else 0
-    grand_total = max(0, subtotal - discount)
+    grand_total = max(0, subtotal - discount)\
+    
     return render(request, 'checkout.html', {
         'cart_items':     cart_items,
         'subtotal':       subtotal,
@@ -632,6 +633,29 @@ def category_list(request):
 
 
 @login_required
+def category_edit(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        name        = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        is_active   = request.POST.get('is_active') == 'on'
+        if name:
+            category.name        = name
+            category.description = description
+            category.is_active   = is_active
+            if 'image' in request.FILES:
+                # delete old image if exists
+                if category.image and default_storage.exists(category.image.name):
+                    default_storage.delete(category.image.name)
+                category.image = request.FILES['image']
+            category.save()
+            messages.success(request, f"Category '{category.name}' updated!")
+        else:
+            messages.error(request, "Category name is required.")
+    return redirect('category_list')
+
+
+@login_required
 def category_delete(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -640,7 +664,18 @@ def category_delete(request, pk):
         category.delete()
         messages.success(request, "Category deleted!")
         return redirect('category_list')
-    return render(request, 'category_confirm_delete.html', {'category': category})
+    return redirect('category_list')
+
+
+@login_required
+def category_toggle_active(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        category.is_active = not category.is_active
+        category.save()
+        status = 'activated' if category.is_active else 'deactivated'
+        messages.success(request, f"Category '{category.name}' {status}!")
+    return redirect('category_list')
 
 
 @login_required
@@ -792,7 +827,6 @@ def home(request):
     popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').order_by('-created_at')[:8]
     hard_books   = HardBook.objects.filter(is_active=True).prefetch_related('images').order_by('-created_at')[:8]
     site_settings = NavbarSetting.objects.first()
-    # Cart count badge
     cart_count = len(request.session.get('cart', {}))
     context = {
         'navbar': navbar, 'site_settings': site_settings,
