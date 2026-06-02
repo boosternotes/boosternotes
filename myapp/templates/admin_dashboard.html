@@ -32,9 +32,112 @@
       color: #fff;
     }
     .back-btn .back-arrow { font-size: .9rem; }
+
+    /* ── Upload Loader Overlay ───────────────────────────────────────── */
+    #upload-loader {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: rgba(10, 18, 50, 0.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+    #upload-loader.active { display: flex; }
+
+    .loader-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 48px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      min-width: 260px;
+      animation: loaderPop .25s ease;
+    }
+    @keyframes loaderPop {
+      from { transform: scale(.85); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    /* Spinner ring */
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border: 5px solid #e7ebf5;
+      border-top-color: #1a3a8f;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 18px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+    .loader-sub {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 18px;
+    }
+
+    /* Animated progress bar */
+    .loader-bar-wrap {
+      background: #e7ebf5;
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .loader-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #1a3a8f, #4a7de8);
+      border-radius: 99px;
+      animation: progress 3s ease forwards;
+    }
+    @keyframes progress {
+      0%   { width: 0%; }
+      40%  { width: 55%; }
+      70%  { width: 78%; }
+      90%  { width: 90%; }
+      100% { width: 95%; } /* stays at 95 until server responds */
+    }
+
+    .loader-file-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.75rem;
+      color: #1a3a8f;
+      font-weight: 600;
+      margin-top: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
+    }
   </style>
 </head>  
 <body>
+
+  <!-- ── Global Upload Loader ──────────────────────────────────────── -->
+  <div id="upload-loader">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <div class="loader-title">Uploading...</div>
+      <div class="loader-sub">Please wait, do not close this page</div>
+      <div class="loader-bar-wrap"><div class="loader-bar" id="loader-bar"></div></div>
+      <div class="loader-file-name" id="loader-file-name"></div>
+    </div>
+  </div>
+
   {% block content1 %}
     {% include "msg.html" %}
   <!-- Nav Bar -->
@@ -855,6 +958,89 @@
     if (window.location.hash === '#payments') {
       showSection('payments');
     }
+
+    // ── Upload Loader ─────────────────────────────────────────────────
+    (function () {
+      const loader    = document.getElementById('upload-loader');
+      const bar       = document.getElementById('loader-bar');
+      const fileLabel = document.getElementById('loader-file-name');
+
+      // Labels per page context
+      const LABELS = {
+        banner:   { title: 'Uploading Banner…',    sub: 'Saving image, please wait' },
+        logo:     { title: 'Uploading Logo…',      sub: 'Saving logo & favicon' },
+        pdf:      { title: 'Uploading PDF…',       sub: 'This may take a moment for large files' },
+        image:    { title: 'Uploading Images…',    sub: 'Saving book images' },
+        default:  { title: 'Uploading…',           sub: 'Please wait, do not close this page' },
+      };
+
+      function getLabel(form) {
+        const action = (form.action || window.location.href).toLowerCase();
+        if (action.includes('banner'))  return LABELS.banner;
+        if (action.includes('navbar'))  return LABELS.logo;
+        if (action.includes('pdf') || action.includes('elibrary')) return LABELS.pdf;
+        if (action.includes('book') || action.includes('hard'))    return LABELS.image;
+        // fallback: check file input accept attribute
+        const fileInput = form.querySelector('input[type="file"]');
+        if (fileInput) {
+          const accept = (fileInput.accept || '').toLowerCase();
+          if (accept.includes('pdf'))   return LABELS.pdf;
+          if (accept.includes('image')) return LABELS.image;
+        }
+        return LABELS.default;
+      }
+
+      function showLoader(form) {
+        const lbl = getLabel(form);
+        loader.querySelector('.loader-title').textContent = lbl.title;
+        loader.querySelector('.loader-sub').textContent   = lbl.sub;
+
+        // Show selected file name
+        const fileInput = form.querySelector('input[type="file"]');
+        if (fileInput && fileInput.files && fileInput.files.length) {
+          const names = Array.from(fileInput.files).map(f => f.name).join(', ');
+          fileLabel.textContent = '📎 ' + names;
+        } else {
+          fileLabel.textContent = '';
+        }
+
+        // Reset & restart progress bar animation
+        bar.style.animation = 'none';
+        bar.offsetHeight; // reflow
+        bar.style.animation = 'progress 3s ease forwards';
+
+        loader.classList.add('active');
+      }
+
+      // Attach to every form that contains a file input
+      function attachLoaders() {
+        document.querySelectorAll('form').forEach(function (form) {
+          if (form.dataset.loaderAttached) return;
+          form.dataset.loaderAttached = '1';
+
+          const hasFile = form.querySelector('input[type="file"]');
+          if (!hasFile) return;
+
+          form.addEventListener('submit', function (e) {
+            // Don't show loader for delete/toggle actions (no file involved)
+            const actionInput = form.querySelector('input[name="action"]');
+            if (actionInput && ['delete','toggle'].includes(actionInput.value)) return;
+
+            // Only show if a file is actually selected
+            const fileInputs = form.querySelectorAll('input[type="file"]');
+            const hasSelectedFile = Array.from(fileInputs).some(fi => fi.files && fi.files.length > 0);
+            if (!hasSelectedFile) return;
+
+            showLoader(form);
+          });
+        });
+      }
+
+      // Run on DOM ready and also after any dynamic content
+      document.addEventListener('DOMContentLoaded', attachLoaders);
+      // MutationObserver for dynamically added forms
+      new MutationObserver(attachLoaders).observe(document.body, { childList: true, subtree: true });
+    })();
   </script>
 {% endblock content1 %}
 </body>
