@@ -5,23 +5,40 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.db import transaction          # ✔ was missing – caused apply_coupon to crash
+from django.db import transaction
 from django.db.models import Count, Q, F
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.timesince import timesince
 from django.core.files.storage import default_storage
 
 from .models import *
 from .forms import *
 
-# elibrary dropbox
 from .dropbox_utils import DropboxManager
 import os
 from django.core.files.base import ContentFile
 
 
+# ── Notifications API (bell icon) ──────────────────────────────────────────────
+def notifications_api(request):
+    """Returns the latest 10 notifications as JSON for the bell icon."""
+    notifs = Notification.objects.order_by('-sent_at')[:10]
+    data = []
+    for n in notifs:
+        data.append({
+            'id':      n.id,
+            'title':   n.title,
+            'message': n.message,
+            'link':    n.link or '',
+            'time':    timesince(n.sent_at) + ' ago',
+        })
+    return JsonResponse({'notifications': data, 'count': len(data)})
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 
 def category_courses_view(request, category_id):
     category = get_object_or_404(Category, id=category_id)
@@ -41,9 +58,9 @@ def search(request):
     query = request.GET.get('q', '').strip()
     navbar = NavbarSetting.objects.first()
     footer = FooterSetting.objects.first()
-    category_results   = Category.objects.filter(name__icontains=query)       if query else Category.objects.none()
-    elibrary_results   = ELibraryModel.objects.filter(name__icontains=query)  if query else ELibraryModel.objects.none()
-    hardbook_results   = HardBook.objects.filter(title__icontains=query)      if query else HardBook.objects.none()
+    category_results  = Category.objects.filter(name__icontains=query)      if query else Category.objects.none()
+    elibrary_results  = ELibraryModel.objects.filter(name__icontains=query) if query else ELibraryModel.objects.none()
+    hardbook_results  = HardBook.objects.filter(title__icontains=query)     if query else HardBook.objects.none()
     total_results = category_results.count() + elibrary_results.count() + hardbook_results.count()
     active_coupons = Coupon.objects.filter(
         is_active=True,
@@ -51,13 +68,9 @@ def search(request):
         usage_limit__gt=F('times_used')
     ).order_by('-created_at')[:6]
     context = {
-        'navbar': navbar,
-        'footer': footer,
-        'search_query': query,
-        'category_results': category_results,
-        'elibrary_results': elibrary_results,
-        'hardbook_results': hardbook_results,
-        'total_results': total_results,
+        'navbar': navbar, 'footer': footer, 'search_query': query,
+        'category_results': category_results, 'elibrary_results': elibrary_results,
+        'hardbook_results': hardbook_results, 'total_results': total_results,
         'active_coupons': active_coupons,
     }
     return render(request, 'search_results.html', context)
@@ -347,12 +360,12 @@ def about_custom(request):
             text1="BoosterNotes provides exam-focused PDFs, revision notes, and physical books for students preparing for competitive exams across India.",
             text2="Our material is organized by category, updated regularly, and designed for quick revision and better results.",
             pdf_count="343+", books_count="500+", users_count="2456+", categories_count="10+",
-            feature1_icon="fa-solid fa-bolt", feature1_icon_color="#1a3a8f",
-            feature1_title="Fast Download", feature1_desc="Get instant access to PDF study material after purchase.",
-            feature2_icon="fa-solid fa-bullseye", feature2_icon_color="#28a745",
-            feature2_title="Exam Targeted", feature2_desc="Curated content for NEET, JEE, UPSC, SSC, and more.",
-            feature3_icon="fa-solid fa-comments", feature3_icon_color="#ffc107",
-            feature3_title="Support", feature3_desc="Support available on WhatsApp during working hours."
+            feature1_icon="fa-solid fa-bolt",     feature1_icon_color="#1a3a8f",
+            feature1_title="Fast Download",        feature1_desc="Get instant access to PDF study material after purchase.",
+            feature2_icon="fa-solid fa-bullseye",  feature2_icon_color="#28a745",
+            feature2_title="Exam Targeted",        feature2_desc="Curated content for NEET, JEE, UPSC, SSC, and more.",
+            feature3_icon="fa-solid fa-comments",  feature3_icon_color="#ffc107",
+            feature3_title="Support",              feature3_desc="Support available on WhatsApp during working hours."
         )
     if request.method == 'POST':
         form = AboutSettingForm(request.POST, instance=setting)
@@ -450,10 +463,8 @@ def coupon_delete(request, pk):
 
 @login_required
 def coupon_toggle_active(request, pk):
-    """Toggle coupon active/inactive – uses update() to bypass editable=False"""
     coupon = get_object_or_404(Coupon, pk=pk)
     new_status = not coupon.is_active
-    # update() skips model.save() so editable=False is not a problem
     Coupon.objects.filter(pk=pk).update(is_active=new_status)
     status = "activated" if new_status else "deactivated"
     messages.success(request, f"Coupon '{coupon.code}' {status}!")
@@ -477,9 +488,9 @@ def notifications_section(request):
             return redirect('notifications_section')
     else:
         form = NotificationForm()
-    notifications      = Notification.objects.all()[:50]
+    notifications       = Notification.objects.all()[:50]
     total_notifications = Notification.objects.count()
-    sent_today         = Notification.objects.filter(sent_at__date=timezone.now().date()).count()
+    sent_today          = Notification.objects.filter(sent_at__date=timezone.now().date()).count()
     context = {
         'title': 'Notifications', 'subtitle': 'Send notifications to users',
         'form': form, 'notifications': notifications,
@@ -584,28 +595,23 @@ def home(request):
             copyright_text="© 2026 BoosterNotes. All rights reserved."
         )
 
-    # Active coupons – exclude ones already used by the logged-in user
     if request.user.is_authenticated:
         used_coupon_ids = CouponUsage.objects.filter(user=request.user).values_list('coupon_id', flat=True)
         active_coupons = Coupon.objects.filter(
-            is_active=True,
-            expiry_date__gte=timezone.now().date(),
+            is_active=True, expiry_date__gte=timezone.now().date(),
         ).exclude(id__in=used_coupon_ids).annotate(
             remaining=F('usage_limit') - F('times_used')
         ).filter(remaining__gt=0).order_by('-created_at')[:6]
     else:
         active_coupons = Coupon.objects.filter(
-            is_active=True,
-            expiry_date__gte=timezone.now().date(),
+            is_active=True, expiry_date__gte=timezone.now().date(),
         ).annotate(
             remaining=F('usage_limit') - F('times_used')
         ).filter(remaining__gt=0).order_by('-created_at')[:6]
 
-    categories  = Category.objects.annotate(pdf_count=Count('elibrary_courses')).order_by('name')[:10]
+    categories   = Category.objects.annotate(pdf_count=Count('elibrary_courses')).order_by('name')[:10]
     popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').order_by('-created_at')[:8]
     hard_books   = HardBook.objects.filter(is_active=True).prefetch_related('images').order_by('-created_at')[:8]
-
-    # Pass site_settings for logo
     site_settings = NavbarSetting.objects.first()
 
     context = {
@@ -676,21 +682,18 @@ def apply_coupon(request):
                 coupon=coupon,
                 discount_applied=coupon.amount
             )
-            # Use update() to bypass editable=False on is_active
             new_times_used = coupon.times_used + 1
             update_fields  = {'times_used': new_times_used}
             if new_times_used >= coupon.usage_limit:
                 update_fields['is_active'] = False
             Coupon.objects.filter(pk=coupon.pk).update(**update_fields)
 
-        # Store in session for checkout use
         request.session['applied_coupon_id']     = coupon.id
         request.session['applied_coupon_code']   = coupon.code
         request.session['applied_coupon_amount'] = str(coupon.amount)
-
         messages.success(request, f"✅ Coupon '{coupon.code}' applied! You saved ₹{coupon.amount}")
 
-    except Exception as e:
+    except Exception:
         messages.error(request, "Something went wrong applying the coupon. Please try again.")
 
     return redirect(redirect_url)
@@ -701,14 +704,14 @@ def dashboard(request):
     if not request.user.is_staff and not request.user.is_superuser:
         messages.error(request, "You don't have permission to access the dashboard.")
         return redirect('home')
-    users      = User.objects.all().order_by('-date_joined')
-    total_users   = users.count()
-    active_users  = users.filter(is_active=True).count()
+    users          = User.objects.all().order_by('-date_joined')
+    total_users    = users.count()
+    active_users   = users.filter(is_active=True).count()
     inactive_users = users.filter(is_active=False).count()
     thirty_days_ago = datetime.now() - timedelta(days=30)
-    new_users    = users.filter(date_joined__gte=thirty_days_ago).count()
-    staff_users  = users.filter(is_staff=True).count()
-    add_form     = CustomUserCreationForm()
+    new_users      = users.filter(date_joined__gte=thirty_days_ago).count()
+    staff_users    = users.filter(is_staff=True).count()
+    add_form       = CustomUserCreationForm()
     context = {
         'users': users, 'total_users': total_users, 'active_users': active_users,
         'inactive_users': inactive_users, 'new_users': new_users,
