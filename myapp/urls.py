@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from myapp import views
+from myapp import razorpay_views
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -12,24 +13,31 @@ urlpatterns = [
     path('login/', views.user_login, name='login'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('signup/', views.signup, name='signup'),
-    path(
-        'logout/',
-        auth_views.LogoutView.as_view(next_page=reverse_lazy('home')),
-        name='logout'
-    ),
+    path('logout/', auth_views.LogoutView.as_view(next_page=reverse_lazy('home')), name='logout'),
 
-    # ── User profile ──
+    # User profile
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('profile/purchases/', views.my_purchases, name='my_purchases'),
 
-    # ── Cart & Checkout ──
+    # Cart & Checkout
     path('cart/', views.cart_view, name='cart'),
     path('cart/add/', views.add_to_cart, name='add_to_cart'),
     path('cart/remove/<str:item_key>/', views.remove_from_cart, name='remove_from_cart'),
     path('cart/apply-coupon/', views.apply_cart_coupon, name='apply_cart_coupon'),
     path('cart/remove-coupon/', views.remove_cart_coupon, name='remove_cart_coupon'),
     path('checkout/', views.checkout, name='checkout'),
-    path('checkout/place-order/', views.place_order, name='place_order'),
+
+    # ── Razorpay payment ──
+    path('payment/create-order/', razorpay_views.razorpay_create_order, name='razorpay_create_order'),
+    path('payment/verify/', razorpay_views.razorpay_verify_payment, name='razorpay_verify_payment'),
+    path('payment/cancel/', razorpay_views.razorpay_cancel_order, name='razorpay_cancel_order'),
+    path('order/success/<uuid:order_id>/', razorpay_views.order_success, name='order_success'),
+
+    # ── Admin: Orders ──
+    path('admin-orders/', razorpay_views.orders_dashboard, name='orders_dashboard'),
+    path('admin-orders/<uuid:order_id>/', razorpay_views.order_detail, name='order_detail'),
+    path('admin-orders/<uuid:order_id>/status/', razorpay_views.order_update_status, name='order_update_status'),
+    path('admin-orders/<uuid:order_id>/delete/', razorpay_views.order_delete, name='order_delete'),
 
     # user management
     path('users/add/', views.add_user, name='add_user'),

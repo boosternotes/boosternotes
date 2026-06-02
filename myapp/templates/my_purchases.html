@@ -1,115 +1,91 @@
 {% extends 'index.html' %}
 {% load static %}
 
+{% block title %}My Purchases - BoosterNotes{% endblock %}
+
 {% block content %}
 <style>
-  .purchases-page {
-    min-height: 65vh;
-    padding: 52px 16px 72px;
-    background: #f5f7fb;
-  }
-  .purchases-inner {
-    max-width: 860px;
-    margin: 0 auto;
-  }
-  .purchases-inner .page-icon { font-size: 2rem; margin-bottom: 6px; }
-  .purchases-inner h2 {
-    font-size: 1.4rem; font-weight: 800; color: #1a3a8f; margin: 0 0 4px;
-  }
-  .purchases-inner .sub { font-size: .8rem; color: #aaa; margin-bottom: 32px; }
-
-  /* Empty state */
-  .empty-box {
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 4px 24px rgba(26,58,143,0.08);
-    padding: 70px 24px;
-    text-align: center;
-  }
-  .empty-box .empty-icon { font-size: 4rem; margin-bottom: 18px; }
-  .empty-box h3 { font-size: 1.15rem; font-weight: 700; color: #333; margin: 0 0 8px; }
-  .empty-box p { font-size: .85rem; color: #aaa; margin: 0 0 26px; line-height: 1.6; }
-  .empty-box a {
-    display: inline-block;
-    background: linear-gradient(135deg, #1a3a8f, #0d6efd);
-    color: #fff; padding: 13px 30px; border-radius: 10px;
-    font-weight: 700; font-size: .9rem; text-decoration: none;
-    transition: opacity .15s;
-  }
-  .empty-box a:hover { opacity: .88; }
-
-  /* Purchase card */
-  .purchase-card {
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid #eaecf4;
-    padding: 18px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 14px;
-    transition: box-shadow .2s;
-  }
-  .purchase-card:hover { box-shadow: 0 6px 22px rgba(26,58,143,0.09); }
-  .purchase-thumb {
-    width: 68px; height: 68px; border-radius: 10px;
-    background: #eef2ff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2rem; flex-shrink: 0; overflow: hidden;
-  }
-  .purchase-thumb img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
-  .purchase-info { flex: 1; min-width: 0; }
-  .purchase-info h4 { font-size: .9rem; font-weight: 700; color: #222; margin: 0 0 4px; }
-  .purchase-info .meta { font-size: .74rem; color: #aaa; margin-bottom: 3px; }
-  .purchase-info .price { font-size: .85rem; font-weight: 700; color: #1a3a8f; }
-  .download-btn {
-    background: linear-gradient(135deg,#1a3a8f,#0d6efd); color: #fff;
-    border: none; border-radius: 8px; padding: 9px 18px;
-    font-size: .78rem; font-weight: 600; cursor: pointer;
-    font-family: inherit; text-decoration: none;
-    display: inline-block; transition: opacity .15s; white-space: nowrap;
-  }
-  .download-btn:hover { opacity: .85; }
-  @media (max-width: 540px) {
-    .purchase-card { flex-wrap: wrap; }
-    .download-btn { width: 100%; text-align: center; margin-top: 6px; }
-  }
+.purch-page{background:#f5f7fb;min-height:60vh;padding:40px 16px 80px;}
+.purch-inner{max-width:900px;margin:0 auto;}
+.purch-inner h1{font-size:1.5rem;font-weight:900;color:#1a3a8f;margin-bottom:6px;}
+.purch-inner .sub{font-size:.82rem;color:#888;margin-bottom:28px;}
+.purch-card{background:#fff;border-radius:16px;border:1px solid #e7ebf5;box-shadow:0 4px 20px rgba(26,58,143,.06);overflow:hidden;margin-bottom:1.2rem;}
+.purch-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f2f8;}
+.purch-order-num{font-size:.75rem;color:#888;font-weight:600;}
+.purch-date{font-size:.72rem;color:#aaa;}
+.purch-items{padding:12px 20px;display:flex;flex-direction:column;gap:10px;}
+.purch-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f8f8f8;}
+.purch-item:last-child{border-bottom:none;}
+.purch-thumb{width:50px;height:50px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;overflow:hidden;}
+.purch-thumb img{width:100%;height:100%;object-fit:cover;}
+.purch-info{flex:1;}
+.purch-info h3{font-size:.88rem;font-weight:700;color:#1a1a2e;margin:0 0 4px;}
+.purch-info .type-badge{font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:999px;}
+.badge-pdf{background:#e6f9ef;color:#1a7a45;}
+.badge-book{background:#fff0f5;color:#c0392b;}
+.purch-price{font-size:.9rem;font-weight:800;color:#1a3a8f;}
+.purch-action{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:.78rem;font-weight:700;text-decoration:none;transition:opacity .15s;margin-top:6px;}
+.purch-action.access{background:#1a3a8f;color:#fff;}
+.purch-action.tracking{background:#f5f5f5;color:#444;border:1px solid #e0e0e0;}
+.purch-action:hover{opacity:.85;}
+.empty-purch{text-align:center;padding:5rem 2rem;background:#fff;border-radius:16px;border:2px dashed #e2e8f0;}
+.empty-purch .icon{font-size:3.5rem;opacity:.5;margin-bottom:1rem;}
+.empty-purch h3{font-size:1.3rem;font-weight:800;color:#1a1a2e;margin-bottom:.6rem;}
+.empty-purch p{color:#888;font-size:.88rem;margin-bottom:1.5rem;}
+.empty-purch a{display:inline-flex;align-items:center;gap:7px;padding:.7rem 1.5rem;background:#1a3a8f;color:#fff;border-radius:8px;font-size:.87rem;font-weight:700;text-decoration:none;}
 </style>
 
-<div class="purchases-page">
-  <div class="purchases-inner">
-    <div class="page-icon">🛒</div>
-    <h2>My Purchases</h2>
-    <div class="sub">All your bought PDFs and books in one place</div>
+<div class="purch-page">
+  <div class="purch-inner">
+    <h1>📦 My Purchases</h1>
+    <p class="sub">All your bought courses and books</p>
 
-    {% if purchases %}
-      {% for item in purchases %}
-      <div class="purchase-card">
-        <div class="purchase-thumb">
-          {% if item.thumbnail %}
-            <img src="{{ item.thumbnail.url }}" alt="{{ item.name }}">
-          {% else %}
-            📘
-          {% endif %}
+    {% if orders %}
+      {% for order in orders %}
+      <div class="purch-card">
+        <div class="purch-card-head">
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#1a1a2e;">Order #{{ order.order_number }}</div>
+            <div class="purch-date">{{ order.paid_at|date:"d M Y" }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800;color:#1a3a8f;font-size:.95rem;">₹{{ order.grand_total }}</div>
+            <span class="badge badge-success" style="font-size:.68rem;">Paid</span>
+          </div>
         </div>
-        <div class="purchase-info">
-          <h4>{{ item.name }}</h4>
-          <div class="meta">Purchased on {{ item.purchased_on|date:"d M Y" }}</div>
-          <div class="price">₹{{ item.price|floatformat:0 }}</div>
+        <div class="purch-items">
+          {% for item in order.items.all %}
+          <div class="purch-item">
+            <div class="purch-thumb">
+              {% if item.item_type == 'pdf' %}📄{% else %}📚{% endif %}
+            </div>
+            <div class="purch-info">
+              <h3>{{ item.item_name }}</h3>
+              <span class="type-badge {% if item.item_type == 'pdf' %}badge-pdf{% else %}badge-book{% endif %}">
+                {% if item.item_type == 'pdf' %}E-Library{% else %}Hardcopy Book{% endif %}
+              </span>
+              {% if item.item_type == 'pdf' %}
+              <br>
+              <a href="{% url 'elibrary_detail' item.item_id %}" class="purch-action access">📌 Access Course</a>
+              {% else %}
+              <br>
+              <span class="purch-action tracking">📦 Order Placed — Delivery in 3-5 days</span>
+              {% endif %}
+            </div>
+            <div class="purch-price">₹{{ item.item_price }}</div>
+          </div>
+          {% endfor %}
         </div>
-        {% if item.download_url %}
-          <a href="{{ item.download_url }}" class="download-btn" target="_blank">⬇ Download</a>
-        {% endif %}
       </div>
       {% endfor %}
     {% else %}
-      <div class="empty-box">
-        <div class="empty-icon">🛒</div>
-        <h3>No purchases yet</h3>
-        <p>You haven't bought any PDF courses or books yet.<br>Browse our collection and start learning today!</p>
-        <a href="{% url 'home' %}">Explore Courses →</a>
-      </div>
+    <div class="empty-purch">
+      <div class="icon">📦</div>
+      <h3>No Purchases Yet</h3>
+      <p>You haven't bought any courses or books yet. Start exploring!</p>
+      <a href="{% url 'home' %}">🏠 Browse Courses</a>
+    </div>
     {% endif %}
   </div>
 </div>
-{% endblock content %}
+{% endblock %}
