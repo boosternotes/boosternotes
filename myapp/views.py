@@ -845,7 +845,11 @@ def elibrary_detail(request, pk):
     return render(request, 'elibrary_detail.html', {'pdf': course, 'uploaded_pdfs': uploaded_pdfs, 'is_purchased': is_purchased})
 
 
-# ── Apply Coupon ────────────────────────────────────────────────────────────────
+# ── Apply Coupon (homepage "Save to Cart" button) ───────────────────────────────
+# This view ONLY saves the coupon code to the session so it pre-fills
+# the cart coupon field. It does NOT write CouponUsage to the database.
+# The actual DB write (CouponUsage + times_used increment) happens only
+# when payment is successfully verified in razorpay_views.
 @login_required
 @require_POST
 def apply_coupon(request):
@@ -854,37 +858,31 @@ def apply_coupon(request):
     if not code:
         messages.error(request, 'Please enter a coupon code.')
         return redirect(redirect_url)
+
     try:
         coupon = Coupon.objects.get(code__iexact=code)
     except Coupon.DoesNotExist:
         messages.error(request, '\u274c Invalid coupon code.')
         return redirect(redirect_url)
+
     if not coupon.is_active:
         messages.error(request, '\u274c This coupon is no longer active.')
         return redirect(redirect_url)
     if coupon.is_expired:
         messages.error(request, '\u274c This coupon has expired.')
         return redirect(redirect_url)
-    if CouponUsage.objects.filter(user=request.user, coupon=coupon).exists():
-        messages.warning(request, '\u26a0\ufe0f You have already used this coupon.')
-        return redirect(redirect_url)
     if coupon.remaining_uses <= 0:
         messages.error(request, '\u274c This coupon has reached its usage limit.')
         return redirect(redirect_url)
-    try:
-        with transaction.atomic():
-            CouponUsage.objects.create(user=request.user, coupon=coupon, discount_applied=coupon.amount)
-            new_times_used = coupon.times_used + 1
-            update_fields  = {'times_used': new_times_used}
-            if new_times_used >= coupon.usage_limit:
-                update_fields['is_active'] = False
-            Coupon.objects.filter(pk=coupon.pk).update(**update_fields)
-        request.session['applied_coupon_id']     = coupon.id
-        request.session['applied_coupon_code']   = coupon.code
-        request.session['applied_coupon_amount'] = str(coupon.amount)
-        messages.success(request, f"\u2705 Coupon '{coupon.code}' applied! You saved \u20b9{coupon.amount}")
-    except Exception:
-        messages.error(request, 'Something went wrong. Please try again.')
+    if CouponUsage.objects.filter(user=request.user, coupon=coupon).exists():
+        messages.warning(request, '\u26a0\ufe0f You have already used this coupon.')
+        return redirect(redirect_url)
+
+    # ── Save to session only (no DB write here) ──────────────────────────────
+    request.session['applied_coupon_id']     = coupon.id
+    request.session['applied_coupon_code']   = coupon.code
+    request.session['applied_coupon_amount'] = str(coupon.amount)
+    messages.success(request, f"\u2705 Coupon '{coupon.code}' saved! \u20b9{coupon.amount} discount will apply at checkout.")
     return redirect(redirect_url)
 
 
@@ -987,9 +985,5 @@ def signup(request):
 
 
 # ── Custom 404 — works even with DEBUG=True ──────────────────────────────────────
-# Django's built-in 404.html only shows when DEBUG=False.
-# This catch-all view is registered as the LAST url pattern so any
-# unmatched path hits it and gets a friendly branded page instead of
-# Django's yellow debug error screen.
 def custom_404_view(request, unknown_path=None):
     return render(request, '404.html', status=404)
