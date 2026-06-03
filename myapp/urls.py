@@ -95,8 +95,8 @@ urlpatterns = [
     path('elibrary/<uuid:pk>/', views.elibrary_detail, name='elibrary_detail'),
     path('hard-books/<uuid:pk>/', views.hard_book_detail, name='hard_book_detail'),
 
-    # DB Backup & Restore Panel
-    path('admin/db-backup/', backup_panel, name='backup_panel'),
+    # DB Backup & Restore Panel — NOTE: must NOT start with 'admin/' (conflicts with Django admin)
+    path('db-backup/', backup_panel, name='backup_panel'),
 ]
 
 if settings.DEBUG:
