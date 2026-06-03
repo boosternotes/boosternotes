@@ -3,33 +3,390 @@
 
 {% block title %}All Exam Categories - BoosterNotes{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ===== ALL CATEGORIES PAGE ===== */
+.allcat-page {
+  background: #f0f4ff;
+  min-height: 80vh;
+  padding: 0 0 4rem;
+}
+
+/* Breadcrumb */
+.allcat-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 1rem 0 0.6rem;
+  font-size: 0.83rem;
+  color: #888;
+  flex-wrap: wrap;
+}
+.allcat-breadcrumb a {
+  color: #1a3a8f;
+  font-weight: 600;
+  text-decoration: none;
+}
+.allcat-breadcrumb a:hover { text-decoration: underline; }
+.allcat-breadcrumb .sep { color: #ccc; font-size: 0.7rem; }
+.allcat-breadcrumb span { color: #333; font-weight: 700; }
+
+/* ===== HERO BANNER ===== */
+.allcat-hero {
+  background: linear-gradient(135deg, #1a3a8f 0%, #0d2060 60%, #1a1a6e 100%);
+  border-radius: 20px;
+  padding: 2.5rem 2.5rem 2.2rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  box-shadow: 0 12px 48px rgba(26,58,143,0.28);
+  position: relative;
+  overflow: hidden;
+}
+.allcat-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.allcat-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 40%;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(232,180,0,0.10) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.allcat-hero-left { position: relative; z-index: 1; }
+.allcat-hero-left h1 {
+  font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 0.6rem;
+  line-height: 1.2;
+}
+.allcat-hero-left p {
+  color: rgba(255,255,255,0.80);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 500px;
+  margin: 0;
+}
+
+.allcat-hero-stats {
+  display: flex;
+  gap: 1.2rem;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+.allcat-stat-box {
+  background: rgba(255,255,255,0.13);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  border-radius: 14px;
+  padding: 1rem 1.6rem;
+  text-align: center;
+  min-width: 90px;
+  backdrop-filter: blur(4px);
+}
+.allcat-stat-box strong {
+  display: block;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.allcat-stat-box small {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.72);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== SECTION HEADER ===== */
+.allcat-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.4rem;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+.allcat-section-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+}
+.allcat-section-title span {
+  color: #1a3a8f;
+}
+.allcat-count-badge {
+  background: #e8eeff;
+  color: #1a3a8f;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #c5d0f5;
+}
+
+/* ===== CATEGORY GRID ===== */
+.allcat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1.4rem;
+}
+
+.allcat-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 12px rgba(26,58,143,0.07);
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.22s cubic-bezier(.22,1,.36,1),
+              box-shadow 0.22s ease,
+              border-color 0.22s ease;
+  cursor: pointer;
+}
+.allcat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(26,58,143,0.16);
+  border-color: #1a3a8f;
+}
+
+/* Card Image Area */
+.allcat-card-thumb {
+  height: 140px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #4f46e5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.allcat-card-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+.allcat-card:hover .allcat-card-thumb img {
+  transform: scale(1.06);
+}
+.allcat-card-thumb-icon {
+  font-size: 3rem;
+  line-height: 1;
+  z-index: 1;
+}
+.allcat-card-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 55%);
+  z-index: 2;
+}
+
+/* Inactive chip */
+.allcat-inactive-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  z-index: 3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Card Body */
+.allcat-card-body {
+  padding: 1rem 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+}
+.allcat-card-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.allcat-card-desc {
+  font-size: 0.78rem;
+  color: #777;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* Card Footer */
+.allcat-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1.5px solid #f0f2f8;
+}
+.allcat-pdf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f0f4ff;
+  color: #1a3a8f;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #d0daff;
+}
+.allcat-pdf-badge i { font-size: 0.72rem; color: #e53e3e; }
+
+.allcat-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #1a3a8f;
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.18s, transform 0.18s;
+  letter-spacing: 0.02em;
+}
+.allcat-card:hover .allcat-view-btn {
+  background: #0d2060;
+  transform: translateX(2px);
+}
+.allcat-view-btn i { font-size: 0.68rem; }
+
+/* ===== EMPTY STATE ===== */
+.allcat-empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: #fff;
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
+  margin: 1rem 0;
+}
+.allcat-empty-icon { font-size: 4rem; opacity: 0.45; margin-bottom: 1rem; }
+.allcat-empty h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 0.5rem;
+}
+.allcat-empty p {
+  color: #777;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  max-width: 360px;
+  margin-inline: auto;
+}
+.allcat-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.7rem 1.6rem;
+  background: #1a3a8f;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.87rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.18s;
+}
+.allcat-back-btn:hover { background: #0d2060; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .allcat-hero {
+    padding: 1.8rem 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .allcat-hero-stats { width: 100%; justify-content: flex-start; }
+  .allcat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .allcat-card-thumb { height: 110px; }
+}
+@media (max-width: 420px) {
+  .allcat-grid { grid-template-columns: 1fr; }
+  .allcat-stat-box { padding: 0.8rem 1.2rem; }
+  .allcat-stat-box strong { font-size: 1.8rem; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="allcat-page">
   <div class="container">
 
     <!-- Breadcrumb -->
-    <nav class="breadcrumb">
-      <a href="{% url 'home' %}"><i class="fa-solid fa-home"></i> Home</a>
+    <nav class="allcat-breadcrumb">
+      <a href="{% url 'home' %}"><i class="fa-solid fa-house"></i> Home</a>
       <i class="fa-solid fa-chevron-right sep"></i>
       <span>All Categories</span>
     </nav>
 
-    <!-- Hero -->
+    <!-- Hero Banner -->
     <div class="allcat-hero">
-      <div class="allcat-hero-text">
+      <div class="allcat-hero-left">
         <h1>🎯 Browse All Exam Categories</h1>
         <p>Choose your exam and explore targeted study material — PDFs, revision notes, and physical books.</p>
       </div>
       <div class="allcat-hero-stats">
-        <div class="allcat-stat">
+        <div class="allcat-stat-box">
           <strong>{{ total_categories }}</strong>
           <small>Categories</small>
         </div>
-        <div class="allcat-stat">
+        <div class="allcat-stat-box">
           <strong>{{ total_courses }}</strong>
           <small>Total Courses</small>
         </div>
       </div>
+    </div>
+
+    <!-- Section Header -->
+    <div class="allcat-section-header">
+      <h2 class="allcat-section-title">All <span>Exam Categories</span></h2>
+      {% if categories %}
+        <span class="allcat-count-badge">{{ total_categories }} Categories</span>
+      {% endif %}
     </div>
 
     <!-- Category Grid -->
@@ -37,35 +394,44 @@
     <div class="allcat-grid">
       {% for category in categories %}
       <a href="{% url 'category_courses_view' category.id %}" class="allcat-card">
-        <div class="allcat-card-img">
+
+        <!-- Thumbnail -->
+        <div class="allcat-card-thumb">
           {% if category.image %}
             <img src="{{ category.image.url }}" alt="{{ category.name }}">
+            <div class="allcat-card-thumb-overlay"></div>
           {% else %}
-            <span class="allcat-emoji">📚</span>
+            <span class="allcat-card-thumb-icon">📚</span>
           {% endif %}
           {% if not category.is_active %}
-            <span class="allcat-inactive-chip">Inactive</span>
+            <span class="allcat-inactive-badge">Inactive</span>
           {% endif %}
         </div>
+
+        <!-- Body -->
         <div class="allcat-card-body">
-          <h3>{{ category.name }}</h3>
+          <h3 class="allcat-card-name">{{ category.name }}</h3>
           {% if category.description %}
-            <p>{{ category.description|truncatewords:12 }}</p>
+            <p class="allcat-card-desc">{{ category.description|truncatewords:14 }}</p>
           {% endif %}
-          <div class="allcat-card-foot">
-            <span class="allcat-count">
+          <div class="allcat-card-footer">
+            <span class="allcat-pdf-badge">
               <i class="fa-solid fa-file-pdf"></i>
               {{ category.pdf_count }} PDF{% if category.pdf_count != 1 %}s{% endif %}
             </span>
-            <span class="allcat-arrow">→</span>
+            <span class="allcat-view-btn">
+              View <i class="fa-solid fa-arrow-right"></i>
+            </span>
           </div>
         </div>
+
       </a>
       {% endfor %}
     </div>
+
     {% else %}
     <div class="allcat-empty">
-      <div class="allcat-empty-icon">💭</div>
+      <div class="allcat-empty-icon">📭</div>
       <h3>No Categories Yet</h3>
       <p>Categories will appear here once they are added from the admin dashboard.</p>
       <a href="{% url 'home' %}" class="allcat-back-btn">← Back to Home</a>
@@ -74,168 +440,4 @@
 
   </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-:root {
-  --navy: #1a3a8f;
-  --navy-dark: #0d2060;
-  --bg: #f5f7fa;
-  --card-bg: #fff;
-  --text: #1a1a2e;
-  --muted: #666;
-  --border: #e2e8f0;
-  --radius: 14px;
-  --shadow: 0 4px 20px rgba(26,58,143,.08);
-}
-.allcat-page {
-  background: var(--bg);
-  min-height: 60vh;
-  padding-bottom: 4rem;
-}
-.breadcrumb {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 6px; padding: 1.2rem 0 .8rem;
-  font-size: .82rem; color: var(--muted);
-}
-.breadcrumb a { color: var(--navy); font-weight: 600; }
-.breadcrumb a:hover { text-decoration: underline; }
-.breadcrumb span { color: var(--text); font-weight: 700; }
-.sep { font-size: .65rem; color: #bbb; }
-
-/* Hero */
-.allcat-hero {
-  background: linear-gradient(135deg, var(--navy), var(--navy-dark));
-  border-radius: 20px;
-  padding: 2rem 2.2rem;
-  margin-bottom: 2.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  box-shadow: 0 10px 40px rgba(26,58,143,.22);
-  position: relative; overflow: hidden;
-}
-.allcat-hero::after {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(circle at 80% 50%, rgba(232,180,0,.12), transparent 60%);
-  pointer-events: none;
-}
-.allcat-hero-text { position: relative; z-index: 1; }
-.allcat-hero-text h1 {
-  font-family: 'Baloo 2', cursive;
-  font-size: clamp(1.4rem, 4vw, 2rem);
-  font-weight: 800; color: #fff; margin-bottom: .5rem;
-}
-.allcat-hero-text p { color: rgba(255,255,255,.82); font-size: .9rem; line-height: 1.6; max-width: 540px; }
-.allcat-hero-stats {
-  display: flex; gap: 1.5rem;
-  position: relative; z-index: 1;
-}
-.allcat-stat {
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 12px;
-  padding: .9rem 1.4rem;
-  text-align: center; min-width: 80px;
-}
-.allcat-stat strong { display: block; font-size: 2rem; font-weight: 800; color: #fff; line-height: 1; }
-.allcat-stat small  { font-size: .74rem; color: rgba(255,255,255,.75); font-weight: 500; }
-
-/* Grid */
-.allcat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.2rem;
-}
-.allcat-card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  border: 1.5px solid var(--border);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  text-decoration: none;
-  display: flex; flex-direction: column;
-  transition: transform .22s, box-shadow .22s, border-color .22s;
-}
-.allcat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 14px 32px rgba(26,58,143,.14);
-  border-color: var(--navy);
-}
-.allcat-card-img {
-  height: 120px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  display: grid; place-items: center;
-  position: relative; overflow: hidden;
-}
-.allcat-card-img img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%; object-fit: cover;
-}
-.allcat-emoji { font-size: 2.6rem; }
-.allcat-inactive-chip {
-  position: absolute; top: 8px; right: 8px;
-  background: rgba(0,0,0,.55); color: #fff;
-  font-size: .65rem; font-weight: 700;
-  padding: 3px 9px; border-radius: 999px;
-}
-.allcat-card-body {
-  padding: 1rem 1rem .9rem;
-  display: flex; flex-direction: column; gap: .35rem; flex: 1;
-}
-.allcat-card-body h3 {
-  font-size: .95rem; font-weight: 700;
-  color: var(--text); margin: 0;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.allcat-card-body p {
-  font-size: .76rem; color: var(--muted); line-height: 1.5; margin: 0;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  flex: 1;
-}
-.allcat-card-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-top: .5rem; padding-top: .5rem;
-  border-top: 1px solid var(--border);
-}
-.allcat-count { font-size: .76rem; color: var(--navy); font-weight: 600; }
-.allcat-count i { margin-right: 4px; }
-.allcat-arrow {
-  font-size: 1rem; font-weight: 700; color: var(--navy);
-  transition: transform .2s;
-}
-.allcat-card:hover .allcat-arrow { transform: translateX(4px); }
-
-/* Empty */
-.allcat-empty {
-  text-align: center; padding: 5rem 2rem;
-  background: var(--card-bg);
-  border-radius: 20px;
-  border: 2px dashed var(--border);
-  margin: 1rem 0;
-}
-.allcat-empty-icon { font-size: 4rem; opacity: .5; margin-bottom: 1rem; }
-.allcat-empty h3 { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: .6rem; }
-.allcat-empty p  { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
-.allcat-back-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: .7rem 1.5rem; background: var(--navy); color: #fff;
-  border-radius: 8px; font-size: .87rem; font-weight: 700;
-  text-decoration: none; transition: opacity .2s;
-}
-.allcat-back-btn:hover { opacity: .88; }
-
-@media (max-width: 640px) {
-  .allcat-hero { padding: 1.4rem; }
-  .allcat-hero-stats { gap: .9rem; }
-  .allcat-grid { grid-template-columns: repeat(2, 1fr); gap: .9rem; }
-  .allcat-card-img { height: 90px; }
-}
-@media (max-width: 380px) {
-  .allcat-grid { grid-template-columns: 1fr; }
-}
-</style>
 {% endblock %}
