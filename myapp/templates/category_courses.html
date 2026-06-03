@@ -4,505 +4,436 @@
 {% block title %}{{ category.name }} - Courses{% endblock %}
 
 {% block content %}
-<div class="cat-page">
-  <div class="container">
+<style>
+  /* ── reuse same base as search_results.html ── */
+  .cat-results-section {
+    padding: 2rem 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 50vh;
+  }
 
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb">
-      <a href="{% url 'home' %}"><i class="fa-solid fa-home"></i> Home</a>
-      <i class="fa-solid fa-chevron-right sep"></i>
-      <a href="{% url 'search' %}">Search</a>
-      <i class="fa-solid fa-chevron-right sep"></i>
-      <span>{{ category.name }}</span>
-    </nav>
+  /* breadcrumb */
+  .cat-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: .82rem;
+    color: #888;
+    margin-bottom: 1.4rem;
+  }
+  .cat-breadcrumb a { color: #1a3a8f; font-weight: 600; text-decoration: none; }
+  .cat-breadcrumb a:hover { text-decoration: underline; }
+  .cat-breadcrumb span { color: #1a1a2e; font-weight: 700; }
+  .cat-breadcrumb .sep { font-size: .65rem; color: #ccc; }
 
-    <!-- Hero -->
-    <div class="hero">
-      <div class="hero-inner">
-        <!-- Left: Icon/Image -->
-        <div class="hero-img-wrap">
-          {% if category.image %}
-            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="hero-cat-img">
-          {% else %}
-            <div class="hero-emoji">📚</div>
-          {% endif %}
-        </div>
+  /* header strip */
+  .cat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e7ebf5;
+  }
+  .cat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .cat-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cat-name-badge {
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: .9rem;
+    font-weight: 600;
+  }
+  .cat-count-badge {
+    background: #f0f4ff;
+    color: #1a3a8f;
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: .85rem;
+    font-weight: 600;
+  }
 
-        <!-- Right: Text + Stats -->
-        <div class="hero-content">
-          <div class="hero-label">Category</div>
-          <h1>{{ category.name }}</h1>
-          <p class="hero-desc">
-            {% if category.description %}{{ category.description }}
-            {% else %}Explore comprehensive courses in {{ category.name }}{% endif %}
-          </p>
+  /* result group wrapper */
+  .search-result-group {
+    margin-bottom: 2.5rem;
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(26,58,143,.04);
+  }
+  .search-result-group h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.2rem;
+    padding-bottom: .8rem;
+    border-bottom: 2px solid #f0f2f8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .search-result-group h3 span {
+    background: #1a3a8f;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 14px;
+    font-size: .8rem;
+    font-weight: 600;
+    margin-left: auto;
+  }
 
-          <div class="stats-row">
-            <div class="stat-box">
-              <span class="stat-icon">📊</span>
-              <div>
-                <strong>{{ total_courses }}</strong>
-                <small>Total Courses</small>
-              </div>
-            </div>
-            <div class="stat-box">
-              <span class="stat-icon">💻</span>
-              <div>
-                <strong>{{ elibrary_courses.count }}</strong>
-                <small>E-Library</small>
-              </div>
-            </div>
-            <div class="stat-box">
-              <span class="stat-icon">📖</span>
-              <div>
-                <strong>{{ hardcopy_courses.count }}</strong>
-                <small>Hardcopy Books</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  /* ── E-Library PDF cards (identical to search_results) ── */
+  .pdf-grid-search {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.2rem;
+    align-items: stretch;
+  }
+  .pdf-card-search {
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    transition: all .2s ease;
+  }
+  .pdf-card-search:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(26,58,143,.15);
+    text-decoration: none;
+    color: inherit;
+  }
+  .pdf-thumb-search {
+    height: 140px;
+    background: linear-gradient(135deg, #f5f7fa, #e9edf5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .pdf-thumb-search img { width: 100%; height: 100%; object-fit: cover; }
+  .pdf-thumb-search .pdf-emoji { font-size: 3rem; }
+  .pdf-body-search {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .pdf-body-search h3 {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 .4rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+  .pdf-categorySearch { font-size: .78rem; color: #888; margin-bottom: .6rem; }
+  .pdf-foot-search {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .8rem;
+  }
+  .price-now-search { font-size: 1.05rem; font-weight: 700; color: #1a3a8f; }
+  .price-old-search { font-size: .85rem; color: #999; text-decoration: line-through; margin-left: 6px; }
+  .pdf-pages-search { font-size: .78rem; color: #888; }
+  .buy-btn-search {
+    display: block;
+    width: 100%;
+    padding: 9px;
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-decoration: none;
+    margin-top: auto;
+  }
+  .buy-btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26,58,143,.3);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  /* ── Physical book cards (identical to search_results) ── */
+  .book-grid-search {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.2rem;
+    align-items: stretch;
+  }
+  .book-card-search {
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    transition: all .2s ease;
+  }
+  .book-card-search:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(26,58,143,.15);
+    text-decoration: none;
+    color: inherit;
+  }
+  .book-thumb-search {
+    height: 160px;
+    background: linear-gradient(135deg, #fff9e6, #ffe066);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .book-thumb-search img { width: 100%; height: 100%; object-fit: cover; }
+  .book-thumb-search .book-emoji { font-size: 3.5rem; }
+  .book-body-search {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .b-tag-search {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #f0f4ff;
+    color: #1a3a8f;
+    border-radius: 12px;
+    font-size: .75rem;
+    font-weight: 600;
+    margin-bottom: .5rem;
+    align-self: flex-start;
+  }
+  .book-body-search h3 {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 .6rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+  .b-price-search { font-size: 1.1rem; font-weight: 700; color: #1a3a8f; margin-bottom: .8rem; }
+  .b-orig-search { font-size: .85rem; color: #999; text-decoration: line-through; margin-left: 6px; font-weight: 400; }
+  .cart-btn-search {
+    display: block;
+    width: 100%;
+    padding: 9px;
+    background: #fff;
+    color: #1a3a8f;
+    border: 2px solid #1a3a8f;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-decoration: none;
+    margin-top: auto;
+  }
+  .cart-btn-search:hover {
+    background: #1a3a8f;
+    color: #fff;
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  /* back button */
+  .back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f5f7fa;
+    color: #333;
+    border: 1.5px solid #dde2ee;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: all .2s ease;
+  }
+  .back-to-home:hover { background: #e9edf5; transform: translateY(-2px); text-decoration: none; }
+
+  /* empty state */
+  .no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(26,58,143,.04);
+  }
+  .no-results i { font-size: 4rem; display: block; margin-bottom: 1.5rem; color: #ddd; }
+  .no-results h3 { font-size: 1.4rem; font-weight: 600; color: #333; margin-bottom: .5rem; }
+  .no-results p { color: #888; font-size: 1rem; margin: 0; }
+
+  @media (max-width: 768px) {
+    .cat-results-section { padding: 1rem; }
+    .cat-header { flex-direction: column; align-items: flex-start; }
+    .pdf-grid-search, .book-grid-search { grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+  }
+  @media (max-width: 480px) {
+    .pdf-grid-search, .book-grid-search { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="cat-results-section">
+
+  <!-- Back button -->
+  <a href="{% url 'search' %}" class="back-to-home">
+    <i class="fa-solid fa-arrow-left"></i> Back to Search
+  </a>
+
+  <!-- Breadcrumb -->
+  <nav class="cat-breadcrumb">
+    <a href="{% url 'home' %}"><i class="fa-solid fa-home"></i> Home</a>
+    <span class="sep"><i class="fa-solid fa-chevron-right"></i></span>
+    <a href="{% url 'search' %}">Search</a>
+    <span class="sep"><i class="fa-solid fa-chevron-right"></i></span>
+    <span>{{ category.name }}</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="cat-header">
+    <div class="cat-header-left">
+      <h2>
+        {% if category.image %}
+          <img src="{{ category.image.url }}" alt="" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">
+        {% else %}
+          <i class="fa-solid fa-folder-open"></i>
+        {% endif %}
+        {{ category.name }}
+      </h2>
+      <span class="cat-name-badge">{{ category.name }}</span>
+      <span class="cat-count-badge">{{ total_courses }} Course{{ total_courses|pluralize }}</span>
     </div>
+  </div>
+
+  {% if elibrary_courses or hardcopy_courses %}
 
     <!-- E-Library Section -->
     {% if elibrary_courses %}
-    <section class="section">
-      <div class="sec-head">
-        <div>
-          <h2>💻 E-Library <span>Courses</span></h2>
-          <p>Digital learning materials for {{ category.name }}</p>
-        </div>
-        <span class="badge">{{ elibrary_courses.count }} Available</span>
-      </div>
-
-      <div class="card-grid">
+    <div class="search-result-group">
+      <h3>
+        <i class="fa-solid fa-file-pdf"></i> E-Library Courses
+        <span>{{ elibrary_courses.count }}</span>
+      </h3>
+      <div class="pdf-grid-search">
         {% for course in elibrary_courses %}
-        <div class="card">
-          <div class="card-thumb elibrary-thumb">
-            {% if course.thumbnail %}
-              <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
-            {% elif course.image %}
-              <img src="{{ course.image.url }}" alt="{{ course.title }}">
-            {% else %}
-              📄
-            {% endif %}
-            <span class="chip green">E-Library</span>
-          </div>
-          <div class="card-body">
-            <h3>{{ course.title|default:course.name|truncatewords:8 }}</h3>
-            <p class="meta-text">
-              {% if course.description %}{{ course.description|truncatewords:15 }}
-              {% else %}Digital course material available for instant access{% endif %}
-            </p>
-            <div class="card-foot">
-              <strong class="price">
-                {% if course.price %}₹{{ course.price }}{% else %}Free{% endif %}
-              </strong>
-              {% if course.pages %}
-                <span class="pages"><i class="fa-solid fa-file-pdf"></i> {{ course.pages }}p</span>
+        <div class="pdf-card-search">
+          <a href="{% url 'elibrary_detail' course.pk %}" style="text-decoration:none;color:inherit;">
+            <div class="pdf-thumb-search">
+              {% if course.thumbnail %}
+                <img src="{{ course.thumbnail.url }}" alt="{{ course.title|default:course.name }}">
+              {% elif course.image %}
+                <img src="{{ course.image.url }}" alt="{{ course.title|default:course.name }}">
+              {% else %}
+                <span class="pdf-emoji">📘</span>
               {% endif %}
             </div>
-            <a href="{% url 'elibrary_detail' course.pk %}" class="btn">
-              <i class="fa-solid fa-eye"></i> View Details
-            </a>
+            <div class="pdf-body-search">
+              <h3>{{ course.title|default:course.name }}</h3>
+              <div class="pdf-categorySearch">{{ category.name }}</div>
+              <div class="pdf-foot-search">
+                <div>
+                  <span class="price-now-search">{% if course.price %}₹{{ course.price }}{% else %}Free{% endif %}</span>
+                  {% if course.original_price %}<span class="price-old-search">₹{{ course.original_price }}</span>{% endif %}
+                </div>
+                {% if course.pages %}<div class="pdf-pages-search">{{ course.pages }} pages</div>{% endif %}
+              </div>
+            </div>
+          </a>
+          <div style="padding:0 1rem 1rem;">
+            <a href="{% url 'elibrary_detail' course.pk %}" class="buy-btn-search">👁️ View Details</a>
           </div>
         </div>
         {% endfor %}
       </div>
-    </section>
+    </div>
     {% endif %}
 
     <!-- Hardcopy Books Section -->
     {% if hardcopy_courses %}
-    <section class="section">
-      <div class="sec-head">
-        <div>
-          <h2>📚 Hardcopy <span>Books</span></h2>
-          <p>Physical books delivered to your doorstep</p>
-        </div>
-        <span class="badge">{{ hardcopy_courses.count }} Available</span>
-      </div>
-
-      <div class="card-grid">
-        {% for course in hardcopy_courses %}
-        <div class="card">
-          <div class="card-thumb hardcopy-thumb">
-            {% if course.thumbnail %}
-              <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
-            {% elif course.image %}
-              <img src="{{ course.image.url }}" alt="{{ course.title }}">
-            {% else %}
-              📚
-            {% endif %}
-            <span class="chip pink">Hardcopy</span>
-          </div>
-          <div class="card-body">
-            <h3>{{ course.title|default:course.name|truncatewords:6 }}</h3>
-            <p class="meta-text">
-              {% if course.author %}<i class="fa-solid fa-user"></i> {{ course.author }}<br>{% endif %}
-              {% if course.publisher %}<i class="fa-solid fa-building"></i> {{ course.publisher }}{% endif %}
-              {% if not course.author and not course.publisher %}Physical book available for delivery{% endif %}
-            </p>
-            <div class="card-foot">
-              <strong class="price">
-                {% if course.price %}₹{{ course.price }}{% else %}Free{% endif %}
-              </strong>
+    <div class="search-result-group">
+      <h3>
+        <i class="fa-solid fa-book"></i> Physical Books
+        <span>{{ hardcopy_courses.count }}</span>
+      </h3>
+      <div class="book-grid-search">
+        {% for book in hardcopy_courses %}
+        <div class="book-card-search">
+          <a href="{% url 'hard_book_detail' book.pk %}" style="text-decoration:none;color:inherit;">
+            <div class="book-thumb-search">
+              {% if book.thumbnail %}
+                <img src="{{ book.thumbnail.url }}" alt="{{ book.title|default:book.name }}">
+              {% elif book.image %}
+                <img src="{{ book.image.url }}" alt="{{ book.title|default:book.name }}">
+              {% else %}
+                <span class="book-emoji">📖</span>
+              {% endif %}
             </div>
-            <a href="{% url 'hard_book_detail' course.pk %}" class="btn btn-cart">
-              <i class="fa-solid fa-shopping-cart"></i> View Details
-            </a>
+            <div class="book-body-search">
+              <div class="b-tag-search">Hardcopy</div>
+              <h3>{{ book.title|default:book.name }}</h3>
+              <div class="b-price-search">
+                {% if book.price %}₹{{ book.price }}{% else %}Free{% endif %}
+                {% if book.original_price %}<span class="b-orig-search">₹{{ book.original_price }}</span>{% endif %}
+              </div>
+            </div>
+          </a>
+          <div style="padding:0 1rem 1rem;">
+            <a href="{% url 'hard_book_detail' book.pk %}" class="cart-btn-search">🛒 View Details</a>
           </div>
         </div>
         {% endfor %}
       </div>
-    </section>
-    {% endif %}
-
-    <!-- Empty State -->
-    {% if not elibrary_courses and not hardcopy_courses %}
-    <div class="empty-state">
-      <div class="empty-icon">📭</div>
-      <h3>No Courses Available</h3>
-      <p>We currently don't have any courses in <strong>{{ category.name }}</strong>. Check back soon!</p>
-      <div class="empty-actions">
-        <a href="{% url 'home' %}" class="btn"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
-        <a href="{% url 'search' %}" class="btn btn-cart"><i class="fa-solid fa-search"></i> Search Courses</a>
-      </div>
     </div>
     {% endif %}
 
+  {% else %}
+  <div class="no-results">
+    <i>📭</i>
+    <h3>No Courses in {{ category.name }}</h3>
+    <p>We don't have any courses here yet. Check back soon!</p>
   </div>
+  {% endif %}
+
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-/* ── Variables ──────────────────────────────── */
-:root {
-  --navy: #1a3a8f;
-  --navy-dark: #0d2060;
-  --gold: #e8b400;
-  --bg: #f5f7fa;
-  --card-bg: #fff;
-  --text: #1a1a2e;
-  --muted: #666;
-  --border: #e2e8f0;
-  --radius: 14px;
-  --shadow: 0 4px 20px rgba(26,58,143,.08);
-  --transition: .25s ease;
-}
-
-/* ── Page ───────────────────────────────────── */
-.cat-page {
-  background: var(--bg);
-  min-height: calc(100vh - 80px);
-  padding-bottom: 3rem;
-}
-
-/* ── Breadcrumb ─────────────────────────────── */
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 1.2rem 0 .8rem;
-  font-size: .82rem;
-  color: var(--muted);
-}
-.breadcrumb a { color: var(--navy); font-weight: 600; }
-.breadcrumb a:hover { text-decoration: underline; }
-.breadcrumb span { color: var(--text); font-weight: 700; }
-.sep { font-size: .65rem; color: #bbb; }
-
-/* ── Hero ───────────────────────────────────── */
-.hero {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
-  border-radius: 20px;
-  padding: 2rem 2.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 10px 40px rgba(26,58,143,.22);
-  position: relative;
-  overflow: hidden;
-}
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 85% 50%, rgba(232,180,0,.12), transparent 55%);
-  pointer-events: none;
-}
-
-/* ── Hero Inner: side-by-side layout ────────── */
-.hero-inner {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Hero Image box ─────────────────────────── */
-.hero-img-wrap {
-  flex-shrink: 0;
-  width: 120px;
-  height: 120px;
-  border-radius: 18px;
-  background: rgba(255,255,255,.14);
-  border: 2px solid rgba(232,180,0,.45);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-}
-.hero-cat-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.hero-emoji {
-  font-size: 3rem;
-  line-height: 1;
-}
-
-/* ── Hero Content (right side) ──────────────── */
-.hero-content {
-  flex: 1;
-  min-width: 0;
-}
-.hero-label {
-  display: inline-block;
-  background: rgba(232,180,0,.22);
-  color: var(--gold);
-  font-size: .7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-bottom: .6rem;
-  border: 1px solid rgba(232,180,0,.35);
-}
-.hero-content h1 {
-  font-family: 'Baloo 2', cursive;
-  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.2;
-  margin: 0 0 .4rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.hero-desc {
-  color: rgba(255,255,255,.78);
-  font-size: .88rem;
-  line-height: 1.55;
-  margin-bottom: 1.2rem;
-  max-width: 520px;
-}
-
-/* ── Stats Row ──────────────────────────────── */
-.stats-row {
-  display: flex;
-  gap: .75rem;
-  flex-wrap: wrap;
-}
-.stat-box {
-  background: rgba(255,255,255,.11);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 12px;
-  padding: .7rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: .7rem;
-  flex: 1;
-  min-width: 90px;
-  transition: background var(--transition);
-}
-.stat-box:hover { background: rgba(255,255,255,.18); }
-.stat-icon { font-size: 1.5rem; line-height: 1; }
-.stat-box strong { display: block; font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1; }
-.stat-box small  { font-size: .72rem; color: rgba(255,255,255,.7); font-weight: 500; }
-
-/* ── Section ────────────────────────────────── */
-.section { margin-bottom: 2.5rem; }
-.sec-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-.sec-head h2 { font-size: 1.35rem; font-weight: 800; color: var(--text); margin-bottom: .2rem; }
-.sec-head h2 span { color: var(--navy); }
-.sec-head p { font-size: .82rem; color: var(--muted); }
-.badge {
-  background: linear-gradient(135deg, var(--navy), var(--navy-dark));
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: .76rem;
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(26,58,143,.2);
-}
-
-/* ── Card Grid ──────────────────────────────── */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.2rem;
-}
-.card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  transition: transform var(--transition), box-shadow var(--transition);
-  display: flex;
-  flex-direction: column;
-}
-.card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(26,58,143,.13); }
-
-.card-thumb {
-  position: relative;
-  height: 130px;
-  display: grid;
-  place-items: center;
-  font-size: 2rem;
-  overflow: hidden;
-}
-.elibrary-thumb { background: linear-gradient(135deg, #667eea, #764ba2); }
-.hardcopy-thumb { background: linear-gradient(135deg, #f093fb, #f5576c); }
-.card-thumb img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.chip {
-  position: absolute;
-  top: 8px; left: 8px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: .67rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .4px;
-  z-index: 2;
-}
-.green { background: rgba(16,185,129,.9); color: #fff; }
-.pink  { background: rgba(245,87,108,.9); color: #fff; }
-
-/* ── Card Body ──────────────────────────────── */
-.card-body {
-  padding: .9rem;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: .35rem;
-}
-.card-body h3 {
-  font-size: .88rem;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.35;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.meta-text {
-  font-size: .75rem;
-  color: var(--muted);
-  line-height: 1.5;
-  flex: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.meta-text i { color: var(--navy); margin-right: 3px; }
-
-.card-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: .4rem;
-  border-top: 1px solid var(--border);
-  margin-top: auto;
-}
-.price { font-size: .95rem; font-weight: 800; color: var(--navy); }
-.pages { font-size: .7rem; color: var(--muted); }
-
-/* ── Buttons ────────────────────────────────── */
-.btn, .btn-cart {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  width: 100%;
-  padding: .55rem;
-  border-radius: 8px;
-  font-size: .8rem;
-  font-weight: 700;
-  margin-top: .5rem;
-  transition: opacity var(--transition), transform var(--transition);
-  text-decoration: none;
-}
-.btn      { background: var(--navy); color: #fff; }
-.btn-cart { background: #0d2060; color: #fff; }
-.btn:hover, .btn-cart:hover { opacity: .88; transform: scale(.98); }
-
-/* ── Empty State ────────────────────────────── */
-.empty-state {
-  text-align: center;
-  background: var(--card-bg);
-  border-radius: 20px;
-  border: 2px dashed var(--border);
-  padding: 4rem 2rem;
-  margin: 2rem 0;
-}
-.empty-icon  { font-size: 4rem; opacity: .55; margin-bottom: 1rem; }
-.empty-state h3 { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: .6rem; }
-.empty-state p  { color: var(--muted); font-size: .92rem; margin-bottom: 1.5rem; }
-.empty-state p strong { color: var(--navy); }
-.empty-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
-
-/* ── Responsive ─────────────────────────────── */
-@media (max-width: 768px) {
-  .hero { padding: 1.5rem; }
-  .hero-inner { gap: 1.25rem; }
-  .hero-img-wrap { width: 90px; height: 90px; border-radius: 14px; }
-  .hero-emoji { font-size: 2.4rem; }
-  .card-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-  .stats-row { gap: .5rem; }
-}
-
-@media (max-width: 540px) {
-  .hero { padding: 1.2rem; border-radius: 16px; }
-  .hero-inner { gap: 1rem; }
-  .hero-img-wrap { width: 72px; height: 72px; border-radius: 12px; }
-  .hero-emoji { font-size: 2rem; }
-  .hero-content h1 { font-size: 1.3rem; }
-  .hero-desc { font-size: .82rem; margin-bottom: .9rem; }
-  .stats-row { flex-direction: column; gap: .4rem; }
-  .stat-box { padding: .6rem .8rem; }
-  .stat-box strong { font-size: 1.2rem; }
-  .sec-head { flex-direction: column; align-items: flex-start; }
-  .card-grid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 360px) {
-  .hero-inner { flex-direction: column; align-items: flex-start; }
-  .hero-img-wrap { width: 60px; height: 60px; }
-  .card-grid { grid-template-columns: 1fr; }
-}
-</style>
 {% endblock %}
