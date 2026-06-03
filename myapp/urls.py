@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from myapp import views
@@ -101,9 +101,12 @@ urlpatterns = [
     # DB Backup & Restore Panel
     path('db-backup/', backup_panel, name='backup_panel'),
 
-    # ── Catch-all: any unmatched URL → custom 404 page ──────────────────────
-    # This makes the friendly 404 work even when DEBUG=True
-    path('<path:unknown_path>', views.custom_404_view, name='custom_404'),
+    # ── Catch-all 404 ───────────────────────────────────────────────────────
+    # Uses a negative lookahead regex to SKIP /media/ and /static/ paths
+    # so uploaded images and CSS/JS files keep working normally.
+    # Every other unmatched URL gets the branded 404 page instead of
+    # Django's yellow debug screen (works even with DEBUG=True).
+    re_path(r'^(?!media/|static/).*$', views.custom_404_view, name='custom_404'),
 ]
 
 if settings.DEBUG:
