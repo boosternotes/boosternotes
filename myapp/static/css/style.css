@@ -243,7 +243,14 @@
     .profile-pill:hover .caret{transform:rotate(180deg)}
     .profile-pill:hover .drop-menu{display:block}
 
-    .notif-wrap{position:relative;flex-shrink:0}
+    /* ════════════════════════════════════════
+       🔔 NOTIFICATION BELL
+       ════════════════════════════════════════ */
+    .notif-wrap{
+      position:relative;
+      flex-shrink:0;
+    }
+
     .notif-btn{
       background:#fff;
       border:1.5px solid var(--soft-border);
@@ -274,9 +281,36 @@
       font-weight:700;border:2px solid #fff;
     }
 
+    /* ── Notification Panel (dropdown) — BASE RULE ── */
+    .notif-panel{
+      display:none;
+      position:absolute;
+      top:calc(100% + 8px);
+      right:0;
+      width:320px;
+      max-height:400px;
+      background:#fff;
+      border:1px solid #e0e4ee;
+      border-radius:14px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.14);
+      z-index:99999;
+      overflow:hidden;
+      flex-direction:column;
+    }
+
+    .notif-panel.open{
+      display:flex;
+    }
+
+    #notifList{
+      overflow-y:auto;
+      max-height:320px;
+    }
+
     .notif-header{
       display:flex;align-items:center;justify-content:space-between;
       padding:12px 15px;border-bottom:1px solid #eee;gap:8px;
+      flex-shrink:0;
     }
 
     .notif-header h4{font-size:0.9rem;font-weight:700;color:#1a1a2e}
@@ -294,6 +328,13 @@
     .notif-dot.read{background:#ccc}
     .notif-text p{font-size:0.8rem;color:#333;line-height:1.4;font-weight:500}
     .notif-text span{font-size:0.72rem;color:#999;margin-top:2px;display:block}
+
+    .notif-empty{
+      padding:24px 16px;
+      text-align:center;
+      font-size:0.82rem;
+      color:#aaa;
+    }
 
     .wa-block{display:flex;align-items:center;gap:5px;flex-shrink:0}
     .wa-info{font-size:0.72rem;color:#333;text-align:right;line-height:1.3}
