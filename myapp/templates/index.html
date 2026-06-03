@@ -243,7 +243,9 @@
     <div class="mob-profile-drop" id="mobProfileDrop">
       <a href="{% url 'edit_profile' %}"><span class="drop-icon">✏️</span>Edit Profile</a>
       <a href="{% url 'my_purchases' %}"><span class="drop-icon">🛒</span>My Purchases</a>
+      {% if user.is_staff or user.is_superuser %}
       <a href="{% url 'dashboard' %}"><span class="drop-icon">📊</span>Admin Dashboard</a>
+      {% endif %}
       <hr>
       <form method="post" action="{% url 'logout' %}" style="margin:0;">
         {% csrf_token %}
@@ -260,7 +262,9 @@
     <div class="drop-menu">
       <a href="{% url 'edit_profile' %}"><span class="icon">✏️</span>Edit Profile</a>
       <a href="{% url 'my_purchases' %}"><span class="icon">🛒</span>My Purchases</a>
+      {% if user.is_staff or user.is_superuser %}
       <a href="{% url 'dashboard' %}"><span class="icon">📊</span>Admin Dashboard</a>
+      {% endif %}
       <hr>
       <form method="post" action="{% url 'logout' %}" style="margin:0;">
         {% csrf_token %}
@@ -293,7 +297,9 @@
     {% if user.is_authenticated %}
       <a class="mob-link" href="{% url 'edit_profile' %}"><span class="icon">✏️</span>Edit Profile</a>
       <a class="mob-link" href="{% url 'my_purchases' %}"><span class="icon">🛒</span>My Purchases</a>
+      {% if user.is_staff or user.is_superuser %}
       <a class="mob-link" href="{% url 'dashboard' %}"><span class="icon">📊</span>Admin Dashboard</a>
+      {% endif %}
       <form method="post" action="{% url 'logout' %}" style="margin:0;">
         {% csrf_token %}
         <button type="submit" class="mob-link" style="width:100%;background:none;border:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;align-items:center;gap:8px;">
@@ -801,7 +807,9 @@
       <h4>{{ footer.contact_title }}</h4>
       <a href="#">{{ footer.whatsapp_contact }}</a>
       <a href="#">{{ footer.hours_contact }}</a>
+      {% if user.is_staff or user.is_superuser %}
       <a href="{% url 'dashboard' %}">Admin Dashboard</a>
+      {% endif %}
     </div>
   </div>
   <div class="footer-bot">
