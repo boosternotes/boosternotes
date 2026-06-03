@@ -299,13 +299,6 @@
       <p>Login to access your study materials</p>
     </div>
 
-    {% if form.errors %}
-    <div class="form-error">
-      <span>⚠️</span>
-      <div>Invalid username or password. Please try again.</div>
-    </div>
-    {% endif %}
-
     {% if messages %}
       {% for message in messages %}
       <div class="form-error" style="{% if message.tags == 'success' %}background:#f0fff8;border-color:#b2f0d8;color:#1d9e75;{% endif %}">
@@ -320,17 +313,16 @@
       <input type="hidden" name="next" value="{{ next }}">
 
       <div class="form-group">
-        <label for="id_username">Username</label>
+        <label for="id_email">Email Address</label>
         <div class="input-wrap">
-          <span class="input-icon">👤</span>
+          <span class="input-icon">✉️</span>
           <input
-            type="text"
-            id="id_username"
-            name="username"
-            placeholder="Enter your username"
-            autocomplete="username"
+            type="email"
+            id="id_email"
+            name="email"
+            placeholder="Enter your email address"
+            autocomplete="email"
             required
-            value="{{ form.username.value|default:'' }}"
           >
         </div>
       </div>

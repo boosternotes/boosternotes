@@ -1035,14 +1035,20 @@ def user_login(request):
     if request.user.is_authenticated:
         return redirect('home')
     if request.method == 'POST':
-        username = request.POST.get('username')
+        email    = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password')
-        user     = authenticate(request, username=username, password=password)
+        # Look up user by email, then authenticate with their username
+        try:
+            user_obj = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with that email address.')
+            return redirect('login')
+        user = authenticate(request, username=user_obj.username, password=password)
         if user is not None:
             login(request, user)
             messages.success(request, 'Login successful!')
             return redirect(request.POST.get('next') or request.GET.get('next') or 'home')
-        messages.error(request, 'Invalid username or password')
+        messages.error(request, 'Incorrect password. Please try again.')
         return redirect('login')
     return render(request, 'login.html')
 
