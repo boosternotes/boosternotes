@@ -116,7 +116,7 @@
     margin: 0;
   }
 
-  /* ── Category cards ── */
+  /* Category cards */
   .cat-grid-search {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -186,7 +186,7 @@
     font-weight: 600;
   }
 
-  /* ── E-Library PDF cards ── */
+  /* E-Library PDF cards */
   .pdf-grid-search {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -228,9 +228,7 @@
     object-fit: cover;
   }
 
-  .pdf-thumb-search .pdf-emoji {
-    font-size: 3rem;
-  }
+  .pdf-thumb-search .pdf-emoji { font-size: 3rem; }
 
   .pdf-body-search {
     padding: 1rem;
@@ -278,10 +276,7 @@
     margin-left: 6px;
   }
 
-  .pdf-pages-search {
-    font-size: 0.78rem;
-    color: #888;
-  }
+  .pdf-pages-search { font-size: 0.78rem; color: #888; }
 
   .buy-btn-search {
     display: block;
@@ -307,7 +302,7 @@
     text-decoration: none;
   }
 
-  /* ── Physical book cards ── */
+  /* Physical book cards */
   .book-grid-search {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -343,15 +338,8 @@
     overflow: hidden;
   }
 
-  .book-thumb-search img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .book-thumb-search .book-emoji {
-    font-size: 3.5rem;
-  }
+  .book-thumb-search img { width: 100%; height: 100%; object-fit: cover; }
+  .book-thumb-search .book-emoji { font-size: 3.5rem; }
 
   .book-body-search {
     padding: 1rem;
@@ -480,7 +468,7 @@
       <h3><i class="fa-solid fa-folder-open"></i> Categories <span>{{ category_results.count }}</span></h3>
       <div class="cat-grid-search">
         {% for cat in category_results %}
-        <a href="{% url 'category_courses' cat.id %}" class="cat-card-search">
+        <a href="{% url 'category_courses_view' cat.id %}" class="cat-card-search">
           <div class="cat-icon">
             {% if cat.image %}
               <img src="{{ cat.image.url }}" alt="{{ cat.name }}">
@@ -507,7 +495,6 @@
       <div class="pdf-grid-search">
         {% for course in elibrary_results %}
         <div class="pdf-card-search">
-          <!-- Clickable top area → detail page -->
           <a href="{% url 'elibrary_detail' course.id %}" style="text-decoration:none;color:inherit;">
             <div class="pdf-thumb-search">
               {% if course.thumbnail %}
@@ -530,7 +517,6 @@
               </div>
             </div>
           </a>
-          <!-- Add to cart form -->
           <div style="padding:0 1rem 1rem;">
             <form method="post" action="{% url 'add_to_cart' %}">
               {% csrf_token %}
@@ -551,7 +537,6 @@
       <div class="book-grid-search">
         {% for book in hardbook_results %}
         <div class="book-card-search">
-          <!-- Clickable top area → detail page -->
           <a href="{% url 'hard_book_detail' book.id %}" style="text-decoration:none;color:inherit;">
             <div class="book-thumb-search">
               {% with first_img=book.images.all.0 %}
@@ -571,7 +556,6 @@
               </div>
             </div>
           </a>
-          <!-- Add to cart form -->
           <div style="padding:0 1rem 1rem;">
             <form method="post" action="{% url 'add_to_cart' %}">
               {% csrf_token %}

@@ -1,443 +1,364 @@
-{% extends 'index.html' %}
+{% extends "index.html" %}
 {% load static %}
 
-{% block title %}All Exam Categories - BoosterNotes{% endblock %}
-
-{% block extra_css %}
+{% block content %}
 <style>
-/* ===== ALL CATEGORIES PAGE ===== */
-.allcat-page {
-  background: #f0f4ff;
-  min-height: 80vh;
-  padding: 0 0 4rem;
-}
-
-/* Breadcrumb */
-.allcat-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 1rem 0 0.6rem;
-  font-size: 0.83rem;
-  color: #888;
-  flex-wrap: wrap;
-}
-.allcat-breadcrumb a {
-  color: #1a3a8f;
-  font-weight: 600;
-  text-decoration: none;
-}
-.allcat-breadcrumb a:hover { text-decoration: underline; }
-.allcat-breadcrumb .sep { color: #ccc; font-size: 0.7rem; }
-.allcat-breadcrumb span { color: #333; font-weight: 700; }
-
-/* ===== HERO BANNER ===== */
-.allcat-hero {
-  background: linear-gradient(135deg, #1a3a8f 0%, #0d2060 60%, #1a1a6e 100%);
-  border-radius: 20px;
-  padding: 2.5rem 2.5rem 2.2rem;
-  margin-bottom: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  flex-wrap: wrap;
-  box-shadow: 0 12px 48px rgba(26,58,143,0.28);
-  position: relative;
-  overflow: hidden;
-}
-.allcat-hero::before {
-  content: '';
-  position: absolute;
-  top: -60px; right: -60px;
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.allcat-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -40px; left: 40%;
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(232,180,0,0.10) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.allcat-hero-left { position: relative; z-index: 1; }
-.allcat-hero-left h1 {
-  font-size: clamp(1.5rem, 3.5vw, 2.1rem);
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 0.6rem;
-  line-height: 1.2;
-}
-.allcat-hero-left p {
-  color: rgba(255,255,255,0.80);
-  font-size: 0.95rem;
-  line-height: 1.65;
-  max-width: 500px;
-  margin: 0;
-}
-
-.allcat-hero-stats {
-  display: flex;
-  gap: 1.2rem;
-  position: relative;
-  z-index: 1;
-  flex-wrap: wrap;
-}
-.allcat-stat-box {
-  background: rgba(255,255,255,0.13);
-  border: 1.5px solid rgba(255,255,255,0.22);
-  border-radius: 14px;
-  padding: 1rem 1.6rem;
-  text-align: center;
-  min-width: 90px;
-  backdrop-filter: blur(4px);
-}
-.allcat-stat-box strong {
-  display: block;
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: #fff;
-  line-height: 1;
-  margin-bottom: 0.3rem;
-}
-.allcat-stat-box small {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.72);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-/* ===== SECTION HEADER ===== */
-.allcat-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.4rem;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-}
-.allcat-section-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin: 0;
-}
-.allcat-section-title span {
-  color: #1a3a8f;
-}
-.allcat-count-badge {
-  background: #e8eeff;
-  color: #1a3a8f;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1.5px solid #c5d0f5;
-}
-
-/* ===== CATEGORY GRID ===== */
-.allcat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 1.4rem;
-}
-
-.allcat-card {
-  background: #fff;
-  border-radius: 16px;
-  border: 1.5px solid #e2e8f0;
-  box-shadow: 0 2px 12px rgba(26,58,143,0.07);
-  overflow: hidden;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.22s cubic-bezier(.22,1,.36,1),
-              box-shadow 0.22s ease,
-              border-color 0.22s ease;
-  cursor: pointer;
-}
-.allcat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 40px rgba(26,58,143,0.16);
-  border-color: #1a3a8f;
-}
-
-/* Card Image Area */
-.allcat-card-thumb {
-  height: 140px;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #4f46e5 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.allcat-card-thumb img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.35s ease;
-}
-.allcat-card:hover .allcat-card-thumb img {
-  transform: scale(1.06);
-}
-.allcat-card-thumb-icon {
-  font-size: 3rem;
-  line-height: 1;
-  z-index: 1;
-}
-.allcat-card-thumb-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 55%);
-  z-index: 2;
-}
-
-/* Inactive chip */
-.allcat-inactive-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  font-size: 0.62rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 999px;
-  z-index: 3;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-/* Card Body */
-.allcat-card-body {
-  padding: 1rem 1.1rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  flex: 1;
-}
-.allcat-card-name {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin: 0;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.allcat-card-desc {
-  font-size: 0.78rem;
-  color: #777;
-  line-height: 1.5;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex: 1;
-}
-
-/* Card Footer */
-.allcat-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1.5px solid #f0f2f8;
-}
-.allcat-pdf-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: #f0f4ff;
-  color: #1a3a8f;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 1px solid #d0daff;
-}
-.allcat-pdf-badge i { font-size: 0.72rem; color: #e53e3e; }
-
-.allcat-view-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #1a3a8f;
-  color: #fff;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background 0.18s, transform 0.18s;
-  letter-spacing: 0.02em;
-}
-.allcat-card:hover .allcat-view-btn {
-  background: #0d2060;
-  transform: translateX(2px);
-}
-.allcat-view-btn i { font-size: 0.68rem; }
-
-/* ===== EMPTY STATE ===== */
-.allcat-empty {
-  text-align: center;
-  padding: 5rem 2rem;
-  background: #fff;
-  border-radius: 20px;
-  border: 2px dashed #e2e8f0;
-  margin: 1rem 0;
-}
-.allcat-empty-icon { font-size: 4rem; opacity: 0.45; margin-bottom: 1rem; }
-.allcat-empty h3 {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin-bottom: 0.5rem;
-}
-.allcat-empty p {
-  color: #777;
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
-  max-width: 360px;
-  margin-inline: auto;
-}
-.allcat-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0.7rem 1.6rem;
-  background: #1a3a8f;
-  color: #fff;
-  border-radius: 10px;
-  font-size: 0.87rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.18s;
-}
-.allcat-back-btn:hover { background: #0d2060; }
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .allcat-hero {
-    padding: 1.8rem 1.5rem;
-    flex-direction: column;
-    align-items: flex-start;
+  .allcat-section {
+    padding: 2rem 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 50vh;
   }
-  .allcat-hero-stats { width: 100%; justify-content: flex-start; }
+
+  /* Back button */
+  .back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f5f7fa;
+    color: #333;
+    border: 1.5px solid #dde2ee;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+  }
+  .back-to-home:hover {
+    background: #e9edf5;
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #333;
+  }
+
+  /* Page header */
+  .allcat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e7ebf5;
+  }
+  .allcat-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .allcat-count-badge {
+    background: #f0f4ff;
+    color: #1a3a8f;
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .allcat-total-badge {
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  /* Stats row */
+  .allcat-stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .allcat-stat-card {
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 0 2px 8px rgba(26,58,143,0.05);
+    min-width: 150px;
+  }
+  .allcat-stat-icon {
+    width: 44px;
+    height: 44px;
+    background: #f0f4ff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #1a3a8f;
+    flex-shrink: 0;
+  }
+  .allcat-stat-info strong {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1;
+  }
+  .allcat-stat-info small {
+    font-size: 0.78rem;
+    color: #888;
+    font-weight: 500;
+  }
+
+  /* Group box (matches search_results style) */
+  .allcat-group {
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+  }
+  .allcat-group-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f0f2f8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .allcat-group-header span {
+    background: #1a3a8f;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  /* Category card grid (matches cat-card-search style) */
   .allcat-grid {
-    grid-template-columns: repeat(2, 1fr);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
   }
-  .allcat-card-thumb { height: 110px; }
-}
-@media (max-width: 420px) {
-  .allcat-grid { grid-template-columns: 1fr; }
-  .allcat-stat-box { padding: 0.8rem 1.2rem; }
-  .allcat-stat-box strong { font-size: 1.8rem; }
-}
+  .allcat-card {
+    background: #fff;
+    border: 2px solid #e7ebf5;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .allcat-card:hover {
+    border-color: #1a3a8f;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(26,58,143,0.15);
+    text-decoration: none;
+    color: inherit;
+  }
+  .allcat-card-icon {
+    font-size: 2rem;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f0f4ff;
+    margin-bottom: 0.2rem;
+  }
+  .allcat-card-icon img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .allcat-card-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.3;
+  }
+  .allcat-card-desc {
+    font-size: 0.76rem;
+    color: #888;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .allcat-card-count {
+    font-size: 0.78rem;
+    color: #888;
+    background: #f0f4ff;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+  .allcat-card-view {
+    display: block;
+    margin-top: 6px;
+    color: #1a3a8f;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .allcat-inactive-chip {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  /* Empty state */
+  .allcat-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+  }
+  .allcat-empty i {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1.5rem;
+    color: #ddd;
+  }
+  .allcat-empty h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+  .allcat-empty p {
+    color: #888;
+    font-size: 1rem;
+    margin: 0 0 1.5rem;
+  }
+  .allcat-empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.18s;
+  }
+  .allcat-empty-btn:hover { opacity: 0.88; text-decoration: none; color: #fff; }
+
+  @media (max-width: 768px) {
+    .allcat-section { padding: 1rem; }
+    .allcat-header { flex-direction: column; align-items: flex-start; }
+    .allcat-grid { grid-template-columns: repeat(2, 1fr); }
+    .allcat-stats-row { gap: 0.8rem; }
+  }
+  @media (max-width: 420px) {
+    .allcat-grid { grid-template-columns: 1fr; }
+  }
 </style>
-{% endblock %}
 
-{% block content %}
-<div class="allcat-page">
-  <div class="container">
+<div class="allcat-section">
 
-    <!-- Breadcrumb -->
-    <nav class="allcat-breadcrumb">
-      <a href="{% url 'home' %}"><i class="fa-solid fa-house"></i> Home</a>
-      <i class="fa-solid fa-chevron-right sep"></i>
-      <span>All Categories</span>
-    </nav>
+  <a href="{% url 'home' %}" class="back-to-home">
+    <i class="fa-solid fa-arrow-left"></i> Back to Home
+  </a>
 
-    <!-- Hero Banner -->
-    <div class="allcat-hero">
-      <div class="allcat-hero-left">
-        <h1>🎯 Browse All Exam Categories</h1>
-        <p>Choose your exam and explore targeted study material — PDFs, revision notes, and physical books.</p>
-      </div>
-      <div class="allcat-hero-stats">
-        <div class="allcat-stat-box">
-          <strong>{{ total_categories }}</strong>
-          <small>Categories</small>
-        </div>
-        <div class="allcat-stat-box">
-          <strong>{{ total_courses }}</strong>
-          <small>Total Courses</small>
-        </div>
+  <!-- Page Header -->
+  <div class="allcat-header">
+    <h2><i class="fa-solid fa-folder-open"></i> All Exam Categories</h2>
+    <div style="display:flex;gap:0.7rem;flex-wrap:wrap;align-items:center;">
+      <span class="allcat-total-badge">{{ total_courses }} Course{{ total_courses|pluralize }}</span>
+      <span class="allcat-count-badge">{{ total_categories }} Categor{{ total_categories|pluralize:"y,ies" }}</span>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="allcat-stats-row">
+    <div class="allcat-stat-card">
+      <div class="allcat-stat-icon"><i class="fa-solid fa-folder-open"></i></div>
+      <div class="allcat-stat-info">
+        <strong>{{ total_categories }}</strong>
+        <small>Categories</small>
       </div>
     </div>
-
-    <!-- Section Header -->
-    <div class="allcat-section-header">
-      <h2 class="allcat-section-title">All <span>Exam Categories</span></h2>
-      {% if categories %}
-        <span class="allcat-count-badge">{{ total_categories }} Categories</span>
-      {% endif %}
+    <div class="allcat-stat-card">
+      <div class="allcat-stat-icon"><i class="fa-solid fa-book-open"></i></div>
+      <div class="allcat-stat-info">
+        <strong>{{ total_courses }}</strong>
+        <small>Total Courses</small>
+      </div>
     </div>
+  </div>
 
-    <!-- Category Grid -->
-    {% if categories %}
+  {% if categories %}
+  <!-- Category Group -->
+  <div class="allcat-group">
+    <h3 class="allcat-group-header">
+      <i class="fa-solid fa-layer-group"></i> Browse Categories
+      <span>{{ total_categories }}</span>
+    </h3>
     <div class="allcat-grid">
       {% for category in categories %}
       <a href="{% url 'category_courses_view' category.id %}" class="allcat-card">
-
-        <!-- Thumbnail -->
-        <div class="allcat-card-thumb">
+        <div class="allcat-card-icon">
           {% if category.image %}
             <img src="{{ category.image.url }}" alt="{{ category.name }}">
-            <div class="allcat-card-thumb-overlay"></div>
           {% else %}
-            <span class="allcat-card-thumb-icon">📚</span>
-          {% endif %}
-          {% if not category.is_active %}
-            <span class="allcat-inactive-badge">Inactive</span>
+            📚
           {% endif %}
         </div>
-
-        <!-- Body -->
-        <div class="allcat-card-body">
-          <h3 class="allcat-card-name">{{ category.name }}</h3>
-          {% if category.description %}
-            <p class="allcat-card-desc">{{ category.description|truncatewords:14 }}</p>
-          {% endif %}
-          <div class="allcat-card-footer">
-            <span class="allcat-pdf-badge">
-              <i class="fa-solid fa-file-pdf"></i>
-              {{ category.pdf_count }} PDF{% if category.pdf_count != 1 %}s{% endif %}
-            </span>
-            <span class="allcat-view-btn">
-              View <i class="fa-solid fa-arrow-right"></i>
-            </span>
-          </div>
+        <div class="allcat-card-label">{{ category.name }}</div>
+        {% if category.description %}
+          <div class="allcat-card-desc">{{ category.description|truncatewords:10 }}</div>
+        {% endif %}
+        <div class="allcat-card-count">
+          <i class="fa-solid fa-file-pdf" style="color:#e53e3e;"></i>
+          {{ category.pdf_count }} PDF{% if category.pdf_count != 1 %}s{% endif %}
         </div>
-
+        <span class="allcat-card-view">View All &rarr;</span>
+        {% if not category.is_active %}
+          <span class="allcat-inactive-chip">Inactive</span>
+        {% endif %}
       </a>
       {% endfor %}
     </div>
-
-    {% else %}
-    <div class="allcat-empty">
-      <div class="allcat-empty-icon">📭</div>
-      <h3>No Categories Yet</h3>
-      <p>Categories will appear here once they are added from the admin dashboard.</p>
-      <a href="{% url 'home' %}" class="allcat-back-btn">← Back to Home</a>
-    </div>
-    {% endif %}
-
   </div>
+
+  {% else %}
+  <div class="allcat-empty">
+    <i class="fa-regular fa-folder-open"></i>
+    <h3>No Categories Yet</h3>
+    <p>Categories will appear here once they are added from the admin dashboard.</p>
+    <a href="{% url 'home' %}" class="allcat-empty-btn">
+      <i class="fa-solid fa-house"></i> Back to Home
+    </a>
+  </div>
+  {% endif %}
+
 </div>
-{% endblock %}
+{% endblock content %}
