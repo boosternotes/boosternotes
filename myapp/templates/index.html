@@ -133,7 +133,7 @@
     @media (max-width:820px) {
       .notif-panel {
         position:fixed;
-        top:64px;          /* height of your nav bar — adjust if needed */
+        top:64px;
         right:10px;
         left:10px;
         width:auto;
@@ -210,7 +210,7 @@
     .mobile-search-center svg { flex-shrink: 0; }
     .mobile-search-center input {
       flex: 1;
-      min-width: 0; /* critical: prevents flex child from overflowing on narrow screens */
+      min-width: 0;
       background: transparent;
       border: none;
       outline: none;
@@ -230,6 +230,77 @@
       font-size: 13px;
       cursor: pointer;
       font-family: inherit;
+    }
+
+    /* ════════════════════════════════════════════
+       🎯 CATEGORY SCROLL — Arrow Nav
+       ════════════════════════════════════════════ */
+    .cat-scroll-outer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* The scrollable row */
+    .cat-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;          /* Firefox */
+      -ms-overflow-style: none;       /* IE/Edge */
+      padding: 6px 4px 10px;
+      flex: 1;
+      min-width: 0;
+      scroll-snap-type: x mandatory;
+    }
+    .cat-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+    /* Snap each card */
+    .cat-card {
+      scroll-snap-align: start;
+      flex-shrink: 0;
+    }
+
+    /* Arrow buttons */
+    .cat-nav-btn {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #e0e4f4;
+      background: #fff;
+      color: #1a3a8f;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(26,58,143,0.10);
+      transition: background .18s, color .18s, box-shadow .18s, opacity .18s, transform .15s;
+      z-index: 2;
+      line-height: 1;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cat-nav-btn:hover {
+      background: #1a3a8f;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(26,58,143,0.22);
+      transform: scale(1.08);
+    }
+    .cat-nav-btn:active { transform: scale(0.95); }
+    .cat-nav-btn.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* On very narrow phones (≤360px) make arrows smaller */
+    @media (max-width: 360px) {
+      .cat-nav-btn { width: 30px; height: 30px; font-size: .9rem; }
     }
   </style>
 </head>
@@ -465,31 +536,39 @@
     </div>
     <a href="" class="view-all">View All →</a>
   </div>
-  <div class="cat-scroll" id="catScroll">
-    {% for category in categories %}
-      <div class="cat-card {% if forloop.first %}active{% endif %}" onclick="selectCat(this)">
-        <div class="cat-img-wrap">
-          {% if category.image %}
-            <img src="{{ category.image.url }}"
-                 alt="{{ category.name }}"
-                 width="52" height="52"
-                 loading="lazy" decoding="async"
-                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-            <span class="cat-emoji" style="display:none;">📚</span>
-          {% else %}
-            <span class="cat-emoji">📚</span>
-          {% endif %}
+
+  <!-- Scroll outer: holds ← scroll → -->
+  <div class="cat-scroll-outer">
+    <button class="cat-nav-btn" id="catPrev" onclick="catScroll(-1)" type="button" aria-label="Scroll categories left">&#8592;</button>
+
+    <div class="cat-scroll" id="catScroll">
+      {% for category in categories %}
+        <div class="cat-card {% if forloop.first %}active{% endif %}" onclick="selectCat(this)">
+          <div class="cat-img-wrap">
+            {% if category.image %}
+              <img src="{{ category.image.url }}"
+                   alt="{{ category.name }}"
+                   width="52" height="52"
+                   loading="lazy" decoding="async"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+              <span class="cat-emoji" style="display:none;">📚</span>
+            {% else %}
+              <span class="cat-emoji">📚</span>
+            {% endif %}
+          </div>
+          <div class="cat-label">{{ category.name }}</div>
+          <div class="cat-count">{{ category.pdf_count|default:"0" }} PDFs</div>
         </div>
-        <div class="cat-label">{{ category.name }}</div>
-        <div class="cat-count">{{ category.pdf_count|default:"0" }} PDFs</div>
-      </div>
-    {% empty %}
-      <div class="cat-card">
-        <div class="cat-img-wrap"><span class="cat-emoji">📚</span></div>
-        <div class="cat-label">No categories yet</div>
-        <div class="cat-count">0 PDFs</div>
-      </div>
-    {% endfor %}
+      {% empty %}
+        <div class="cat-card">
+          <div class="cat-img-wrap"><span class="cat-emoji">📚</span></div>
+          <div class="cat-label">No categories yet</div>
+          <div class="cat-count">0 PDFs</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <button class="cat-nav-btn" id="catNext" onclick="catScroll(1)" type="button" aria-label="Scroll categories right">&#8594;</button>
   </div>
 </section>
 
@@ -511,7 +590,6 @@
 
   .book-card-link { text-decoration: none; color: inherit; display: block; }
 
-  /* The outer wrapper adds the 3D perspective tilt on hover */
   .book-card-wrap {
     perspective: 600px;
   }
@@ -526,7 +604,6 @@
     border-radius: 4px 10px 10px 4px;
     overflow: hidden;
     cursor: pointer;
-    /* Layered shadow: left hard shadow = spine depth, right soft = elevation */
     box-shadow:
       -5px 5px 0 0 #8a96c8,
       -8px 8px 0 0 rgba(138,150,200,0.35),
@@ -534,7 +611,6 @@
     transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s cubic-bezier(.22,1,.36,1);
   }
 
-  /* Left spine strip — coloured binding edge */
   .book-card::before {
     content: '';
     position: absolute;
@@ -546,7 +622,6 @@
     border-radius: 4px 0 0 4px;
   }
 
-  /* Glossy sheen overlay on the cover */
   .book-card::after {
     content: '';
     position: absolute;
@@ -565,10 +640,9 @@
       8px 24px 40px rgba(26,58,143,0.22);
   }
 
-  /* ── Portrait cover image — tall ratio like real book (3:4.5) ── */
   .book-thumb {
     width: 100%;
-    aspect-ratio: 2 / 3;   /* True portrait book cover ratio */
+    aspect-ratio: 2 / 3;
     overflow: hidden;
     background: linear-gradient(145deg, #c8d6ff 0%, #e8edff 60%, #d4e0ff 100%);
     display: flex;
@@ -588,9 +662,8 @@
     top: 0; left: 0;
   }
 
-  /* ── Info area below cover ── */
   .book-body {
-    padding: 10px 10px 12px 16px;  /* extra left pad to clear spine */
+    padding: 10px 10px 12px 16px;
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -664,7 +737,6 @@
   }
   .cart-btn:hover { background: #0d2060; }
 
-  /* Mobile tweaks */
   @media (max-width: 600px) {
     .book-grid {
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -908,6 +980,43 @@
   }
 
   /* ════════════════════════════════════════════
+     🎯 CATEGORY SCROLL — Arrow Nav
+     Scrolls by ~3 card widths per click.
+     Auto-hides arrows at start/end edges.
+     ════════════════════════════════════════════ */
+  (function () {
+    var SCROLL_AMT = 260; // px per arrow click (~3 cards at 80px each + gap)
+
+    function updateCatArrows() {
+      var el   = document.getElementById('catScroll');
+      var prev = document.getElementById('catPrev');
+      var next = document.getElementById('catNext');
+      if (!el || !prev || !next) return;
+      var atStart = el.scrollLeft <= 4;
+      var atEnd   = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+      prev.classList.toggle('hidden', atStart);
+      next.classList.toggle('hidden', atEnd);
+    }
+
+    window.catScroll = function (dir) {
+      var el = document.getElementById('catScroll');
+      if (!el) return;
+      el.scrollBy({ left: dir * SCROLL_AMT, behavior: 'smooth' });
+      // Update arrows after scroll animation (~350ms)
+      setTimeout(updateCatArrows, 360);
+    };
+
+    window.addEventListener('DOMContentLoaded', function () {
+      var el = document.getElementById('catScroll');
+      if (!el) return;
+      // Update arrows on manual scroll (touch swipe)
+      el.addEventListener('scroll', updateCatArrows, { passive: true });
+      // Initial state
+      updateCatArrows();
+    });
+  })();
+
+  /* ════════════════════════════════════════════
      🔔 NOTIFICATION BELL — live from backend
      ════════════════════════════════════════════ */
   let notifOpen   = false;
@@ -921,7 +1030,6 @@
     if (notifOpen && !notifLoaded) fetchNotifications();
   }
 
-  /* Close when clicking outside */
   document.addEventListener('click', function(e) {
     const wrap = document.getElementById('notifWrap');
     if (wrap && !wrap.contains(e.target)) {
@@ -953,7 +1061,6 @@
       return;
     }
 
-    /* Show badge */
     badge.textContent    = data.count > 9 ? '9+' : data.count;
     badge.style.display  = 'block';
 
@@ -986,7 +1093,6 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* Auto-load badge on page load without opening panel */
   window.addEventListener('DOMContentLoaded', function() {
     {% if user.is_authenticated %}
     fetch('/notifications/api/')
@@ -996,7 +1102,6 @@
           const badge = document.getElementById('notifBadge');
           badge.textContent   = data.count > 9 ? '9+' : data.count;
           badge.style.display = 'block';
-          /* Pre-render list so panel is instant on first click */
           renderNotifications(data);
           notifLoaded = true;
         }
