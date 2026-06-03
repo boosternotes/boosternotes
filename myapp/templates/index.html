@@ -431,19 +431,105 @@
 <style>
   .pdf-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,240px)); gap:1rem; justify-content:flex-start; }
   .pdf-card{ width:100%; max-width:240px; background:#fff; border-radius:14px; overflow:hidden; border:1px solid #eaecf4; transition:transform .2s,box-shadow .2s; cursor:pointer; min-width:0; }
-  .book-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,240px)); gap:1rem; justify-content:flex-start; }
+
+  /* ── Physical Books: portrait/book-spine style ── */
+  .book-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(155px, 175px));
+    gap:1.2rem;
+    justify-content:flex-start;
+  }
   .book-card-link{ text-decoration:none; color:inherit; display:block; }
-  .book-card{ background:#f5f7fa; border-radius:14px; overflow:hidden; border:1px solid #eaecf4; transition:transform .2s,box-shadow .2s; cursor:pointer; min-width:0; width:100%; max-width:240px; }
-  .book-card:hover{ transform:translateY(-3px); box-shadow:0 10px 28px rgba(26,58,143,0.1); }
-  .book-thumb{ height:150px; width:100%; display:flex; align-items:center; justify-content:center; font-size:4rem; overflow:hidden; background:#eef2ff; }
-  .book-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .book-body{ padding:12px; display:flex; flex-direction:column; gap:8px; }
-  .book-body h3{ font-size:.82rem; font-weight:600; color:#1a1a2e; line-height:1.35; min-height:42px; margin:0; }
-  .b-tag{ display:inline-block; background:#e8f0fe; color:#1a3a8f; font-size:.66rem; padding:3px 8px; border-radius:10px; font-weight:600; margin-bottom:2px; }
-  .b-price{ font-size:.95rem; font-weight:800; color:#1a3a8f; margin-bottom:0; }
-  .b-price .b-orig{ font-size:.7rem; color:#aaa; text-decoration:line-through; margin-left:4px; font-weight:400; }
-  .cart-btn{ display:flex; align-items:center; justify-content:center; text-align:center; background:#fff; border:1.5px solid #1a3a8f; color:#1a3a8f; padding:10px; border-radius:8px; font-size:.78rem; font-weight:600; transition:all .15s; font-family:'Poppins',sans-serif; cursor:pointer; width:100%; min-height:42px; }
-  .cart-btn:hover{ background:#1a3a8f; color:#fff; }
+  .book-card{
+    background:#fff;
+    border-radius:6px 14px 14px 6px;
+    overflow:hidden;
+    border:1px solid #dde2f0;
+    transition:transform .22s, box-shadow .22s;
+    cursor:pointer;
+    width:100%;
+    max-width:175px;
+    display:flex;
+    flex-direction:column;
+    /* Book spine shadow on left edge */
+    box-shadow: -4px 4px 0 0 #b0b8d4, 0 6px 18px rgba(26,58,143,0.10);
+    position:relative;
+  }
+  .book-card::before{
+    content:'';
+    position:absolute;
+    top:0; left:0;
+    width:6px; height:100%;
+    background:linear-gradient(180deg,#1a3a8f 0%,#2e55c8 40%,#1a3a8f 100%);
+    border-radius:6px 0 0 6px;
+    z-index:1;
+  }
+  .book-card:hover{
+    transform:translateY(-6px) rotate(-1deg);
+    box-shadow:-6px 12px 0 0 #8892bc, 0 18px 36px rgba(26,58,143,0.18);
+  }
+  /* Portrait cover image — tall like a real book cover */
+  .book-thumb{
+    height:220px;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:3.5rem;
+    overflow:hidden;
+    background:linear-gradient(160deg,#eef2ff 0%,#dde6ff 100%);
+    flex-shrink:0;
+  }
+  .book-thumb img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .book-body{
+    padding:10px 10px 12px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    flex:1;
+  }
+  .book-body h3{
+    font-size:.78rem;
+    font-weight:700;
+    color:#1a1a2e;
+    line-height:1.35;
+    margin:0;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .b-tag{
+    display:inline-block;
+    background:#e8f0fe;
+    color:#1a3a8f;
+    font-size:.62rem;
+    padding:2px 7px;
+    border-radius:10px;
+    font-weight:700;
+    width:fit-content;
+  }
+  .b-price{ font-size:.9rem; font-weight:800; color:#1a3a8f; margin:0; }
+  .b-price .b-orig{ font-size:.68rem; color:#aaa; text-decoration:line-through; margin-left:4px; font-weight:400; }
+  .cart-btn{
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    background:#1a3a8f; border:none; color:#fff;
+    padding:8px; border-radius:7px;
+    font-size:.73rem; font-weight:600;
+    transition:background .15s;
+    font-family:'Poppins',sans-serif; cursor:pointer;
+    width:100%; min-height:36px;
+    margin-top:auto;
+  }
+  .cart-btn:hover{ background:#0d2060; }
+
+  @media(max-width:600px){
+    .book-grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:.8rem; }
+    .book-thumb{ height:190px; }
+  }
 </style>
 
 <section class="section pdf-section" id="pdfs">
@@ -513,7 +599,7 @@
               {% if first_image and first_image.image %}
                 <img data-src="{{ first_image.image.url }}"
                      src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                     alt="{{ book.title }}" class="lazy" loading="lazy" decoding="async" width="240" height="150">
+                     alt="{{ book.title }}" class="lazy" loading="lazy" decoding="async" width="175" height="220">
               {% else %}📚{% endif %}
             {% endwith %}
           </div>
