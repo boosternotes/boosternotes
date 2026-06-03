@@ -50,13 +50,7 @@ def _get_about():
 # ── Notifications API ────────────────────────────────────────────────────────────
 def notifications_api(request):
     notifs = Notification.objects.order_by('-sent_at')[:10]
-    data = [{
-        'id':      n.id,
-        'title':   n.title,
-        'message': n.message,
-        'link':    n.link or '',
-        'time':    timesince(n.sent_at) + ' ago',
-    } for n in notifs]
+    data = [{'id': n.id, 'title': n.title, 'message': n.message, 'link': n.link or '', 'time': timesince(n.sent_at) + ' ago'} for n in notifs]
     return JsonResponse({'notifications': data, 'count': len(data)})
 
 
@@ -98,9 +92,7 @@ def edit_profile(request):
 @login_required
 def my_purchases(request):
     from .models import Order
-    orders = Order.objects.filter(
-        user=request.user, is_paid=True
-    ).prefetch_related('items').order_by('-paid_at')
+    orders = Order.objects.filter(user=request.user, is_paid=True).prefetch_related('items').order_by('-paid_at')
     return render(request, 'my_purchases.html', {'orders': orders})
 
 
@@ -128,22 +120,12 @@ def _build_cart_items(cart):
             if item_type == 'pdf' and item_id in pdf_map:
                 obj   = pdf_map[item_id]
                 thumb = obj.thumbnail.url if obj.thumbnail else None
-                items.append({
-                    'id': key, 'item_type': 'PDF Course',
-                    'name': obj.name, 'thumbnail': thumb,
-                    'category': obj.category.name if obj.category else '',
-                    'price': obj.current_price, 'original_price': obj.original_price,
-                })
+                items.append({'id': key, 'item_type': 'PDF Course', 'name': obj.name, 'thumbnail': thumb, 'category': obj.category.name if obj.category else '', 'price': obj.current_price, 'original_price': obj.original_price})
             elif item_type == 'book' and item_id in book_map:
                 obj       = book_map[item_id]
                 first_img = next(iter(obj.images.all()), None)
                 thumb     = first_img.image.url if first_img and first_img.image else None
-                items.append({
-                    'id': key, 'item_type': 'Physical Book',
-                    'name': obj.title, 'thumbnail': thumb,
-                    'category': '',
-                    'price': obj.price, 'original_price': obj.original_price,
-                })
+                items.append({'id': key, 'item_type': 'Physical Book', 'name': obj.title, 'thumbnail': thumb, 'category': '', 'price': obj.price, 'original_price': obj.original_price})
         except Exception:
             pass
     return items
@@ -154,7 +136,7 @@ def _build_cart_items(cart):
 def add_to_cart(request):
     item_id     = request.POST.get('item_id', '').strip()
     item_type   = request.POST.get('item_type', '').strip()
-    redirect_to = request.POST.get('redirect_to', '').strip()  # 'checkout' for Buy Now
+    redirect_to = request.POST.get('redirect_to', '').strip()
 
     redirect_back = request.META.get('HTTP_REFERER', '/')
     if not item_id or item_type not in ('pdf', 'book'):
@@ -170,7 +152,6 @@ def add_to_cart(request):
     else:
         messages.info(request, 'Item is already in your cart.')
 
-    # Buy Now: go straight to checkout
     if redirect_to == 'checkout':
         return redirect('checkout')
     return redirect(redirect_back)
@@ -200,10 +181,7 @@ def cart_view(request):
             request.session.pop('applied_coupon_id', None)
     discount    = applied.amount if applied else 0
     grand_total = max(0, subtotal - discount)
-    return render(request, 'cart.html', {
-        'cart_items': cart_items, 'subtotal': subtotal,
-        'applied_coupon': applied, 'grand_total': grand_total,
-    })
+    return render(request, 'cart.html', {'cart_items': cart_items, 'subtotal': subtotal, 'applied_coupon': applied, 'grand_total': grand_total})
 
 
 # ── Apply Coupon (cart page) ──────────────────────────────────────────────────────
@@ -258,10 +236,7 @@ def checkout(request):
             pass
     discount    = applied.amount if applied else 0
     grand_total = max(0, subtotal - discount)
-    return render(request, 'checkout.html', {
-        'cart_items': cart_items, 'subtotal': subtotal,
-        'applied_coupon': applied, 'grand_total': grand_total,
-    })
+    return render(request, 'checkout.html', {'cart_items': cart_items, 'subtotal': subtotal, 'applied_coupon': applied, 'grand_total': grand_total})
 
 
 # ── Place Order (legacy fallback) ──────────────────────────────────────────────
@@ -281,47 +256,21 @@ def place_order(request):
 
 # ── All Categories (public) ─────────────────────────────────────────────────────────
 def all_categories(request):
-    categories = Category.objects.filter(is_active=True).annotate(
-        pdf_count=Count('elibrary_courses')
-    ).order_by('name')
+    categories = Category.objects.filter(is_active=True).annotate(pdf_count=Count('elibrary_courses')).order_by('name')
     total_categories = categories.count()
     from django.db.models import IntegerField, Value
     from django.db.models.functions import Coalesce
-    total_courses = (
-        ELibraryModel.objects.filter(is_active=True).count() +
-        HardBook.objects.filter(is_active=True).count()
-    )
-    return render(request, 'all_categories.html', {
-        'categories':       categories,
-        'total_categories': total_categories,
-        'total_courses':    total_courses,
-        'navbar':           _get_navbar(),
-        'footer':           _get_footer(),
-        'cart_count':       len(request.session.get('cart', {})),
-    })
+    total_courses = (ELibraryModel.objects.filter(is_active=True).count() + HardBook.objects.filter(is_active=True).count())
+    return render(request, 'all_categories.html', {'categories': categories, 'total_categories': total_categories, 'total_courses': total_courses, 'navbar': _get_navbar(), 'footer': _get_footer(), 'cart_count': len(request.session.get('cart', {}))})
 
 
 # ── Category Courses (public) ───────────────────────────────────────────────────────
 def category_courses_view(request, category_id):
     category = get_object_or_404(Category, id=category_id, is_active=True)
-    elibrary_courses = ELibraryModel.objects.filter(
-        category=category, is_active=True
-    ).select_related('category').only(
-        'id', 'name', 'current_price', 'original_price', 'thumbnail', 'category_id'
-    )
-    hardcopy_courses = HardBook.objects.filter(is_active=True).prefetch_related(
-        Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))
-    ) if hasattr(HardBook, 'category') else []
+    elibrary_courses = ELibraryModel.objects.filter(category=category, is_active=True).select_related('category').only('id', 'name', 'current_price', 'original_price', 'thumbnail', 'category_id')
+    hardcopy_courses = HardBook.objects.filter(is_active=True).prefetch_related(Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))) if hasattr(HardBook, 'category') else []
     total_courses = elibrary_courses.count()
-    return render(request, 'category_courses.html', {
-        'category':         category,
-        'elibrary_courses': elibrary_courses,
-        'hardcopy_courses': hardcopy_courses,
-        'total_courses':    total_courses,
-        'navbar':           _get_navbar(),
-        'footer':           _get_footer(),
-        'cart_count':       len(request.session.get('cart', {})),
-    })
+    return render(request, 'category_courses.html', {'category': category, 'elibrary_courses': elibrary_courses, 'hardcopy_courses': hardcopy_courses, 'total_courses': total_courses, 'navbar': _get_navbar(), 'footer': _get_footer(), 'cart_count': len(request.session.get('cart', {}))})
 
 
 # ── Search ───────────────────────────────────────────────────────────────────────
@@ -329,35 +278,17 @@ def search(request):
     query = request.GET.get('q', '').strip()
     if query:
         category_results = Category.objects.filter(name__icontains=query, is_active=True)
-        elibrary_results = ELibraryModel.objects.filter(
-            name__icontains=query, is_active=True
-        ).select_related('category').only('id', 'name', 'current_price', 'thumbnail', 'category_id')
-        hardbook_results = HardBook.objects.filter(
-            title__icontains=query, is_active=True
-        ).prefetch_related(Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at')[:1]))
+        elibrary_results = ELibraryModel.objects.filter(name__icontains=query, is_active=True).select_related('category').only('id', 'name', 'current_price', 'thumbnail', 'category_id')
+        hardbook_results = HardBook.objects.filter(title__icontains=query, is_active=True).prefetch_related(Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at')[:1]))
     else:
         category_results = Category.objects.none()
         elibrary_results = ELibraryModel.objects.none()
         hardbook_results = HardBook.objects.none()
 
-    total_results = (
-        category_results.count() + elibrary_results.count() + hardbook_results.count()
-    )
-    active_coupons = Coupon.objects.filter(
-        is_active=True,
-        expiry_date__gte=timezone.now().date(),
-        usage_limit__gt=F('times_used')
-    ).order_by('-created_at')[:6]
+    total_results = (category_results.count() + elibrary_results.count() + hardbook_results.count())
+    active_coupons = Coupon.objects.filter(is_active=True, expiry_date__gte=timezone.now().date(), usage_limit__gt=F('times_used')).order_by('-created_at')[:6]
 
-    return render(request, 'search_results.html', {
-        'navbar': _get_navbar(), 'footer': _get_footer(),
-        'search_query': query,
-        'category_results': category_results,
-        'elibrary_results': elibrary_results,
-        'hardbook_results': hardbook_results,
-        'total_results': total_results,
-        'active_coupons': active_coupons,
-    })
+    return render(request, 'search_results.html', {'navbar': _get_navbar(), 'footer': _get_footer(), 'search_query': query, 'category_results': category_results, 'elibrary_results': elibrary_results, 'hardbook_results': hardbook_results, 'total_results': total_results, 'active_coupons': active_coupons})
 
 
 # ── Hard Books ───────────────────────────────────────────────────────────────────
@@ -375,11 +306,7 @@ def hard_book_add(request):
         if form.is_valid():
             book = form.save()
             for i, file_obj in enumerate(files[:5], start=1):
-                result = DropboxManager.upload_file(
-                    file_obj=file_obj,
-                    file_name=f"{book.title.replace(' ', '_')}_{i}_{file_obj.name}",
-                    folder_path='hardbooks/images'
-                )
+                result = DropboxManager.upload_file(file_obj=file_obj, file_name=f"{book.title.replace(' ', '_')}_{i}_{file_obj.name}", folder_path='hardbooks/images')
                 if result['success']:
                     HardBookImage.objects.create(book=book, image=file_obj, dropbox_path=result['dropbox_path'])
                 else:
@@ -402,11 +329,7 @@ def hard_book_edit(request, pk):
             book            = form.save()
             available_slots = max(0, 5 - book.images.count())
             for i, file_obj in enumerate(files[:available_slots], start=1):
-                result = DropboxManager.upload_file(
-                    file_obj=file_obj,
-                    file_name=f"{book.title.replace(' ', '_')}_{i}_{file_obj.name}",
-                    folder_path='hardbooks/images'
-                )
+                result = DropboxManager.upload_file(file_obj=file_obj, file_name=f"{book.title.replace(' ', '_')}_{i}_{file_obj.name}", folder_path='hardbooks/images')
                 if result['success']:
                     HardBookImage.objects.create(book=book, image=file_obj, dropbox_path=result['dropbox_path'])
                 else:
@@ -498,11 +421,7 @@ def elibrary_upload_pdf(request, pk):
         if form.is_valid():
             pdf    = form.save(commit=False)
             pdf.course = course
-            result = DropboxManager.upload_file(
-                request.FILES['pdf_file'],
-                request.FILES['pdf_file'].name,
-                f"{settings.DROPBOX_FOLDER}/pdfs/{course.id}"
-            )
+            result = DropboxManager.upload_file(request.FILES['pdf_file'], request.FILES['pdf_file'].name, f"{settings.DROPBOX_FOLDER}/pdfs/{course.id}")
             if result['success']:
                 pdf.dropbox_path = result['dropbox_path']
                 pdf.save()
@@ -559,11 +478,7 @@ def banner_custom(request):
         if action == 'upload':
             upload_form = BannerUploadForm(request.POST, request.FILES)
             if upload_form.is_valid():
-                BannerSetting.objects.create(
-                    image=upload_form.cleaned_data['image'],
-                    banner_type=upload_form.cleaned_data['banner_type'],
-                    is_active=True
-                )
+                BannerSetting.objects.create(image=upload_form.cleaned_data['image'], banner_type=upload_form.cleaned_data['banner_type'], is_active=True)
                 messages.success(request, 'Banner uploaded successfully!')
                 return redirect('banner_custom')
             messages.error(request, 'Please select a valid image.')
@@ -579,11 +494,7 @@ def banner_custom(request):
             banner.delete()
             messages.success(request, 'Banner deleted successfully!')
             return redirect('banner_custom')
-    return render(request, 'banner.html', {
-        'upload_form': upload_form,
-        'desktop_banners': desktop_banners,
-        'mobile_banners': mobile_banners,
-    })
+    return render(request, 'banner.html', {'upload_form': upload_form, 'desktop_banners': desktop_banners, 'mobile_banners': mobile_banners})
 
 
 @login_required
@@ -655,11 +566,7 @@ def about_custom(request):
 def footer_custom(request):
     setting = FooterSetting.objects.first()
     if not setting:
-        setting = FooterSetting.objects.create(
-            brand_name='BoosterNotes', tagline='Smart Notes. Smart Rank.',
-            description='Reliable study resources.',
-            copyright_text='\u00a9 2026 BoosterNotes.'
-        )
+        setting = FooterSetting.objects.create(brand_name='BoosterNotes', tagline='Smart Notes. Smart Rank.', description='Reliable study resources.', copyright_text='\u00a9 2026 BoosterNotes.')
     if request.method == 'POST':
         form = FooterSettingForm(request.POST, instance=setting)
         if form.is_valid():
@@ -788,11 +695,7 @@ def notifications_section(request):
     notifications       = Notification.objects.all()[:50]
     total_notifications = Notification.objects.count()
     sent_today          = Notification.objects.filter(sent_at__date=timezone.now().date()).count()
-    return render(request, 'notification.html', {
-        'title': 'Notifications', 'subtitle': 'Send notifications to users',
-        'form': form, 'notifications': notifications,
-        'total_notifications': total_notifications, 'sent_today': sent_today,
-    })
+    return render(request, 'notification.html', {'title': 'Notifications', 'subtitle': 'Send notifications to users', 'form': form, 'notifications': notifications, 'total_notifications': total_notifications, 'sent_today': sent_today})
 
 
 @login_required
@@ -803,9 +706,7 @@ def delete_notification(request, notification_id):
         notification.delete()
         messages.success(request, 'Notification deleted!')
         return redirect('notifications_section')
-    return render(request, 'admin/confirm_delete.html', {
-        'object': notification, 'action': 'delete notification', 'next_url': 'notifications_section'
-    })
+    return render(request, 'admin/confirm_delete.html', {'object': notification, 'action': 'delete notification', 'next_url': 'notifications_section'})
 
 
 # ── User management ────────────────────────────────────────────────────────────
@@ -831,8 +732,7 @@ def edit_user(request, user_id):
             return redirect('dashboard')
     else:
         form = CustomUserChangeForm(instance=user)
-    return render(request, 'edit_user.html', {'form': form, 'user': user,
-                                               'title': f'Edit User: {user.username}', 'section': 'users'})
+    return render(request, 'edit_user.html', {'form': form, 'user': user, 'title': f'Edit User: {user.username}', 'section': 'users'})
 
 
 def delete_user(request, user_id):
@@ -870,30 +770,20 @@ def home(request):
     about  = _get_about()
     footer = _get_footer()
 
-    coupon_qs = Coupon.objects.filter(
-        is_active=True, expiry_date__gte=timezone.now().date(),
-    ).annotate(remaining=F('usage_limit') - F('times_used')).filter(remaining__gt=0)
+    coupon_qs = Coupon.objects.filter(is_active=True, expiry_date__gte=timezone.now().date()).annotate(remaining=F('usage_limit') - F('times_used')).filter(remaining__gt=0)
     if request.user.is_authenticated:
         used_ids = CouponUsage.objects.filter(user=request.user).values_list('coupon_id', flat=True)
         coupon_qs = coupon_qs.exclude(id__in=used_ids)
     active_coupons = coupon_qs.order_by('-created_at')[:6]
 
-    categories   = cache.get('home_categories')
+    categories = cache.get('home_categories')
     if categories is None:
-        categories = list(
-            Category.objects.filter(is_active=True)
-            .annotate(pdf_count=Count('elibrary_courses'))
-            .order_by('name')[:10]
-        )
+        categories = list(Category.objects.filter(is_active=True).annotate(pdf_count=Count('elibrary_courses')).order_by('name')[:10])
         cache.set('home_categories', categories, 600)
 
-    popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').only(
-        'id', 'name', 'current_price', 'original_price', 'thumbnail', 'category_id'
-    ).order_by('-created_at')[:8]
+    popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').only('id', 'name', 'current_price', 'original_price', 'thumbnail', 'category_id').order_by('-created_at')[:8]
 
-    hard_books = HardBook.objects.filter(is_active=True).prefetch_related(
-        Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))
-    ).order_by('-created_at')[:8]
+    hard_books = HardBook.objects.filter(is_active=True).prefetch_related(Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))).order_by('-created_at')[:8]
 
     return render(request, 'index.html', {
         'navbar': navbar, 'site_settings': navbar,
@@ -907,37 +797,21 @@ def home(request):
 
 # ── Detail pages ───────────────────────────────────────────────────────────────────
 def hard_book_detail(request, pk):
-    book = get_object_or_404(
-        HardBook.objects.prefetch_related(
-            Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))
-        ),
-        pk=pk, is_active=True
-    )
+    book = get_object_or_404(HardBook.objects.prefetch_related(Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))), pk=pk, is_active=True)
     return render(request, 'hard_book_detail.html', {'book': book, 'book_images': book.images.all()})
 
 
 def elibrary_detail(request, pk):
     from .models import Order, OrderItem
     course = get_object_or_404(
-        ELibraryModel.objects.select_related('category').prefetch_related(
-            Prefetch('pdfs', queryset=ELibraryPDF.objects.filter(is_active=True).order_by('uploaded_at'))
-        ),
+        ELibraryModel.objects.select_related('category').prefetch_related(Prefetch('pdfs', queryset=ELibraryPDF.objects.filter(is_active=True).order_by('uploaded_at'))),
         pk=pk, is_active=True
     )
     is_purchased = False
     if request.user.is_authenticated:
-        is_purchased = OrderItem.objects.filter(
-            order__user=request.user,
-            order__is_paid=True,
-            item_type='pdf',
-            item_id=str(pk)
-        ).exists()
+        is_purchased = OrderItem.objects.filter(order__user=request.user, order__is_paid=True, item_type='pdf', item_id=str(pk)).exists()
     uploaded_pdfs = course.pdfs.all()
-    return render(request, 'elibrary_detail.html', {
-        'pdf': course,
-        'uploaded_pdfs': uploaded_pdfs,
-        'is_purchased': is_purchased,
-    })
+    return render(request, 'elibrary_detail.html', {'pdf': course, 'uploaded_pdfs': uploaded_pdfs, 'is_purchased': is_purchased})
 
 
 # ── Apply Coupon ────────────────────────────────────────────────────────────────
@@ -990,11 +864,7 @@ def dashboard(request):
         messages.error(request, "You don't have permission.")
         return redirect('home')
 
-    # ── User stats ────────────────────────────────────────────────
-    users = User.objects.only(
-        'id', 'username', 'email', 'first_name', 'last_name',
-        'is_active', 'is_staff', 'date_joined'
-    ).order_by('-date_joined')
+    users = User.objects.only('id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'date_joined').order_by('-date_joined')
     total_users     = users.count()
     active_users    = users.filter(is_active=True).count()
     inactive_users  = users.filter(is_active=False).count()
@@ -1002,30 +872,22 @@ def dashboard(request):
     new_users       = users.filter(date_joined__gte=thirty_days_ago).count()
     staff_users     = users.filter(is_staff=True).count()
 
-    # ── Payment / Order stats ──────────────────────────────────────
     from .models import Order
     total_revenue    = Order.objects.filter(is_paid=True).aggregate(r=Sum('grand_total'))['r'] or 0
     completed_orders = Order.objects.filter(status='paid').count()
     pending_orders   = Order.objects.filter(status='pending').count()
     failed_orders    = Order.objects.filter(status='cancelled').count()
-    recent_transactions = (
-        Order.objects
-        .select_related('user')
-        .prefetch_related('items')
-        .order_by('-created_at')[:10]
-    )
+    recent_transactions = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')[:10]
 
     return render(request, 'admin_dashboard.html', {
-        # user context
         'users': users, 'total_users': total_users,
         'active_users': active_users, 'inactive_users': inactive_users,
         'new_users': new_users, 'staff_users': staff_users,
         'form': CustomUserCreationForm(),
-        # payment context
-        'total_revenue':       total_revenue,
-        'completed_orders':    completed_orders,
-        'pending_orders':      pending_orders,
-        'failed_orders':       failed_orders,
+        'total_revenue': total_revenue,
+        'completed_orders': completed_orders,
+        'pending_orders': pending_orders,
+        'failed_orders': failed_orders,
         'recent_transactions': recent_transactions,
     })
 
@@ -1037,7 +899,6 @@ def user_login(request):
     if request.method == 'POST':
         email    = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password')
-        # Look up user by email, then authenticate with their username
         try:
             user_obj = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
@@ -1057,21 +918,43 @@ def signup(request):
     if request.user.is_authenticated:
         return redirect('home')
     if request.method == 'POST':
-        username = request.POST.get('name')
-        email    = request.POST.get('email')
-        password = request.POST.get('password')
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email already exists')
+        full_name = request.POST.get('name', '').strip()
+        email     = request.POST.get('email', '').strip().lower()
+        password  = request.POST.get('password', '').strip()
+
+        # Validate all fields are present
+        if not full_name or not email or not password:
+            messages.error(request, 'All fields are required.')
             return redirect('signup')
-        # Always create as a regular student — never grant staff/superuser via public signup
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            is_staff=False,
-            is_superuser=False,
-        )
-        login(request, user)
-        messages.success(request, 'Account created successfully!')
-        return redirect('home')
+
+        # Validate password length
+        if len(password) < 6:
+            messages.error(request, 'Password must be at least 6 characters.')
+            return redirect('signup')
+
+        # Check duplicate email
+        if User.objects.filter(email__iexact=email).exists():
+            messages.error(request, 'An account with this email already exists. Please login.')
+            return redirect('signup')
+
+        # Use email as the unique username (guaranteed unique since email is unique)
+        # Store full name in first_name field for display purposes
+        username = email  # email is always unique, safe to use as username
+
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=full_name,
+                is_staff=False,
+                is_superuser=False,
+            )
+            login(request, user)
+            messages.success(request, f'Welcome, {full_name}! Your account has been created.')
+            return redirect('home')
+        except Exception as e:
+            messages.error(request, 'Something went wrong. Please try again.')
+            return redirect('signup')
+
     return render(request, 'signup.html')
