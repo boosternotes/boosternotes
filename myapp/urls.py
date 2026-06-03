@@ -100,6 +100,10 @@ urlpatterns = [
 
     # DB Backup & Restore Panel
     path('db-backup/', backup_panel, name='backup_panel'),
+
+    # ── Catch-all: any unmatched URL → custom 404 page ──────────────────────
+    # This makes the friendly 404 work even when DEBUG=True
+    path('<path:unknown_path>', views.custom_404_view, name='custom_404'),
 ]
 
 if settings.DEBUG:

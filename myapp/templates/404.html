@@ -1,77 +1,113 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page Not Found | BoosterNotes</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found – BoosterNotes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Poppins', sans-serif;
       background: #f0f4ff;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 20px;
+      padding: 24px;
     }
-    .container {
+    .card {
       background: #fff;
-      border-radius: 20px;
-      padding: 60px 40px;
-      max-width: 500px;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(26,58,143,0.10);
+      padding: 56px 48px 48px;
+      text-align: center;
+      max-width: 480px;
       width: 100%;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both;
     }
-    .error-code {
-      font-size: 96px;
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.88) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .emoji {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 16px;
+      display: block;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    .code {
+      font-size: 5rem;
       font-weight: 800;
       color: #1a3a8f;
       line-height: 1;
+      letter-spacing: -2px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1a1a2e;
       margin-bottom: 10px;
     }
-    .emoji { font-size: 48px; margin-bottom: 16px; }
-    h1 {
-      font-size: 24px;
-      color: #1a1a2e;
-      margin-bottom: 12px;
-    }
     p {
-      color: #666;
-      font-size: 15px;
-      margin-bottom: 32px;
+      font-size: .9rem;
+      color: #777;
       line-height: 1.6;
+      margin-bottom: 32px;
     }
-    .btn {
+    .url-badge {
       display: inline-block;
-      background: #1a3a8f;
-      color: #fff;
-      text-decoration: none;
-      padding: 14px 32px;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      margin: 6px;
-      transition: background 0.2s;
-    }
-    .btn:hover { background: #142d70; }
-    .btn-outline {
-      background: transparent;
+      background: #f0f4ff;
+      border: 1.5px solid #c7d5f5;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: .78rem;
       color: #1a3a8f;
-      border: 2px solid #1a3a8f;
+      font-weight: 600;
+      word-break: break-all;
+      margin-bottom: 28px;
     }
-    .btn-outline:hover { background: #f0f4ff; }
+    .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 24px;
+      border-radius: 10px;
+      font-size: .88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,58,143,.18); }
+    .btn-primary { background: #1a3a8f; color: #fff; }
+    .btn-secondary { background: #f0f4ff; color: #1a3a8f; border: 1.5px solid #c7d5f5; }
+    @media (max-width: 480px) {
+      .card { padding: 40px 24px 36px; }
+      .code { font-size: 3.5rem; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="emoji">🔍</div>
-    <div class="error-code">404</div>
+  <div class="card">
+    <span class="emoji">🔍</span>
+    <div class="code">404</div>
     <h1>Page Not Found</h1>
-    <p>Oops! The page you're looking for doesn't exist or has been moved.</p>
-    <a href="/" class="btn">🏠 Go Home</a>
-    <a href="javascript:history.back()" class="btn btn-outline">← Go Back</a>
+    <p>The URL you visited doesn't exist on BoosterNotes.<br>It may have been moved, deleted, or never existed.</p>
+    <div class="url-badge">{{ request.path }}</div>
+    <div class="btn-group">
+      <a href="/" class="btn btn-primary">🏠 Go to Homepage</a>
+      <a href="javascript:history.back()" class="btn btn-secondary">← Go Back</a>
+    </div>
   </div>
 </body>
 </html>
