@@ -138,51 +138,6 @@
     img.lazy { opacity:0; transition:opacity .3s ease; }
     img.lazy.loaded { opacity:1; }
 
-    /* ── Mobile: fix notification panel so it's not clipped by nav overflow ── */
-    @media (max-width:820px) {
-      .notif-panel {
-        position:fixed;
-        top:64px;
-        right:10px;
-        left:10px;
-        width:auto;
-        max-height:calc(100dvh - 80px);
-        overflow-y:auto;
-        -webkit-overflow-scrolling:touch;
-        border-radius:14px;
-        z-index:99999;
-      }
-    }
-
-    .notif-header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:12px 16px; border-bottom:1px solid #f0f0f0;
-      font-weight:700; font-size:.85rem; color:#1a3a8f; position:sticky; top:0; background:#fff;
-    }
-    .notif-header span { font-size:.75rem; color:#888; cursor:pointer; font-weight:400; }
-    .notif-header span:hover { color:#1a3a8f; }
-    .notif-item {
-      display:flex; gap:10px; padding:12px 16px;
-      border-bottom:1px solid #f8f8f8; cursor:pointer; transition:background .15s;
-    }
-    .notif-item:hover { background:#f5f7ff; }
-    .notif-item:last-child { border-bottom:none; }
-    .notif-dot {
-      width:9px; height:9px; border-radius:50%; background:#1a3a8f;
-      flex-shrink:0; margin-top:4px; transition:background .2s;
-    }
-    .notif-item.read .notif-dot { background:#ddd; }
-    .notif-text p { margin:0 0 3px; font-size:.8rem; font-weight:600; color:#222; line-height:1.4; }
-    .notif-text span { font-size:.72rem; color:#aaa; }
-    .notif-empty { padding:28px 16px; text-align:center; color:#bbb; font-size:.82rem; }
-    .notif-badge {
-      position:absolute; top:-4px; right:-6px;
-      background:#e74c3c; color:#fff; border-radius:50%;
-      font-size:10px; width:17px; height:17px;
-      line-height:17px; text-align:center; font-weight:700;
-      display:none;
-    }
-
     /* ── Category Card Image ── */
     .cat-card { cursor:pointer; }
     .cat-img-wrap {
@@ -258,16 +213,15 @@
       overflow-x: auto;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;          /* Firefox */
-      -ms-overflow-style: none;       /* IE/Edge */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
       padding: 6px 4px 10px;
       flex: 1;
       min-width: 0;
       scroll-snap-type: x mandatory;
     }
-    .cat-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+    .cat-scroll::-webkit-scrollbar { display: none; }
 
-    /* Snap each card */
     .cat-card {
       scroll-snap-align: start;
       flex-shrink: 0;
@@ -307,7 +261,6 @@
       pointer-events: none;
     }
 
-    /* On very narrow phones (≤360px) make arrows smaller */
     @media (max-width: 360px) {
       .cat-nav-btn { width: 30px; height: 30px; font-size: .9rem; }
     }
@@ -344,8 +297,8 @@
   {% if user.is_authenticated %}
   <!-- ── Bell Icon ── -->
   <div class="notif-wrap" id="notifWrap">
-    <button class="notif-btn" id="notifBtn" onclick="toggleNotif(event)" type="button" style="position:relative;">
-      🔔<span class="notif-badge" id="notifBadge"></span>
+    <button class="notif-btn" id="notifBtn" onclick="toggleNotif(event)" type="button">
+      🔔<span class="notif-badge" id="notifBadge" style="display:none;"></span>
     </button>
     <div class="notif-panel" id="notifPanel">
       <div class="notif-header">
@@ -543,10 +496,8 @@
       <h2>🎯 Browse by <span>Exam Category</span></h2>
       <div style="font-size:.78rem;color:#888;margin-top:2px;">Choose your exam and explore targeted study material</div>
     </div>
-    <!-- View All button removed — use ← → arrows to scroll categories -->
   </div>
 
-  <!-- Scroll outer: holds ← scroll → -->
   <div class="cat-scroll-outer">
     <button class="cat-nav-btn" id="catPrev" onclick="catScroll(-1)" type="button" aria-label="Scroll categories left">&#8592;</button>
 
@@ -982,7 +933,7 @@
     if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
   });
 
-  /* ── Desktop profile dropdown — click toggle (fixes hover-gap issue) ── */
+  /* ── Desktop profile dropdown — click toggle ── */
   (function() {
     const pill = document.getElementById('desktopProfilePill');
     if (!pill) return;
@@ -1005,11 +956,9 @@
 
   /* ════════════════════════════════════════════
      🎯 CATEGORY SCROLL — Arrow Nav
-     Scrolls by ~3 card widths per click.
-     Auto-hides arrows at start/end edges.
      ════════════════════════════════════════════ */
   (function () {
-    var SCROLL_AMT = 260; // px per arrow click (~3 cards at 80px each + gap)
+    var SCROLL_AMT = 260;
 
     function updateCatArrows() {
       var el   = document.getElementById('catScroll');
@@ -1026,38 +975,35 @@
       var el = document.getElementById('catScroll');
       if (!el) return;
       el.scrollBy({ left: dir * SCROLL_AMT, behavior: 'smooth' });
-      // Update arrows after scroll animation (~350ms)
       setTimeout(updateCatArrows, 360);
     };
 
     window.addEventListener('DOMContentLoaded', function () {
       var el = document.getElementById('catScroll');
       if (!el) return;
-      // Update arrows on manual scroll (touch swipe)
       el.addEventListener('scroll', updateCatArrows, { passive: true });
-      // Initial state
       updateCatArrows();
     });
   })();
 
   /* ════════════════════════════════════════════
-     🔔 NOTIFICATION BELL — live from backend
+     🔔 NOTIFICATION BELL
      ════════════════════════════════════════════ */
-  let notifOpen   = false;
-  let notifLoaded = false;
+  var notifOpen   = false;
+  var notifLoaded = false;
 
   function toggleNotif(e) {
     e.stopPropagation();
-    const panel = document.getElementById('notifPanel');
+    var panel = document.getElementById('notifPanel');
     notifOpen = !notifOpen;
     panel.classList.toggle('open', notifOpen);
     if (notifOpen && !notifLoaded) fetchNotifications();
   }
 
   document.addEventListener('click', function(e) {
-    const wrap = document.getElementById('notifWrap');
+    var wrap = document.getElementById('notifWrap');
     if (wrap && !wrap.contains(e.target)) {
-      const panel = document.getElementById('notifPanel');
+      var panel = document.getElementById('notifPanel');
       if (panel) panel.classList.remove('open');
       notifOpen = false;
     }
@@ -1065,20 +1011,21 @@
 
   function fetchNotifications() {
     fetch('/notifications/api/')
-      .then(r => r.json())
-      .then(data => {
+      .then(function(r){ return r.json(); })
+      .then(function(data){
         notifLoaded = true;
         renderNotifications(data);
       })
-      .catch(() => {
+      .catch(function(){
         document.getElementById('notifList').innerHTML =
           '<div class="notif-empty" style="color:#e74c3c;">⚠️ Could not load notifications.</div>';
       });
   }
 
   function renderNotifications(data) {
-    const list  = document.getElementById('notifList');
-    const badge = document.getElementById('notifBadge');
+    var list  = document.getElementById('notifList');
+    var badge = document.getElementById('notifBadge');
+    if (!list || !badge) return;
 
     if (!data.notifications || data.notifications.length === 0) {
       list.innerHTML = '<div class="notif-empty">No notifications yet 🔕</div>';
@@ -1086,19 +1033,17 @@
       return;
     }
 
-    badge.textContent    = data.count > 9 ? '9+' : data.count;
-    badge.style.display  = 'block';
+    badge.textContent   = data.count > 9 ? '9+' : data.count;
+    badge.style.display = 'flex';
 
     list.innerHTML = data.notifications.map(function(n) {
-      const clickAttr = n.link
-        ? 'onclick="window.location=\'' + esc(n.link) + '\'"'
-        : '';
+      var clickAttr = n.link ? 'onclick="window.location=\'' + esc(n.link) + '\'"' : '';
       return '<div class="notif-item" ' + clickAttr + '>' +
                '<div class="notif-dot"></div>' +
                '<div class="notif-text">' +
                  '<p>' + esc(n.title) + '</p>' +
                  '<p style="font-weight:400;margin-top:2px;">' + esc(n.message) + '</p>' +
-                 '<span>🕐 ' + n.time + '</span>' +
+                 '<span>🕐 ' + (n.time || '') + '</span>' +
                '</div>' +
              '</div>';
     }).join('');
@@ -1107,8 +1052,11 @@
   function markAllRead() {
     document.querySelectorAll('.notif-item').forEach(function(el) {
       el.classList.add('read');
+      var dot = el.querySelector('.notif-dot');
+      if (dot) dot.classList.add('read');
     });
-    document.getElementById('notifBadge').style.display = 'none';
+    var badge = document.getElementById('notifBadge');
+    if (badge) badge.style.display = 'none';
   }
 
   function esc(str) {
@@ -1121,12 +1069,14 @@
   window.addEventListener('DOMContentLoaded', function() {
     {% if user.is_authenticated %}
     fetch('/notifications/api/')
-      .then(r => r.json())
-      .then(data => {
-        if (data.count > 0) {
-          const badge = document.getElementById('notifBadge');
-          badge.textContent   = data.count > 9 ? '9+' : data.count;
-          badge.style.display = 'block';
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (data.count && data.count > 0) {
+          var badge = document.getElementById('notifBadge');
+          if (badge) {
+            badge.textContent   = data.count > 9 ? '9+' : data.count;
+            badge.style.display = 'flex';
+          }
           renderNotifications(data);
           notifLoaded = true;
         }
@@ -1138,10 +1088,10 @@
   /* ── Intersection Observer lazy loader ── */
   (function(){
     if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(function(entries, obs){
+      var io = new IntersectionObserver(function(entries, obs){
         entries.forEach(function(entry){
           if (entry.isIntersecting) {
-            const img = entry.target;
+            var img = entry.target;
             if (img.dataset.src) {
               img.src = img.dataset.src;
               img.removeAttribute('data-src');
@@ -1161,60 +1111,62 @@
 
   /* ── Banner Slider ── */
   (function(){
-    let currentSlide = 0;
-    let autoTimer    = null;
+    var currentSlide = 0;
+    var autoTimer    = null;
 
     function getActiveSlider(){ return document.querySelector('.banner-slider.active'); }
-    function getSlides(){ const s = getActiveSlider(); return s ? Array.from(s.querySelectorAll('.banner-slide')) : []; }
+    function getSlides(){ var s = getActiveSlider(); return s ? Array.from(s.querySelectorAll('.banner-slide')) : []; }
 
     function buildDots(){
-      const dots = document.getElementById('bannerDots');
-      const prev = document.getElementById('bannerPrev');
-      const next = document.getElementById('bannerNext');
+      var dots = document.getElementById('bannerDots');
+      var prev = document.getElementById('bannerPrev');
+      var next = document.getElementById('bannerNext');
       if (!dots||!prev||!next) return;
-      const count = getSlides().length;
+      var count = getSlides().length;
       dots.innerHTML = '';
       if(count<=1){ dots.classList.add('hidden'); prev.classList.add('hidden'); next.classList.add('hidden'); return; }
       dots.classList.remove('hidden'); prev.classList.remove('hidden'); next.classList.remove('hidden');
-      for(let i=0;i<count;i++){
-        const d = document.createElement('button');
-        d.className = 'banner-dot'+(i===0?' active':'');
-        d.setAttribute('aria-label','Slide '+(i+1));
-        d.addEventListener('click',()=>goToSlide(i));
-        dots.appendChild(d);
+      for(var i=0;i<count;i++){
+        (function(idx){
+          var d = document.createElement('button');
+          d.className = 'banner-dot'+(idx===0?' active':'');
+          d.setAttribute('aria-label','Slide '+(idx+1));
+          d.addEventListener('click',function(){ goToSlide(idx); });
+          dots.appendChild(d);
+        })(i);
       }
     }
 
     function goToSlide(n){
-      const slides   = getSlides();
+      var slides   = getSlides();
       if(!slides.length) return;
-      const dotsList = document.querySelectorAll('.banner-dot');
+      var dotsList = document.querySelectorAll('.banner-dot');
       slides[currentSlide].classList.remove('active');
       if(dotsList[currentSlide]) dotsList[currentSlide].classList.remove('active');
       currentSlide = (n+slides.length)%slides.length;
       slides[currentSlide].classList.add('active');
       if(dotsList[currentSlide]) dotsList[currentSlide].classList.add('active');
-      const lazyImg = slides[currentSlide].querySelector('img.lazy[data-src]');
+      var lazyImg = slides[currentSlide].querySelector('img.lazy[data-src]');
       if(lazyImg){ lazyImg.src=lazyImg.dataset.src; lazyImg.removeAttribute('data-src'); lazyImg.classList.add('loaded'); }
     }
 
     window.slideMove = function(dir){ goToSlide(currentSlide+dir); };
-    function startAuto(){ stopAuto(); if(getSlides().length>1){ autoTimer=setInterval(()=>goToSlide(currentSlide+1),4000); } }
+    function startAuto(){ stopAuto(); if(getSlides().length>1){ autoTimer=setInterval(function(){ goToSlide(currentSlide+1); },4000); } }
     function stopAuto(){ clearInterval(autoTimer); }
 
-    const wrap = document.querySelector('.banner-wrap');
+    var wrap = document.querySelector('.banner-wrap');
     if(wrap){ wrap.addEventListener('mouseenter',stopAuto); wrap.addEventListener('mouseleave',startAuto); }
 
     window.updateBannerMode = function(){
-      const desktop = document.getElementById('desktopBanner');
-      const mobile  = document.getElementById('mobileBanner');
+      var desktop = document.getElementById('desktopBanner');
+      var mobile  = document.getElementById('mobileBanner');
       if(!desktop||!mobile) return;
-      const isMobile = window.innerWidth<=640;
+      var isMobile = window.innerWidth<=640;
       desktop.classList.toggle('active',!isMobile);
       mobile.classList.toggle('active',isMobile);
       currentSlide=0;
-      document.querySelectorAll('.banner-slide').forEach(s=>s.classList.remove('active'));
-      const slides=getSlides();
+      document.querySelectorAll('.banner-slide').forEach(function(s){ s.classList.remove('active'); });
+      var slides=getSlides();
       if(slides.length) slides[0].classList.add('active');
       buildDots(); startAuto();
     };
