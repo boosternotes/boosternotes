@@ -1,151 +1,426 @@
-{% extends 'admin_dashboard.html' %}
-{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DB Backup & Restore - BoosterNotes</title>
+  <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      font-size: .82rem;
+      font-weight: 600;
+      text-decoration: none;
+      font-family: 'Poppins', sans-serif;
+      transition: background .18s, border-color .18s;
+      white-space: nowrap;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.5); color: #fff; }
 
-<div class="container-fluid py-4">
+    /* ── Backup Panel Styles ── */
+    .backup-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 768px) { .backup-grid { grid-template-columns: 1fr; } }
 
-  <!-- Page Header -->
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h2 class="fw-bold mb-1">🗄️ Database Backup &amp; Restore</h2>
-      <p class="text-muted mb-0">Manually backup your SQLite database to Dropbox or restore from a previous backup.</p>
-    </div>
-    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
-      <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+    .backup-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+    .backup-card-header {
+      padding: 16px 24px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .backup-card-header.blue  { background: linear-gradient(135deg, #1a3a8f, #4a7de8); }
+    .backup-card-header.red   { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+    .backup-card-header.gray  { background: linear-gradient(135deg, #374151, #6b7280); }
+    .backup-card-body { padding: 24px; }
+
+    .info-list { list-style: none; padding: 0; margin: 0 0 20px; }
+    .info-list li {
+      padding: 6px 0;
+      font-size: 0.84rem;
+      color: #555;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .info-list li:last-child { border-bottom: none; }
+
+    .btn-backup {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #1a3a8f, #4a7de8);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-backup:hover { opacity: 0.88; }
+
+    .btn-restore {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #b91c1c, #ef4444);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-restore:hover { opacity: 0.88; }
+
+    .form-select-custom {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #dde3f0;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      background: #f8f9fc;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color .18s;
+    }
+    .form-select-custom:focus { border-color: #4a7de8; }
+
+    .warn-box {
+      background: #fff8e1;
+      border: 1.5px solid #ffc107;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.83rem;
+      color: #7a5a00;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .alert-success-custom {
+      background: #ecfdf5;
+      border: 1.5px solid #34d399;
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: #065f46;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert-error-custom {
+      background: #fef2f2;
+      border: 1.5px solid #f87171;
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: #991b1b;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert-warning-custom {
+      background: #fff8e1;
+      border: 1.5px solid #ffc107;
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: #7a5a00;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* History table */
+    .history-table { width: 100%; border-collapse: collapse; }
+    .history-table th {
+      background: #f4f6fb;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #5a6a85;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .history-table td {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #333;
+      border-bottom: 1px solid #f0f2f8;
+    }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table tr:hover td { background: #f8f9ff; }
+
+    .btn-sm-restore {
+      padding: 5px 14px;
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1.5px solid #f87171;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: background .15s;
+    }
+    .btn-sm-restore:hover { background: #fee2e2; }
+
+    .empty-backup {
+      text-align: center;
+      padding: 40px 20px;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+    .empty-backup .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  {% include "msg.html" %}
+
+  <!-- Nav -->
+  <nav>
+    <a href="#" class="logo-wrap">
+      <div class="logo-circle">🚀</div>
+      <div class="logo-text-block">
+        <div class="brand">BoosterNotes</div>
+        <div class="sub">Admin Panel</div>
+      </div>
     </a>
-  </div>
+    <a href="{% url 'home' %}" class="back-btn"><span>←</span> Back to Site</a>
+    <button class="ham-btn" onclick="toggleSidebar()" type="button">☰</button>
+  </nav>
 
-  <!-- Flash Messages -->
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  <div class="row g-4">
-
-    <!-- BACKUP CARD -->
-    <div class="col-lg-5">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0"><i class="fas fa-cloud-upload-alt me-2"></i>Backup to Dropbox</h5>
-        </div>
-        <div class="card-body">
-          <p class="text-muted">Creates a snapshot of your current database and uploads it to your Dropbox account under <code>/db-backups/history/</code>.</p>
-          <ul class="text-muted small mb-4">
-            <li>A timestamped copy is saved (e.g. <code>db_20260603_181200.sqlite3</code>)</li>
-            <li>The latest copy at <code>/db-backups/db_latest.sqlite3</code> is also overwritten</li>
-            <li>All previous backups are kept — nothing gets deleted</li>
-          </ul>
-          <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="backup">
-            <button type="submit" class="btn btn-primary w-100">
-              <i class="fas fa-cloud-upload-alt me-2"></i>Backup Now
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- RESTORE CARD -->
-    <div class="col-lg-7">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-danger text-white">
-          <h5 class="mb-0"><i class="fas fa-cloud-download-alt me-2"></i>Restore from Dropbox</h5>
-        </div>
-        <div class="card-body">
-
-          <div class="alert alert-warning d-flex align-items-start gap-2" role="alert">
-            <i class="fas fa-exclamation-triangle mt-1"></i>
-            <div>
-              <strong>Warning:</strong> Restoring will <strong>overwrite your current database</strong>.
-              Please take a fresh backup before restoring.
-            </div>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a href="{% url 'dashboard' %}" class="sidebar-link">
+            <span class="sidebar-icon">📊</span><span>Dashboard</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{% url 'elibrary_dashboard' %}" class="sidebar-link">
+            <span class="sidebar-icon">📚</span><span>E-Library Courses</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{% url 'hard_books_list' %}" class="sidebar-link">
+            <span class="sidebar-icon">📦</span><span>Hard Copy Books</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{% url 'orders_dashboard' %}" class="sidebar-link">
+            <span class="sidebar-icon">📦</span><span>Orders</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{% url 'notifications_section' %}" class="sidebar-link">
+            <span class="sidebar-icon">🔔</span><span>Notifications</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{% url 'coupon_list' %}" class="sidebar-link">
+            <span class="sidebar-icon">🎟️</span><span>Coupons</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{% url 'category_list' %}" class="sidebar-link">
+            <span class="sidebar-icon">🎯</span><span>Categories</span>
+          </a>
+        </li>
+        <li class="sidebar-item sidebar-dropdown" id="customizationDropdown">
+          <div class="sidebar-link" onclick="toggleDropdown()">
+            <span class="sidebar-icon">🎨</span>
+            <span class="sidebar-dropdown-toggle">
+              <span>Customization</span>
+              <span class="dropdown-arrow">▼</span>
+            </span>
           </div>
+          <ul class="sidebar-submenu">
+            <li><a href="{% url 'navbar_custom' %}" class="sidebar-sublink"><span class="sublink-icon">🔝</span><span>Navbar</span></a></li>
+            <li><a href="{% url 'banner_custom' %}" class="sidebar-sublink"><span class="sublink-icon">🖼️</span><span>Banner</span></a></li>
+            <li><a href="{% url 'stats_custom' %}" class="sidebar-sublink"><span class="sublink-icon">📈</span><span>Stats Section</span></a></li>
+            <li><a href="{% url 'about_custom' %}" class="sidebar-sublink"><span class="sublink-icon">ℹ️</span><span>About Section</span></a></li>
+            <li><a href="{% url 'footer_custom' %}" class="sidebar-sublink"><span class="sublink-icon">🔻</span><span>Footer</span></a></li>
+          </ul>
+        </li>
+        <!-- DB Backup active -->
+        <li class="sidebar-item">
+          <a href="{% url 'backup_panel' %}" class="sidebar-link active">
+            <span class="sidebar-icon">🗄️</span><span>DB Backup</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
 
-          {% if backups %}
-            <form method="post" onsubmit="return confirm('⚠️ Are you sure you want to restore this backup? Your current database will be overwritten!');">
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">🗄️ Database Backup &amp; Restore</h1>
+        <p class="page-subtitle">Manually backup your SQLite database to Dropbox or restore from a previous backup.</p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="{% if message.tags == 'error' %}alert-error-custom{% elif message.tags == 'warning' %}alert-warning-custom{% else %}alert-success-custom{% endif %}">
+            <span>{% if message.tags == 'error' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}✅{% endif %}</span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Backup + Restore Cards -->
+      <div class="backup-grid">
+
+        <!-- Backup Card -->
+        <div class="backup-card">
+          <div class="backup-card-header blue">☁️ Backup to Dropbox</div>
+          <div class="backup-card-body">
+            <ul class="info-list">
+              <li>📁 Saves a timestamped copy to <code>/db-backups/history/</code></li>
+              <li>🔄 Also overwrites <code>/db-backups/db_latest.sqlite3</code></li>
+              <li>🗂️ All old backups are kept — nothing is deleted</li>
+            </ul>
+            <form method="post">
               {% csrf_token %}
-              <input type="hidden" name="action" value="restore">
-
-              <label class="form-label fw-semibold">Select Backup to Restore:</label>
-              <select name="restore_file" class="form-select mb-3">
-                {% for backup in backups %}
-                  <option value="{{ backup }}">{{ backup }}</option>
-                {% endfor %}
-              </select>
-
-              <button type="submit" class="btn btn-danger w-100">
-                <i class="fas fa-cloud-download-alt me-2"></i>Restore Selected Backup
-              </button>
+              <input type="hidden" name="action" value="backup">
+              <button type="submit" class="btn-backup">☁️ Backup Now</button>
             </form>
-          {% else %}
-            <div class="text-center py-4">
-              <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
-              <p class="text-muted">No backups found on Dropbox yet.</p>
-              <p class="text-muted small">Click <strong>Backup Now</strong> on the left to create your first backup.</p>
-            </div>
-          {% endif %}
+          </div>
+        </div>
 
+        <!-- Restore Card -->
+        <div class="backup-card">
+          <div class="backup-card-header red">⬇️ Restore from Dropbox</div>
+          <div class="backup-card-body">
+            <div class="warn-box">
+              ⚠️ <span><strong>Warning:</strong> This will <strong>overwrite your current database</strong>. Take a fresh backup first!</span>
+            </div>
+            {% if backups %}
+              <form method="post" onsubmit="return confirm('⚠️ Restore this backup? Your current database will be overwritten!');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="restore">
+                <label style="font-size:.85rem;font-weight:600;color:#444;display:block;margin-bottom:6px;">Select Backup File:</label>
+                <select name="restore_file" class="form-select-custom">
+                  {% for backup in backups %}
+                    <option value="{{ backup }}">{{ backup }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn-restore">⬇️ Restore Selected Backup</button>
+              </form>
+            {% else %}
+              <div class="empty-backup">
+                <div class="empty-icon">📭</div>
+                <p>No backups found on Dropbox yet.</p>
+                <p style="font-size:.8rem;">Click <strong>Backup Now</strong> to create your first backup.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- History Table -->
+      {% if backups %}
+      <div class="backup-card">
+        <div class="backup-card-header gray">📋 Backup History ({{ backups|length }} backups on Dropbox)</div>
+        <div class="backup-card-body" style="padding:0;">
+          <div style="overflow-x:auto;">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Filename</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for backup in backups %}
+                <tr>
+                  <td style="color:#aaa;">{{ forloop.counter }}</td>
+                  <td><code style="font-size:.82rem;">{{ backup }}</code></td>
+                  <td>
+                    {% if backup|length >= 18 %}
+                      {{ backup|slice:"3:7" }}-{{ backup|slice:"7:9" }}-{{ backup|slice:"9:11" }}
+                    {% else %}—{% endif %}
+                  </td>
+                  <td>
+                    {% if backup|length >= 18 %}
+                      {{ backup|slice:"12:14" }}:{{ backup|slice:"14:16" }}:{{ backup|slice:"16:18" }}
+                    {% else %}—{% endif %}
+                  </td>
+                  <td>
+                    <form method="post" style="display:inline;"
+                      onsubmit="return confirm('Restore from {{ backup }}? Current database will be overwritten.');">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="restore">
+                      <input type="hidden" name="restore_file" value="{{ backup }}">
+                      <button type="submit" class="btn-sm-restore">↩ Restore</button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+      {% endif %}
 
+    </main>
   </div>
 
-  <!-- Backup History Table -->
-  {% if backups %}
-  <div class="card shadow-sm mt-4">
-    <div class="card-header">
-      <h5 class="mb-0"><i class="fas fa-history me-2"></i>Backup History ({{ backups|length }} backups on Dropbox)</h5>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>#</th>
-              <th>Filename</th>
-              <th>Date &amp; Time</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for backup in backups %}
-            <tr>
-              <td class="text-muted">{{ forloop.counter }}</td>
-              <td><code>{{ backup }}</code></td>
-              <td class="text-muted">
-                {% if backup|length >= 22 %}
-                  {{ backup|slice:"3:7" }}-{{ backup|slice:"7:9" }}-{{ backup|slice:"9:11" }}
-                  &nbsp;
-                  {{ backup|slice:"12:14" }}:{{ backup|slice:"14:16" }}:{{ backup|slice:"16:18" }}
-                {% else %}
-                  —
-                {% endif %}
-              </td>
-              <td>
-                <form method="post" class="d-inline"
-                  onsubmit="return confirm('Restore from {{ backup }}? Current database will be overwritten.');">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="restore">
-                  <input type="hidden" name="restore_file" value="{{ backup }}">
-                  <button type="submit" class="btn btn-sm btn-outline-danger">
-                    <i class="fas fa-undo me-1"></i>Restore
-                  </button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-</div>
-{% endblock %}
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+    function toggleDropdown() {
+      event.stopPropagation();
+      document.getElementById('customizationDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function(event) {
+      const sidebar = document.getElementById('sidebar');
+      const hamBtn = document.querySelector('.ham-btn');
+      if (window.innerWidth <= 820 &&
+          !sidebar.contains(event.target) &&
+          !hamBtn.contains(event.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>
