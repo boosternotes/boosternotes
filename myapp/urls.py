@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from myapp import views
 from myapp import razorpay_views
+from myapp.backup_views import backup_panel
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -27,19 +28,19 @@ urlpatterns = [
     path('cart/remove-coupon/', views.remove_cart_coupon, name='remove_cart_coupon'),
     path('checkout/', views.checkout, name='checkout'),
 
-    # ── Razorpay payment ──
+    # Razorpay payment
     path('payment/create-order/', razorpay_views.razorpay_create_order, name='razorpay_create_order'),
     path('payment/verify/', razorpay_views.razorpay_verify_payment, name='razorpay_verify_payment'),
     path('payment/cancel/', razorpay_views.razorpay_cancel_order, name='razorpay_cancel_order'),
     path('order/success/<uuid:order_id>/', razorpay_views.order_success, name='order_success'),
 
-    # ── Admin: Orders ──
+    # Admin: Orders
     path('admin-orders/', razorpay_views.orders_dashboard, name='orders_dashboard'),
     path('admin-orders/<uuid:order_id>/', razorpay_views.order_detail, name='order_detail'),
     path('admin-orders/<uuid:order_id>/status/', razorpay_views.order_update_status, name='order_update_status'),
     path('admin-orders/<uuid:order_id>/delete/', razorpay_views.order_delete, name='order_delete'),
 
-    # user management
+    # User management
     path('users/add/', views.add_user, name='add_user'),
     path('users/edit/<int:user_id>/', views.edit_user, name='edit_user'),
     path('users/delete/<int:user_id>/', views.delete_user, name='delete_user'),
@@ -54,13 +55,13 @@ urlpatterns = [
     path('delete/<int:pk>/', views.coupon_delete, name='coupon_delete'),
     path('toggle/<int:pk>/', views.coupon_toggle_active, name='coupon_toggle_active'),
 
-    # Category ─ admin
+    # Category - admin
     path('category_list', views.category_list, name='category_list'),
     path('category/edit/<int:pk>/', views.category_edit, name='category_edit'),
     path('category/delete/<int:pk>/', views.category_delete, name='category_delete'),
     path('category/toggle/<int:pk>/', views.category_toggle_active, name='category_toggle_active'),
 
-    # Category ─ public
+    # Category - public
     path('categories/', views.all_categories, name='all_categories'),
     path('category/<int:category_id>/courses/', views.category_courses_view, name='category_courses'),
 
@@ -93,6 +94,9 @@ urlpatterns = [
 
     path('elibrary/<uuid:pk>/', views.elibrary_detail, name='elibrary_detail'),
     path('hard-books/<uuid:pk>/', views.hard_book_detail, name='hard_book_detail'),
+
+    # DB Backup & Restore Panel
+    path('admin/db-backup/', backup_panel, name='backup_panel'),
 ]
 
 if settings.DEBUG:

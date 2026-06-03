@@ -1,0 +1,151 @@
+{% extends 'admin_dashboard.html' %}
+{% block content %}
+
+<div class="container-fluid py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">🗄️ Database Backup &amp; Restore</h2>
+      <p class="text-muted mb-0">Manually backup your SQLite database to Dropbox or restore from a previous backup.</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="row g-4">
+
+    <!-- BACKUP CARD -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-cloud-upload-alt me-2"></i>Backup to Dropbox</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">Creates a snapshot of your current database and uploads it to your Dropbox account under <code>/db-backups/history/</code>.</p>
+          <ul class="text-muted small mb-4">
+            <li>A timestamped copy is saved (e.g. <code>db_20260603_181200.sqlite3</code>)</li>
+            <li>The latest copy at <code>/db-backups/db_latest.sqlite3</code> is also overwritten</li>
+            <li>All previous backups are kept — nothing gets deleted</li>
+          </ul>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="backup">
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-cloud-upload-alt me-2"></i>Backup Now
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESTORE CARD -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0"><i class="fas fa-cloud-download-alt me-2"></i>Restore from Dropbox</h5>
+        </div>
+        <div class="card-body">
+
+          <div class="alert alert-warning d-flex align-items-start gap-2" role="alert">
+            <i class="fas fa-exclamation-triangle mt-1"></i>
+            <div>
+              <strong>Warning:</strong> Restoring will <strong>overwrite your current database</strong>.
+              Please take a fresh backup before restoring.
+            </div>
+          </div>
+
+          {% if backups %}
+            <form method="post" onsubmit="return confirm('⚠️ Are you sure you want to restore this backup? Your current database will be overwritten!');">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="restore">
+
+              <label class="form-label fw-semibold">Select Backup to Restore:</label>
+              <select name="restore_file" class="form-select mb-3">
+                {% for backup in backups %}
+                  <option value="{{ backup }}">{{ backup }}</option>
+                {% endfor %}
+              </select>
+
+              <button type="submit" class="btn btn-danger w-100">
+                <i class="fas fa-cloud-download-alt me-2"></i>Restore Selected Backup
+              </button>
+            </form>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+              <p class="text-muted">No backups found on Dropbox yet.</p>
+              <p class="text-muted small">Click <strong>Backup Now</strong> on the left to create your first backup.</p>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Backup History Table -->
+  {% if backups %}
+  <div class="card shadow-sm mt-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-history me-2"></i>Backup History ({{ backups|length }} backups on Dropbox)</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Filename</th>
+              <th>Date &amp; Time</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for backup in backups %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td><code>{{ backup }}</code></td>
+              <td class="text-muted">
+                {% if backup|length >= 22 %}
+                  {{ backup|slice:"3:7" }}-{{ backup|slice:"7:9" }}-{{ backup|slice:"9:11" }}
+                  &nbsp;
+                  {{ backup|slice:"12:14" }}:{{ backup|slice:"14:16" }}:{{ backup|slice:"16:18" }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>
+                <form method="post" class="d-inline"
+                  onsubmit="return confirm('Restore from {{ backup }}? Current database will be overwritten.');">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="restore">
+                  <input type="hidden" name="restore_file" value="{{ backup }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-undo me-1"></i>Restore
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
