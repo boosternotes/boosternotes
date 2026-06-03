@@ -73,13 +73,11 @@
       pointer-events:none; transform:translateY(-8px) scale(.97);
       transition:opacity .2s ease,transform .2s ease,visibility .2s;
     }
-    /* Show on hover */
     .has-drop.profile-pill:hover .drop-menu {
       opacity:1; visibility:visible; pointer-events:all;
       transform:translateY(0) scale(1);
       transition-delay:0s;
     }
-    /* Show when clicked (JS toggles .open class) */
     .has-drop.profile-pill.open .drop-menu {
       opacity:1; visibility:visible; pointer-events:all;
       transform:translateY(0) scale(1);
@@ -96,7 +94,6 @@
     .has-drop.profile-pill .drop-menu hr { margin:6px 12px; border:none; border-top:1px solid #eee; }
     .has-drop.profile-pill .drop-menu .icon { font-size:1.1rem; width:20px; text-align:center; }
 
-    /* Invisible bridge so moving mouse from pill to menu doesn't close it */
     .has-drop.profile-pill::after {
       content:''; position:absolute;
       top:100%; left:0; right:0; height:10px;
@@ -138,22 +135,7 @@
     img.lazy { opacity:0; transition:opacity .3s ease; }
     img.lazy.loaded { opacity:1; }
 
-    /* ── Category Card Image ── */
-    .cat-card { cursor:pointer; }
-    .cat-img-wrap {
-      width:52px; height:52px; border-radius:12px;
-      overflow:hidden; margin:0 auto 8px;
-      background:#eef2ff;
-      display:flex; align-items:center; justify-content:center;
-      flex-shrink:0;
-    }
-    .cat-img-wrap img {
-      width:52px; height:52px; object-fit:cover;
-      border-radius:12px; display:block;
-    }
-    .cat-img-wrap .cat-emoji { font-size:1.6rem; line-height:1; }
-
-    /* ── Mobile Search Bar Fix (Samsung Galaxy A34 & narrow screens) ── */
+    /* ── Mobile Search Bar Fix ── */
     .mobile-search-center {
       display: none;
       width: 100%;
@@ -197,72 +179,240 @@
     }
 
     /* ════════════════════════════════════════════
-       🎯 CATEGORY SCROLL — Arrow Nav
+       🎯 CATEGORY SECTION — REDESIGNED
        ════════════════════════════════════════════ */
-    .cat-scroll-outer {
+
+    .cat-section {
+      padding: 32px 0 28px;
+      background: #fff;
+    }
+
+    .cat-section-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Section Header */
+    .cat-section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cat-section-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cat-section-title h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .cat-section-title h2 span {
+      color: #1a3a8f;
+    }
+
+    .cat-section-title p {
+      font-size: .78rem;
+      color: #888;
+      margin: 0;
+    }
+
+    .cat-view-all {
+      font-size: .78rem;
+      font-weight: 600;
+      color: #1a3a8f;
+      text-decoration: none;
+      padding: 6px 14px;
+      border: 1.5px solid #d0d8f4;
+      border-radius: 20px;
+      background: #f5f7ff;
+      transition: background .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .cat-view-all:hover {
+      background: #1a3a8f;
+      color: #fff;
+      border-color: #1a3a8f;
+    }
+
+    /* Slider wrapper */
+    .cat-slider-wrap {
       position: relative;
       display: flex;
       align-items: center;
-      gap: 0;
-    }
-
-    /* The scrollable row */
-    .cat-scroll {
-      display: flex;
       gap: 10px;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      padding: 6px 4px 10px;
-      flex: 1;
-      min-width: 0;
-      scroll-snap-type: x mandatory;
-    }
-    .cat-scroll::-webkit-scrollbar { display: none; }
-
-    .cat-card {
-      scroll-snap-align: start;
-      flex-shrink: 0;
     }
 
     /* Arrow buttons */
-    .cat-nav-btn {
+    .cat-arrow {
       flex-shrink: 0;
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       border: 2px solid #e0e4f4;
       background: #fff;
       color: #1a3a8f;
       font-size: 1.1rem;
-      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 10px rgba(26,58,143,0.10);
-      transition: background .18s, color .18s, box-shadow .18s, opacity .18s, transform .15s;
+      transition: all .18s ease;
       z-index: 2;
-      line-height: 1;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
-    .cat-nav-btn:hover {
+    .cat-arrow:hover {
       background: #1a3a8f;
       color: #fff;
-      box-shadow: 0 4px 16px rgba(26,58,143,0.22);
+      border-color: #1a3a8f;
+      box-shadow: 0 4px 16px rgba(26,58,143,0.25);
       transform: scale(1.08);
     }
-    .cat-nav-btn:active { transform: scale(0.95); }
-    .cat-nav-btn.hidden {
-      opacity: 0;
+    .cat-arrow:active { transform: scale(0.94); }
+    .cat-arrow.disabled {
+      opacity: 0.35;
       pointer-events: none;
     }
 
+    /* Scrollable track */
+    .cat-track {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 8px 2px 12px;
+      flex: 1;
+      min-width: 0;
+      scroll-snap-type: x mandatory;
+    }
+    .cat-track::-webkit-scrollbar { display: none; }
+
+    /* ── Category Box Card ── */
+    .cat-box {
+      scroll-snap-align: start;
+      flex-shrink: 0;
+      width: 118px;
+      background: #fff;
+      border: 1.5px solid #e8eaf6;
+      border-radius: 14px;
+      padding: 16px 10px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: all .2s cubic-bezier(.22,1,.36,1);
+      box-shadow: 0 2px 8px rgba(26,58,143,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cat-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #1a3a8f, #4f72e3);
+      opacity: 0;
+      transition: opacity .2s;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .cat-box:hover,
+    .cat-box.active {
+      border-color: #1a3a8f;
+      box-shadow: 0 6px 24px rgba(26,58,143,0.14);
+      transform: translateY(-3px);
+      background: #f7f9ff;
+    }
+
+    .cat-box:hover::before,
+    .cat-box.active::before {
+      opacity: 1;
+    }
+
+    .cat-box.active .cat-box-label {
+      color: #1a3a8f;
+      font-weight: 700;
+    }
+
+    /* Image / emoji container */
+    .cat-box-img {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #eef1ff 0%, #dce4ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .cat-box:hover .cat-box-img,
+    .cat-box.active .cat-box-img {
+      transform: scale(1.08);
+    }
+
+    .cat-box-img img {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 12px;
+      display: block;
+    }
+    .cat-box-img .cat-fallback {
+      font-size: 1.7rem;
+      line-height: 1;
+    }
+
+    .cat-box-label {
+      font-size: .73rem;
+      font-weight: 600;
+      color: #2a2a3e;
+      text-align: center;
+      line-height: 1.35;
+      max-width: 100%;
+      word-break: break-word;
+      transition: color .18s;
+    }
+
+    .cat-box-count {
+      font-size: .64rem;
+      color: #9099b7;
+      font-weight: 500;
+      background: #eef1ff;
+      padding: 2px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* Responsive card width */
+    @media (max-width: 480px) {
+      .cat-box { width: 104px; padding: 13px 8px 12px; }
+      .cat-arrow { width: 32px; height: 32px; font-size: .95rem; }
+      .cat-section-title h2 { font-size: 1.1rem; }
+    }
     @media (max-width: 360px) {
-      .cat-nav-btn { width: 30px; height: 30px; font-size: .9rem; }
+      .cat-box { width: 96px; }
     }
   </style>
 </head>
@@ -448,7 +598,7 @@
   <div class="banner-dots" id="bannerDots"></div>
 </div>
 
-<!-- Mobile-only search bar — fixed for narrow screens (Samsung Galaxy A34 etc.) -->
+<!-- Mobile search bar -->
 <div class="mobile-search-center">
   <form method="get" action="{% url 'search' %}">
     <svg width="14" height="14" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -490,46 +640,66 @@
   </div>
 </section>
 
-<section class="categories-section" id="categories">
-  <div class="sec-head">
-    <div>
-      <h2>🎯 Browse by <span>Exam Category</span></h2>
-      <div style="font-size:.78rem;color:#888;margin-top:2px;">Choose your exam and explore targeted study material</div>
+<!-- ═══════════════════════════════════════════════════════
+     🎯 CATEGORIES SECTION — Rebuilt with box cards + arrows
+     ═══════════════════════════════════════════════════════ -->
+<section class="cat-section" id="categories">
+  <div class="cat-section-inner">
+
+    <!-- Header -->
+    <div class="cat-section-header">
+      <div class="cat-section-title">
+        <h2>🎯 Browse by <span>Exam Category</span></h2>
+        <p>Choose your exam and explore targeted study material</p>
+      </div>
+      <a href="{% url 'all_categories' %}" class="cat-view-all">View All →</a>
     </div>
-  </div>
 
-  <div class="cat-scroll-outer">
-    <button class="cat-nav-btn" id="catPrev" onclick="catScroll(-1)" type="button" aria-label="Scroll categories left">&#8592;</button>
+    <!-- Slider -->
+    <div class="cat-slider-wrap">
 
-    <div class="cat-scroll" id="catScroll">
-      {% for category in categories %}
-        <div class="cat-card {% if forloop.first %}active{% endif %}" onclick="selectCat(this)">
-          <div class="cat-img-wrap">
-            {% if category.image %}
-              <img src="{{ category.image.url }}"
-                   alt="{{ category.name }}"
-                   width="52" height="52"
-                   loading="lazy" decoding="async"
-                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-              <span class="cat-emoji" style="display:none;">📚</span>
-            {% else %}
-              <span class="cat-emoji">📚</span>
-            {% endif %}
+      <!-- Left Arrow -->
+      <button class="cat-arrow" id="catPrevBtn" onclick="catMove(-1)" type="button" aria-label="Previous categories">
+        &#8592;
+      </button>
+
+      <!-- Card Track -->
+      <div class="cat-track" id="catTrack">
+        {% for category in categories %}
+          <a href="{% url 'category_courses_view' category.id %}"
+             class="cat-box {% if forloop.first %}active{% endif %}"
+             onclick="activateCat(this)">
+            <div class="cat-box-img">
+              {% if category.image %}
+                <img src="{{ category.image.url }}"
+                     alt="{{ category.name }}"
+                     width="52" height="52"
+                     loading="lazy" decoding="async"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <span class="cat-fallback" style="display:none;">📚</span>
+              {% else %}
+                <span class="cat-fallback">📚</span>
+              {% endif %}
+            </div>
+            <div class="cat-box-label">{{ category.name }}</div>
+            <div class="cat-box-count">{{ category.pdf_count|default:"0" }} PDFs</div>
+          </a>
+        {% empty %}
+          <div class="cat-box" style="pointer-events:none;opacity:.6;">
+            <div class="cat-box-img"><span class="cat-fallback">📭</span></div>
+            <div class="cat-box-label">No categories yet</div>
+            <div class="cat-box-count">0 PDFs</div>
           </div>
-          <div class="cat-label">{{ category.name }}</div>
-          <div class="cat-count">{{ category.pdf_count|default:"0" }} PDFs</div>
-        </div>
-      {% empty %}
-        <div class="cat-card">
-          <div class="cat-img-wrap"><span class="cat-emoji">📚</span></div>
-          <div class="cat-label">No categories yet</div>
-          <div class="cat-count">0 PDFs</div>
-        </div>
-      {% endfor %}
-    </div>
+        {% endfor %}
+      </div>
 
-    <button class="cat-nav-btn" id="catNext" onclick="catScroll(1)" type="button" aria-label="Scroll categories right">&#8594;</button>
-  </div>
+      <!-- Right Arrow -->
+      <button class="cat-arrow" id="catNextBtn" onclick="catMove(1)" type="button" aria-label="Next categories">
+        &#8594;
+      </button>
+
+    </div><!-- /cat-slider-wrap -->
+  </div><!-- /cat-section-inner -->
 </section>
 
 <style>
@@ -905,19 +1075,53 @@
   }
 
   function addCart(btn){
-    const original = btn.innerHTML;
+    var original = btn.innerHTML;
     btn.innerHTML = '✅ Done!';
     btn.style.background='#1d9e75'; btn.style.color='#fff'; btn.style.borderColor='#1d9e75';
-    setTimeout(() => { btn.innerHTML=original; btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; }, 1600);
+    setTimeout(function(){ btn.innerHTML=original; btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; }, 1600);
   }
 
-  function selectCat(card){
-    document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
+  /* ── Activate category card ── */
+  function activateCat(el) {
+    document.querySelectorAll('.cat-box').forEach(function(c){ c.classList.remove('active'); });
+    el.classList.add('active');
   }
 
+  /* ══════════════════════════════════════════════════
+     🎯 CATEGORY SLIDER — Arrow Navigation
+     ══════════════════════════════════════════════════ */
+  (function () {
+    var SCROLL_AMT = 280;
+
+    function syncArrows() {
+      var track = document.getElementById('catTrack');
+      var prev  = document.getElementById('catPrevBtn');
+      var next  = document.getElementById('catNextBtn');
+      if (!track || !prev || !next) return;
+      var atStart = track.scrollLeft <= 4;
+      var atEnd   = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      prev.classList.toggle('disabled', atStart);
+      next.classList.toggle('disabled', atEnd);
+    }
+
+    window.catMove = function (dir) {
+      var track = document.getElementById('catTrack');
+      if (!track) return;
+      track.scrollBy({ left: dir * SCROLL_AMT, behavior: 'smooth' });
+      setTimeout(syncArrows, 350);
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var track = document.getElementById('catTrack');
+      if (!track) return;
+      track.addEventListener('scroll', syncArrows, { passive: true });
+      syncArrows();
+    });
+  })();
+
+  /* ── Mobile search visibility ── */
   function updateMobileSearchVisibility() {
-    const el = document.querySelector('.mobile-search-center');
+    var el = document.querySelector('.mobile-search-center');
     if (el) el.style.display = window.innerWidth <= 640 ? 'block' : 'none';
   }
   window.addEventListener('resize', updateMobileSearchVisibility);
@@ -929,62 +1133,28 @@
     document.getElementById('mobProfileWrap').classList.toggle('open');
   }
   document.addEventListener('click', function(e) {
-    const wrap = document.getElementById('mobProfileWrap');
+    var wrap = document.getElementById('mobProfileWrap');
     if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
   });
 
-  /* ── Desktop profile dropdown — click toggle ── */
+  /* ── Desktop profile dropdown ── */
   (function() {
-    const pill = document.getElementById('desktopProfilePill');
+    var pill = document.getElementById('desktopProfilePill');
     if (!pill) return;
     pill.addEventListener('click', function(e) {
       e.stopPropagation();
       pill.classList.toggle('open');
     });
     document.addEventListener('click', function(e) {
-      if (pill && !pill.contains(e.target)) {
-        pill.classList.remove('open');
-      }
+      if (pill && !pill.contains(e.target)) pill.classList.remove('open');
     });
   })();
 
   /* ── Mobile menu ── */
   function toggleMobile() {
-    const m = document.getElementById('mobileMenu');
+    var m = document.getElementById('mobileMenu');
     if (m) m.classList.toggle('open');
   }
-
-  /* ════════════════════════════════════════════
-     🎯 CATEGORY SCROLL — Arrow Nav
-     ════════════════════════════════════════════ */
-  (function () {
-    var SCROLL_AMT = 260;
-
-    function updateCatArrows() {
-      var el   = document.getElementById('catScroll');
-      var prev = document.getElementById('catPrev');
-      var next = document.getElementById('catNext');
-      if (!el || !prev || !next) return;
-      var atStart = el.scrollLeft <= 4;
-      var atEnd   = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
-      prev.classList.toggle('hidden', atStart);
-      next.classList.toggle('hidden', atEnd);
-    }
-
-    window.catScroll = function (dir) {
-      var el = document.getElementById('catScroll');
-      if (!el) return;
-      el.scrollBy({ left: dir * SCROLL_AMT, behavior: 'smooth' });
-      setTimeout(updateCatArrows, 360);
-    };
-
-    window.addEventListener('DOMContentLoaded', function () {
-      var el = document.getElementById('catScroll');
-      if (!el) return;
-      el.addEventListener('scroll', updateCatArrows, { passive: true });
-      updateCatArrows();
-    });
-  })();
 
   /* ════════════════════════════════════════════
      🔔 NOTIFICATION BELL
@@ -1026,16 +1196,13 @@
     var list  = document.getElementById('notifList');
     var badge = document.getElementById('notifBadge');
     if (!list || !badge) return;
-
     if (!data.notifications || data.notifications.length === 0) {
       list.innerHTML = '<div class="notif-empty">No notifications yet 🔕</div>';
       badge.style.display = 'none';
       return;
     }
-
     badge.textContent   = data.count > 9 ? '9+' : data.count;
     badge.style.display = 'flex';
-
     list.innerHTML = data.notifications.map(function(n) {
       var clickAttr = n.link ? 'onclick="window.location=\'' + esc(n.link) + '\'"' : '';
       return '<div class="notif-item" ' + clickAttr + '>' +
