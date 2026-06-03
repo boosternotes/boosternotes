@@ -984,3 +984,12 @@ def signup(request):
             return redirect('signup')
 
     return render(request, 'signup.html')
+
+
+# ── Custom 404 — works even with DEBUG=True ──────────────────────────────────────
+# Django's built-in 404.html only shows when DEBUG=False.
+# This catch-all view is registered as the LAST url pattern so any
+# unmatched path hits it and gets a friendly branded page instead of
+# Django's yellow debug error screen.
+def custom_404_view(request, unknown_path=None):
+    return render(request, '404.html', status=404)
