@@ -588,7 +588,7 @@ def category_list(request):
         form = CategoryForm(request.POST, request.FILES)
         if form.is_valid():
             category = form.save()
-            cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
+            cache.delete('home_categories')
             messages.success(request, f"Category '{category.name}' created!")
             return redirect('category_list')
         messages.error(request, 'Please correct the errors below.')
@@ -613,7 +613,7 @@ def category_edit(request, pk):
                     default_storage.delete(category.image.name)
                 category.image = request.FILES['image']
             category.save()
-            cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
+            cache.delete('home_categories')
             messages.success(request, f"Category '{category.name}' updated!")
         else:
             messages.error(request, 'Category name is required.')
@@ -627,7 +627,7 @@ def category_delete(request, pk):
         if category.image and default_storage.exists(category.image.name):
             default_storage.delete(category.image.name)
         category.delete()
-        cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
+        cache.delete('home_categories')
         messages.success(request, 'Category deleted!')
     return redirect('category_list')
 
@@ -638,7 +638,7 @@ def category_toggle_active(request, pk):
     if request.method == 'POST':
         category.is_active = not category.is_active
         category.save()
-        cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
+        cache.delete('home_categories')
         status = 'activated' if category.is_active else 'deactivated'
         messages.success(request, f"Category '{category.name}' {status}!")
     return redirect('category_list')
@@ -780,12 +780,11 @@ def home(request):
         coupon_qs = coupon_qs.exclude(id__in=used_ids)
     active_coupons = coupon_qs.order_by('-created_at')[:6]
 
-    # ✅ FIX: No caching for categories on homepage — always fetch fresh from DB
-    # Previously cached for 600s (10 mins), causing homepage to NOT show new/updated categories.
+    # ✅ ALL active categories shown — no limit, no cache, always fresh from DB
     categories = list(
         Category.objects.filter(is_active=True)
         .annotate(pdf_count=Count('elibrary_courses'))
-        .order_by('name')[:20]
+        .order_by('name')
     )
 
     popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').only('id', 'name', 'current_price', 'original_price', 'thumbnail', 'category_id').order_by('-created_at')[:8]
@@ -929,24 +928,19 @@ def signup(request):
         email     = request.POST.get('email', '').strip().lower()
         password  = request.POST.get('password', '').strip()
 
-        # Validate all fields are present
         if not full_name or not email or not password:
             messages.error(request, 'All fields are required.')
             return redirect('signup')
 
-        # Validate password length
         if len(password) < 6:
             messages.error(request, 'Password must be at least 6 characters.')
             return redirect('signup')
 
-        # Check duplicate email
         if User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'An account with this email already exists. Please login.')
             return redirect('signup')
 
-        # Use email as the unique username (guaranteed unique since email is unique)
-        # Store full name in first_name field for display purposes
-        username = email  # email is always unique, safe to use as username
+        username = email
 
         try:
             user = User.objects.create_user(
