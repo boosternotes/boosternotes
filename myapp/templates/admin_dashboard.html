@@ -33,28 +33,6 @@
     }
     .back-btn .back-arrow { font-size: .9rem; }
 
-    .home-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      background: rgba(232,180,0,0.18);
-      color: #e8b400;
-      border: 1.5px solid rgba(232,180,0,0.45);
-      border-radius: 8px;
-      font-size: .82rem;
-      font-weight: 600;
-      text-decoration: none;
-      font-family: 'Poppins', sans-serif;
-      transition: background .18s, border-color .18s;
-      white-space: nowrap;
-    }
-    .home-btn:hover {
-      background: rgba(232,180,0,0.30);
-      border-color: #e8b400;
-      color: #e8b400;
-    }
-
     /* ── Upload Loader Overlay ───────────────────────────────────────── */
     #upload-loader {
       display: none;
@@ -160,7 +138,8 @@
   {% block content1 %}
     {% include "msg.html" %}
   <nav>
-    <a href="#" class="logo-wrap">
+    <!-- Logo clicks go to homepage -->
+    <a href="{% url 'home' %}" class="logo-wrap">
       <div class="logo-circle">🚀</div>
       <div class="logo-text-block">
         <div class="brand">BoosterNotes</div>
@@ -168,15 +147,9 @@
       </div>
     </a>
 
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-      <a href="{% url 'home' %}" class="home-btn">
-        🏠 Homepage
-      </a>
-      <a href="{% url 'home' %}" class="back-btn">
-        <span class="back-arrow">←</span> Back to Site
-      </a>
-    </div>
-
+    <a href="{% url 'home' %}" class="back-btn" style="margin-left:auto;">
+      <span class="back-arrow">←</span> Back to Site
+    </a>
     <button class="ham-btn" onclick="toggleSidebar()" type="button">☰</button>
   </nav>
 
@@ -273,18 +246,10 @@
             </li>
           </ul>
         </li>
-        <!-- DB Backup link -->
         <li class="sidebar-item">
           <a href="{% url 'backup_panel' %}" class="sidebar-link">
             <span class="sidebar-icon">🗄️</span>
             <span>DB Backup</span>
-          </a>
-        </li>
-        <!-- Homepage shortcut in sidebar -->
-        <li class="sidebar-item">
-          <a href="{% url 'home' %}" class="sidebar-link">
-            <span class="sidebar-icon">🏠</span>
-            <span>Homepage</span>
           </a>
         </li>
       </ul>
@@ -380,58 +345,58 @@
         </div>
       </div>
 
-<div id="users-section" class="content-section" style="display:none;">
-  <div class="page-header">
-    <h1 class="page-title">User Signups</h1>
-    <p class="page-subtitle">Manage registered users</p>
-  </div>
-  <div class="content-card">
-    <div class="card-header">
-      <h2 class="card-title">All Users</h2>
-      <a href="{% url 'add_user' %}" class="btn btn-primary">➕ Add User</a>
-    </div>
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
-    <div style="overflow-x:auto;">
-      <table class="data-table">
-        <thead>
-          <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          {% for user in users %}
-          <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.get_full_name|default:user.username }}</td>
-            <td>{{ user.email|default:"N/A" }}</td>
-            <td>{{ user.phone|default:"N/A" }}</td>
-            <td>{{ user.date_joined|date:"Y-m-d" }}</td>
-            <td>
-              {% if user.is_active %}<span class="badge badge-success">Active</span>
-              {% else %}<span class="badge badge-danger">Inactive</span>{% endif %}
-            </td>
-            <td>
-              <div class="action-btns">
-                <a href="{% url 'edit_user' user.id %}" class="action-btn" title="Edit">✏️</a>
-                <form method="post" action="{% url 'delete_user' user.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ user.username }}?');">
-                  {% csrf_token %}
-                  <button type="submit" class="action-btn" title="Delete">🗑️</button>
-                </form>
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="7" style="text-align:center;">No users found.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+      <div id="users-section" class="content-section" style="display:none;">
+        <div class="page-header">
+          <h1 class="page-title">User Signups</h1>
+          <p class="page-subtitle">Manage registered users</p>
+        </div>
+        <div class="content-card">
+          <div class="card-header">
+            <h2 class="card-title">All Users</h2>
+            <a href="{% url 'add_user' %}" class="btn btn-primary">➕ Add User</a>
+          </div>
+          {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>{{ user.id }}</td>
+                  <td>{{ user.get_full_name|default:user.username }}</td>
+                  <td>{{ user.email|default:"N/A" }}</td>
+                  <td>{{ user.phone|default:"N/A" }}</td>
+                  <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                  <td>
+                    {% if user.is_active %}<span class="badge badge-success">Active</span>
+                    {% else %}<span class="badge badge-danger">Inactive</span>{% endif %}
+                  </td>
+                  <td>
+                    <div class="action-btns">
+                      <a href="{% url 'edit_user' user.id %}" class="action-btn" title="Edit">✏️</a>
+                      <form method="post" action="{% url 'delete_user' user.id %}" style="display:inline;" onsubmit="return confirm('Delete {{ user.username }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn" title="Delete">🗑️</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" style="text-align:center;">No users found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       <div id="payments-section" class="content-section" style="display:none;">
         <div class="page-header">
@@ -544,8 +509,8 @@
     document.addEventListener('click', function(event) {
       const sidebar = document.getElementById('sidebar');
       const hamBtn = document.querySelector('.ham-btn');
-      if (window.innerWidth <= 820 && 
-          !sidebar.contains(event.target) && 
+      if (window.innerWidth <= 820 &&
+          !sidebar.contains(event.target) &&
           !hamBtn.contains(event.target)) {
         sidebar.classList.remove('open');
       }
