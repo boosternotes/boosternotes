@@ -63,7 +63,7 @@ urlpatterns = [
 
     # Category - public
     path('categories/', views.all_categories, name='all_categories'),
-    path('category/<int:category_id>/courses/', views.category_courses_view, name='category_courses'),
+    path('category/<int:category_id>/courses/', views.category_courses_view, name='category_courses_view'),
 
     # Navbar / Banner / Stats / About / Footer
     path('navbar/', views.navbar_custom, name='navbar_custom'),
