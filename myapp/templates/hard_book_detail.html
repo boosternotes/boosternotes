@@ -2,97 +2,107 @@
 {% load static %}
 
 {% block content %}
-<section class="section">
-  <div class="pdf-card" style="max-width:1000px;margin:0 auto;">
+<section class="section" style="padding: 30px 16px;">
+  <div style="max-width:960px;margin:0 auto;">
 
-    <!-- Book thumbnail -->
-    <div class="pdf-thumb" style="height:360px;overflow:hidden;">
-      {% with first_image=book_images.first %}
-        {% if first_image and first_image.image %}
-          <img src="{{ first_image.image.url }}" alt="{{ book.title }}" style="width:100%;height:100%;object-fit:cover;">
-        {% else %}
-          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f7fa;color:#1a3a8f;font-size:3rem;font-weight:700;">
-            📚
-          </div>
-        {% endif %}
-      {% endwith %}
-      <span class="pdf-badge blue">Book</span>
-    </div>
+    <!-- Back Button -->
+    <a href="{% url 'home' %}#books" style="display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:#1a3a8f;text-decoration:none;margin-bottom:20px;font-weight:500;">
+      ← Back to Books
+    </a>
 
-    <!-- Book details -->
-    <div class="pdf-body" style="padding:18px;">
-      <h3 style="font-size:1.25rem;margin-bottom:8px;">{{ book.title }}</h3>
+    <div class="pdf-card" style="border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.09);">
 
-      {% if book.description %}
-        <p style="font-size:.92rem;color:#555;line-height:1.7;margin-bottom:14px;">
-          {{ book.description }}
-        </p>
-      {% endif %}
-
-      <div class="pdf-foot" style="margin-bottom:16px;">
-        <div>
-          <span class="price-now">₹{{ book.price|floatformat:0 }}</span>
-          <span class="price-old">₹{{ book.original_price|floatformat:0 }}</span>
-        </div>
+      <!-- Hero Banner Image -->
+      <div style="height:340px;overflow:hidden;position:relative;background:#f0f4ff;">
+        {% with first_image=book_images.first %}
+          {% if first_image and first_image.image %}
+            <img src="{{ first_image.image.url }}" alt="{{ book.title }}"
+                 style="width:100%;height:100%;object-fit:cover;">
+          {% else %}
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;">
+              📚
+            </div>
+          {% endif %}
+        {% endwith %}
+        <span class="pdf-badge blue" style="position:absolute;top:14px;right:14px;">BOOK</span>
       </div>
 
-      <!-- Book images gallery -->
-      <h4 style="font-size:1rem;margin:18px 0 10px;color:#1a1a2e;">Book Images</h4>
-      {% if book_images %}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
-          {% for img in book_images %}
-            {% if img.image %}
-              <a href="{{ img.image.url }}" target="_blank" style="display:block;border-radius:12px;overflow:hidden;border:1px solid #e6e8f0;">
-                <img src="{{ img.image.url }}" alt="{{ book.title }}" style="width:100%;height:180px;object-fit:cover;display:block;">
-              </a>
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% else %}
-        <div style="border:1px dashed #cfd6e6;border-radius:12px;padding:16px;background:#fafbff;color:#777;">
-          No images uploaded yet for this book.
-        </div>
-      {% endif %}
+      <!-- Book Info -->
+      <div style="padding:24px 28px;">
 
-      <!-- Action buttons -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+        <!-- Title (only once) -->
+        <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a2e;margin:0 0 10px;">
+          {{ book.title }}
+        </h2>
 
-        {% if user.is_authenticated %}
-
-          {# Buy Now — add to cart then go straight to checkout #}
-          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;">
-            {% csrf_token %}
-            <input type="hidden" name="item_id"    value="{{ book.id }}">
-            <input type="hidden" name="item_type"  value="book">
-            <input type="hidden" name="redirect_to" value="checkout">
-            <button type="submit" class="buy-btn" style="width:100%;">
-              🛒 Buy Now
-            </button>
-          </form>
-
-          {# Add to Cart — stays on page #}
-          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;">
-            {% csrf_token %}
-            <input type="hidden" name="item_id"   value="{{ book.id }}">
-            <input type="hidden" name="item_type" value="book">
-            <button type="submit" class="view-all" style="width:100%;text-align:center;">
-              🛍️ Add to Cart
-            </button>
-          </form>
-
-        {% else %}
-
-          {# Not logged in — prompt login #}
-          <a href="{% url 'login' %}?next={{ request.path }}"
-             class="buy-btn" style="flex:1;text-align:center;">
-            🔒 Login to Buy
-          </a>
-
+        <!-- Description — only shown if it differs from title -->
+        {% if book.description and book.description|lower != book.title|lower %}
+          <p style="font-size:.95rem;color:#555;line-height:1.75;margin-bottom:16px;">
+            {{ book.description }}
+          </p>
         {% endif %}
 
-        <a href="{% url 'home' %}#books" class="view-all" style="flex:1;text-align:center;">
-          ← Back to Books
-        </a>
+        <!-- Price Row -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
+          <span style="font-size:1.6rem;font-weight:700;color:#1a3a8f;">
+            ₹{{ book.price|floatformat:0 }}
+          </span>
+          {% if book.original_price %}
+            <span style="font-size:1rem;color:#aaa;text-decoration:line-through;">
+              ₹{{ book.original_price|floatformat:0 }}
+            </span>
+            <span style="background:#e6f9ee;color:#1a8f4a;font-size:.8rem;font-weight:600;padding:3px 10px;border-radius:20px;">
+              SAVE ₹{{ book.original_price|floatformat:0|add:"-"|add:book.price|floatformat:0 }}
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;">
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;min-width:140px;">
+              {% csrf_token %}
+              <input type="hidden" name="item_id"    value="{{ book.id }}">
+              <input type="hidden" name="item_type"  value="book">
+              <input type="hidden" name="redirect_to" value="checkout">
+              <button type="submit" class="buy-btn" style="width:100%;padding:12px;font-size:1rem;">
+                🛒 Buy Now
+              </button>
+            </form>
+            <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;min-width:140px;">
+              {% csrf_token %}
+              <input type="hidden" name="item_id"   value="{{ book.id }}">
+              <input type="hidden" name="item_type" value="book">
+              <button type="submit" class="view-all" style="width:100%;padding:12px;font-size:1rem;text-align:center;">
+                🛍️ Add to Cart
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}"
+               class="buy-btn" style="flex:1;text-align:center;padding:12px;font-size:1rem;">
+              🔒 Login to Buy
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Book Images Gallery -->
+        {% if book_images %}
+          <h4 style="font-size:1rem;font-weight:600;color:#1a1a2e;margin:0 0 12px;">
+            📷 Book Preview Images
+          </h4>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
+            {% for img in book_images %}
+              {% if img.image %}
+                <a href="{{ img.image.url }}" target="_blank"
+                   style="display:block;border-radius:12px;overflow:hidden;border:1px solid #e6e8f0;transition:transform .2s;"
+                   onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                  <img src="{{ img.image.url }}" alt="{{ book.title }}"
+                       style="width:100%;height:170px;object-fit:cover;display:block;">
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
 
       </div>
     </div>
