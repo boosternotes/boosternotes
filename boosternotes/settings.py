@@ -52,7 +52,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'boosternotes.wsgi.application'
-
+import dj_database_url
 DATABASES = {
     'default': dj_database_url.parse(
         'postgresql://neondb_owner:npg_cWijTrL7sbl6@ep-tiny-cake-aphi41ej.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
