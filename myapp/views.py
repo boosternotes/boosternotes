@@ -588,6 +588,7 @@ def category_list(request):
         form = CategoryForm(request.POST, request.FILES)
         if form.is_valid():
             category = form.save()
+            cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
             messages.success(request, f"Category '{category.name}' created!")
             return redirect('category_list')
         messages.error(request, 'Please correct the errors below.')
@@ -612,6 +613,7 @@ def category_edit(request, pk):
                     default_storage.delete(category.image.name)
                 category.image = request.FILES['image']
             category.save()
+            cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
             messages.success(request, f"Category '{category.name}' updated!")
         else:
             messages.error(request, 'Category name is required.')
@@ -625,6 +627,7 @@ def category_delete(request, pk):
         if category.image and default_storage.exists(category.image.name):
             default_storage.delete(category.image.name)
         category.delete()
+        cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
         messages.success(request, 'Category deleted!')
     return redirect('category_list')
 
@@ -635,6 +638,7 @@ def category_toggle_active(request, pk):
     if request.method == 'POST':
         category.is_active = not category.is_active
         category.save()
+        cache.delete('home_categories')  # ✅ FIX: clear homepage category cache
         status = 'activated' if category.is_active else 'deactivated'
         messages.success(request, f"Category '{category.name}' {status}!")
     return redirect('category_list')
@@ -776,10 +780,13 @@ def home(request):
         coupon_qs = coupon_qs.exclude(id__in=used_ids)
     active_coupons = coupon_qs.order_by('-created_at')[:6]
 
-    categories = cache.get('home_categories')
-    if categories is None:
-        categories = list(Category.objects.filter(is_active=True).annotate(pdf_count=Count('elibrary_courses')).order_by('name')[:10])
-        cache.set('home_categories', categories, 600)
+    # ✅ FIX: No caching for categories on homepage — always fetch fresh from DB
+    # Previously cached for 600s (10 mins), causing homepage to NOT show new/updated categories.
+    categories = list(
+        Category.objects.filter(is_active=True)
+        .annotate(pdf_count=Count('elibrary_courses'))
+        .order_by('name')[:20]
+    )
 
     popular_pdfs = ELibraryModel.objects.filter(is_active=True).select_related('category').only('id', 'name', 'current_price', 'original_price', 'thumbnail', 'category_id').order_by('-created_at')[:8]
 
