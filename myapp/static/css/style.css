@@ -395,10 +395,10 @@
     .banner-slide.active{opacity:1;pointer-events:auto}
     .banner-slide img{
       width:100%;height:100%;object-fit:cover;display:block;
-      /* force browser decode off main thread */
       content-visibility:auto;
     }
 
+    /* ── Stats Section ── */
     .stats-highlight-section{
       background:linear-gradient(180deg,#ffffff 0%, #f5f8ff 100%);
       padding:1.5rem 0 2rem;
@@ -423,6 +423,8 @@
       gap:12px;
       box-shadow:0 10px 24px rgba(26,58,143,0.06);
       transition:transform .2s ease, box-shadow .2s ease;
+      min-width:0;
+      overflow:hidden;
     }
     .stat-box:hover{
       transform:translateY(-3px);
@@ -448,23 +450,30 @@
       background:linear-gradient(135deg,#f1ecff,#e4dcff);
       border-color:#d8cbff;
     }
-    .stat-copy{min-width:0}
+    .stat-copy{min-width:0;overflow:hidden}
     .stat-value{
       font-size:1.55rem;
       font-weight:800;
       color:#16367f;
       line-height:1;
       margin-bottom:4px;
+      white-space:nowrap;
     }
     .stat-title{
       font-size:.93rem;
       font-weight:700;
       color:#1e2433;
       margin-bottom:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .stat-note{
       font-size:.76rem;
       color:#7a849a;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     /* ── Categories ── */
@@ -486,12 +495,10 @@
       display:flex;
       gap:12px;
       overflow-x:auto;
-      /* padding-bottom gives room so drop-shadow isn't clipped */
       padding-bottom:12px;
       padding-top:4px;
       scroll-snap-type:x mandatory;
       -webkit-overflow-scrolling:touch;
-      /* allow hover shadow to show */
       overflow-y:visible;
     }
     .cat-scroll::-webkit-scrollbar{height:4px}
@@ -513,7 +520,6 @@
       transition:all .2s ease;
       flex-shrink:0;
       text-align:center;
-      /* prevent hover translateY from being clipped */
       will-change:transform;
     }
     .cat-card:hover{
@@ -528,7 +534,6 @@
       color:#fff;
     }
     .cat-card.active .cat-label{color:#fff}
-    /* keep image visible when card is active (tint overlay trick) */
     .cat-card.active .cat-img-wrap{
       background:rgba(255,255,255,0.18);
       border-radius:12px;
@@ -586,18 +591,15 @@
 
     .pdf-section{background:#f5f7fa}
 
-    /* FIX: overflow:visible so hover box-shadow / translateY isn't clipped */
     .pdf-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
       gap:1rem;
-      /* extra padding so translateY shadow shows */
       padding-bottom:8px;
       overflow:visible;
       align-items:stretch;
     }
 
-    /* pdf-card-link wraps the card — must be flex column to stretch */
     .pdf-card-link{
       display:flex;
       flex-direction:column;
@@ -610,7 +612,6 @@
       border:1px solid #eaecf4;
       transition:transform .2s, box-shadow .2s;
       cursor:pointer;min-width:0;
-      /* stretch to fill link height */
       display:flex;
       flex-direction:column;
       height:100%;
@@ -645,7 +646,6 @@
     .pdf-badge.green{background:#1d9e75}
     .pdf-badge.blue{background:#1a3a8f}
 
-    /* body grows to push buy-btn to bottom */
     .pdf-body{
       padding:12px;
       display:flex;
@@ -655,14 +655,13 @@
     .pdf-body h3{
       font-size:.86rem;font-weight:600;color:#1a1a2e;
       margin-bottom:6px;line-height:1.35;
-      /* no min-height — let flexbox handle alignment */
     }
     .pdf-body > div[style*="color:#1a3a8f"]{
       font-size:.72rem;color:#1a3a8f;font-weight:600;margin-bottom:4px;
     }
     .pdf-body > div[style*="color:#777"]{
       font-size:.74rem;color:#777;line-height:1.45;margin-bottom:8px;
-      flex:1; /* pushes buy-btn down */
+      flex:1;
     }
     .pdf-foot{
       display:flex;align-items:center;justify-content:space-between;
@@ -825,6 +824,10 @@
     .footer-bot p{color:#5a7aaa;font-size:.74rem}
     .footer-bot .gold{color:#e8b400}
 
+    /* ════════════════════════════════════════
+       RESPONSIVE BREAKPOINTS
+       ════════════════════════════════════════ */
+
     @media (max-width:1150px){
       .search-box{min-width:220px;flex-basis:360px}
       .wa-info,.wa-icon{display:none}
@@ -834,9 +837,12 @@
       .about-inner{grid-template-columns:1fr}
       .profile-pill .name-text{display:none}
     }
+
+    /* ── Tablet: 3 → 1 col stats ── */
     @media (max-width:900px){
       .stats-cards{grid-template-columns:1fr}
     }
+
     @media (max-width:820px){
       nav{
         padding:0 .85rem;
@@ -858,6 +864,8 @@
       }
       .desktop-banner,.mobile-banner{display:none}
     }
+
+    /* ── Mobile (Samsung Galaxy, iPhone etc ≤640px) ── */
     @media (max-width:640px){
       :root{--nav-h:58px}
       nav{
@@ -898,12 +906,31 @@
       }
       .banner-arrow.prev{left:12px}
       .banner-arrow.next{right:12px}
-      .stats-highlight-section{padding:1.1rem 0 1.4rem}
-      .stats-highlight-inner{width:min(100% - 1.2rem, var(--container))}
-      .stat-box{border-radius:16px;padding:1rem}
-      .stat-icon-wrap{width:48px;height:48px;border-radius:14px;font-size:1.3rem}
-      .stat-value{font-size:1.3rem}
-      .section{padding:1.5rem .9rem}
+
+      /* Stats: full-width horizontal cards on mobile */
+      .stats-highlight-section{padding:1rem 0 1.25rem}
+      .stats-highlight-inner{width:calc(100% - 1.2rem);margin:0 auto}
+      .stats-cards{
+        grid-template-columns:1fr;
+        gap:.75rem;
+      }
+      .stat-box{
+        border-radius:16px;
+        padding:.9rem 1rem;
+        gap:14px;
+      }
+      .stat-icon-wrap{
+        width:48px;height:48px;
+        border-radius:14px;
+        font-size:1.3rem;
+        flex-shrink:0;
+      }
+      .stat-copy{flex:1;min-width:0}
+      .stat-value{font-size:1.35rem}
+      .stat-title{font-size:.88rem}
+      .stat-note{font-size:.72rem}
+
+      .section{padding:1.25rem .9rem}
       .sec-head{align-items:flex-start;flex-direction:column}
       .view-all{align-self:flex-start}
       .pdf-grid,.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -932,8 +959,9 @@
       .mobile-banner{display:block}
     }
 
+    /* ── Small Samsung / older Androids (≤420px) ── */
     @media (max-width:420px){
-      nav{padding:0 .65rem}
+      nav{padding:0 .65rem;gap:.35rem}
       .logo-text-block .sub{display:none}
       .logo-img{height:32px}
       .logo-circle{
@@ -954,16 +982,41 @@
         font-size:7px;
       }
       .banner-slider{height:170px}
+
+      /* Stats: compact on very small screens */
+      .stats-cards{gap:.6rem}
+      .stat-box{
+        padding:.8rem .9rem;
+        gap:10px;
+      }
+      .stat-icon-wrap{
+        width:42px;height:42px;
+        border-radius:12px;
+        font-size:1.1rem;
+      }
+      .stat-value{font-size:1.2rem}
+      .stat-title{font-size:.82rem}
+      .stat-note{font-size:.68rem}
+
       .a-stats{grid-template-columns:1fr}
       .feat{padding:12px}
-      .mobile-menu{
-        padding:.75rem;
-      }
+      .mobile-menu{padding:.75rem}
       .mob-link{
         padding:13px 14px;
         font-size:.9rem;
       }
+      /* On very small screens keep 2 cols if possible, else 1 */
+      .pdf-grid,.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .pdf-thumb{height:95px}
+      .pdf-body{padding:9px}
+      .pdf-body h3{font-size:.78rem}
+      .price-now{font-size:.9rem}
+    }
+
+    /* ── Extra small (360px Samsung Galaxy A series) ── */
+    @media (max-width:360px){
       .pdf-grid,.book-grid{grid-template-columns:1fr}
+      .stat-box{gap:8px;padding:.75rem .85rem}
     }
 
     @media (hover:none){
@@ -1030,6 +1083,6 @@
     }
 
     @media (max-width: 420px){
-      .auth-actions{ gap:6px; }
-      .auth-btn{ padding:8px 10px; font-size:0.68rem; letter-spacing:0; }
+      .auth-actions{ gap:5px; }
+      .auth-btn{ padding:7px 9px; font-size:0.65rem; letter-spacing:0; min-height:36px; }
     }
