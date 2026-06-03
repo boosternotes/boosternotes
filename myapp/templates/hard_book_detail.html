@@ -2,110 +2,482 @@
 {% load static %}
 
 {% block content %}
-<section class="section" style="padding: 30px 16px;">
-  <div style="max-width:960px;margin:0 auto;">
+<style>
+  .book-detail-section {
+    padding: 2rem 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 50vh;
+  }
 
-    <!-- Back Button -->
-    <a href="{% url 'home' %}#books" style="display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:#1a3a8f;text-decoration:none;margin-bottom:20px;font-weight:500;">
-      ← Back to Books
-    </a>
+  .back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f5f7fa;
+    color: #333;
+    border: 1.5px solid #dde2ee;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+  }
+  .back-to-home:hover { background: #e9edf5; transform: translateY(-2px); text-decoration: none; color: #333; }
 
-    <div class="pdf-card" style="border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.09);">
+  .book-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e7ebf5;
+  }
+  .book-detail-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .book-detail-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .book-name-badge {
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .book-type-badge {
+    background: #f0f4ff;
+    color: #1a3a8f;
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
 
-      <!-- Hero Banner Image -->
-      <div style="height:340px;overflow:hidden;position:relative;background:#f0f4ff;">
-        {% with first_image=book_images.first %}
-          {% if first_image and first_image.image %}
-            <img src="{{ first_image.image.url }}" alt="{{ book.title }}"
-                 style="width:100%;height:100%;object-fit:cover;">
+  /* Group box */
+  .book-group {
+    margin-bottom: 2rem;
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+  }
+  .book-group-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f0f2f8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .book-group-title span {
+    background: #1a3a8f;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  /* Overview layout */
+  .book-overview {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* Main image */
+  .book-main-img {
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f7fa, #e9edf5);
+    aspect-ratio: 3/4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .book-main-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+  .book-main-img img:hover { transform: scale(1.03); }
+
+  /* Info column */
+  .book-info-col { display: flex; flex-direction: column; gap: 0.9rem; }
+  .book-title-lg { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; line-height: 1.3; }
+  .book-author { font-size: 0.9rem; color: #666; }
+  .book-desc { font-size: 0.9rem; color: #555; line-height: 1.7; }
+
+  /* Meta tags */
+  .book-meta-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .book-meta-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f0f4ff;
+    color: #1a3a8f;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  /* Price row */
+  .book-price-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .price-now { font-size: 1.7rem; font-weight: 900; color: #1a3a8f; }
+  .price-old { font-size: 1rem; color: #aaa; text-decoration: line-through; }
+  .save-badge {
+    background: #fff3cd;
+    color: #856404;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  /* Delivery info box */
+  .delivery-info {
+    background: #f0f9f0;
+    border: 1px solid #b7e4b7;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: #2d6a2d;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .delivery-info i { margin-top: 2px; flex-shrink: 0; }
+
+  /* Action buttons */
+  .book-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .buy-btn-search {
+    flex: 1;
+    min-width: 140px;
+    padding: 11px 20px;
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    text-align: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+  }
+  .buy-btn-search:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,58,143,0.3); color: #fff; text-decoration: none; }
+  .cart-btn-search {
+    flex: 1;
+    min-width: 140px;
+    padding: 11px 20px;
+    background: #fff;
+    color: #1a3a8f;
+    border: 2px solid #1a3a8f;
+    border-radius: 8px;
+    font-weight: 700;
+    text-align: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+  }
+  .cart-btn-search:hover { background: #1a3a8f; color: #fff; transform: translateY(-2px); text-decoration: none; }
+
+  /* Image gallery */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .gallery-item {
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    background: linear-gradient(135deg, #f5f7fa, #e9edf5);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .gallery-item:hover { transform: scale(1.03); box-shadow: 0 4px 16px rgba(26,58,143,0.12); }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+  .gallery-empty {
+    border: 1px dashed #cfd6e6;
+    border-radius: 12px;
+    padding: 16px;
+    background: #fafbff;
+    color: #888;
+    text-align: center;
+  }
+
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    background: none;
+    border: none;
+  }
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .lightbox-nav:hover { background: rgba(255,255,255,0.25); }
+  .lightbox-nav.prev { left: 20px; }
+  .lightbox-nav.next { right: 20px; }
+  .lightbox-counter { color: #ccc; font-size: 0.85rem; margin-top: 12px; }
+
+  @media (max-width: 768px) {
+    .book-detail-section { padding: 1rem; }
+    .book-overview { grid-template-columns: 1fr; }
+    .book-main-img { aspect-ratio: 16/9; max-height: 220px; }
+    .book-detail-header { flex-direction: column; align-items: flex-start; }
+    .book-actions { flex-direction: column; }
+    .buy-btn-search, .cart-btn-search { min-width: unset; }
+    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+
+<div class="book-detail-section">
+
+  <!-- Back -->
+  <a href="{% url 'hard_books_public' %}" class="back-to-home">
+    <i class="fa-solid fa-arrow-left"></i> Back to Books
+  </a>
+
+  <!-- Header -->
+  <div class="book-detail-header">
+    <div class="book-detail-header-left">
+      <h2><i class="fa-solid fa-book" style="color:#1a3a8f;"></i> Physical Book</h2>
+      <span class="book-name-badge">{{ book.title }}</span>
+      <span class="book-type-badge"><i class="fa-solid fa-truck"></i> Home Delivery</span>
+    </div>
+  </div>
+
+  <!-- Overview Group -->
+  <div class="book-group">
+    <h3 class="book-group-title">
+      <i class="fa-solid fa-circle-info"></i> Book Details
+      <span>Physical Book</span>
+    </h3>
+    <div class="book-overview">
+      <!-- Main image -->
+      <div class="book-main-img" onclick="openLightbox(0)">
+        {% with images=book.images.all %}
+          {% if images.0 and images.0.image %}
+            <img id="mainBookImg" src="{{ images.0.image.url }}" alt="{{ book.title }}" loading="lazy">
           {% else %}
-            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;">
-              📚
-            </div>
+            📗
           {% endif %}
         {% endwith %}
-        <span class="pdf-badge blue" style="position:absolute;top:14px;right:14px;">BOOK</span>
       </div>
 
-      <!-- Book Info -->
-      <div style="padding:24px 28px;">
+      <!-- Info -->
+      <div class="book-info-col">
+        <div class="book-title-lg">{{ book.title }}</div>
 
-        <!-- Title (only once) -->
-        <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a2e;margin:0 0 10px;">
-          {{ book.title }}
-        </h2>
-
-        <!-- Description — only shown if it differs from title -->
-        {% if book.description and book.description|lower != book.title|lower %}
-          <p style="font-size:.95rem;color:#555;line-height:1.75;margin-bottom:16px;">
-            {{ book.description }}
-          </p>
+        {% if book.author %}
+          <div class="book-author"><i class="fa-solid fa-user-pen"></i> {{ book.author }}</div>
         {% endif %}
 
-        <!-- Price Row -->
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
-          <span style="font-size:1.6rem;font-weight:700;color:#1a3a8f;">
-            ₹{{ book.price|floatformat:0 }}
-          </span>
-          {% if book.original_price %}
-            <span style="font-size:1rem;color:#aaa;text-decoration:line-through;">
-              ₹{{ book.original_price|floatformat:0 }}
-            </span>
-            <span style="background:#e6f9ee;color:#1a8f4a;font-size:.8rem;font-weight:600;padding:3px 10px;border-radius:20px;">
-              SAVE ₹{{ book.original_price|floatformat:0|add:"-"|add:book.price|floatformat:0 }}
-            </span>
+        {% if book.description %}
+          <div class="book-desc">{{ book.description }}</div>
+        {% endif %}
+
+        <!-- Meta tags -->
+        <div class="book-meta-row">
+          {% if book.language %}
+            <span class="book-meta-tag"><i class="fa-solid fa-language"></i> {{ book.language }}</span>
+          {% endif %}
+          {% if book.pages %}
+            <span class="book-meta-tag"><i class="fa-solid fa-file-lines"></i> {{ book.pages }} Pages</span>
+          {% endif %}
+          {% if book.publisher %}
+            <span class="book-meta-tag"><i class="fa-solid fa-building"></i> {{ book.publisher }}</span>
+          {% endif %}
+          {% if book.edition %}
+            <span class="book-meta-tag"><i class="fa-solid fa-layer-group"></i> {{ book.edition }}</span>
           {% endif %}
         </div>
 
-        <!-- Action Buttons -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;">
-          {% if user.is_authenticated %}
-            <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;min-width:140px;">
-              {% csrf_token %}
-              <input type="hidden" name="item_id"    value="{{ book.id }}">
-              <input type="hidden" name="item_type"  value="book">
-              <input type="hidden" name="redirect_to" value="checkout">
-              <button type="submit" class="buy-btn" style="width:100%;padding:12px;font-size:1rem;">
-                🛒 Buy Now
-              </button>
-            </form>
-            <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;min-width:140px;">
-              {% csrf_token %}
-              <input type="hidden" name="item_id"   value="{{ book.id }}">
-              <input type="hidden" name="item_type" value="book">
-              <button type="submit" class="view-all" style="width:100%;padding:12px;font-size:1rem;text-align:center;">
-                🛍️ Add to Cart
-              </button>
-            </form>
-          {% else %}
-            <a href="{% url 'login' %}?next={{ request.path }}"
-               class="buy-btn" style="flex:1;text-align:center;padding:12px;font-size:1rem;">
-              🔒 Login to Buy
-            </a>
+        <!-- Price -->
+        <div class="book-price-row">
+          <span class="price-now">₹{{ book.price|floatformat:0 }}</span>
+          {% if book.original_price and book.original_price > book.price %}
+            <span class="price-old">₹{{ book.original_price|floatformat:0 }}</span>
           {% endif %}
         </div>
 
-        <!-- Book Images Gallery -->
-        {% if book_images %}
-          <h4 style="font-size:1rem;font-weight:600;color:#1a1a2e;margin:0 0 12px;">
-            📷 Book Preview Images
-          </h4>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
-            {% for img in book_images %}
-              {% if img.image %}
-                <a href="{{ img.image.url }}" target="_blank"
-                   style="display:block;border-radius:12px;overflow:hidden;border:1px solid #e6e8f0;transition:transform .2s;"
-                   onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                  <img src="{{ img.image.url }}" alt="{{ book.title }}"
-                       style="width:100%;height:170px;object-fit:cover;display:block;">
-                </a>
-              {% endif %}
-            {% endfor %}
+        <!-- Delivery note -->
+        <div class="delivery-info">
+          <i class="fa-solid fa-truck-fast"></i>
+          <div>
+            <strong>Physical Book — Delivered to your doorstep.</strong>
+            <br>After placing your order, our team will contact you to confirm delivery details. Typically dispatched within 2–4 business days.
           </div>
-        {% endif %}
+        </div>
 
+        <!-- Action buttons -->
+        <div class="book-actions">
+          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;display:flex;">
+            {% csrf_token %}
+            <input type="hidden" name="item_id" value="{{ book.id }}">
+            <input type="hidden" name="item_type" value="book">
+            <input type="hidden" name="redirect_to" value="checkout">
+            <button type="submit" class="buy-btn-search" style="width:100%;">⚡ Buy Now — ₹{{ book.price|floatformat:0 }}</button>
+          </form>
+          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;display:flex;">
+            {% csrf_token %}
+            <input type="hidden" name="item_id" value="{{ book.id }}">
+            <input type="hidden" name="item_type" value="book">
+            <button type="submit" class="cart-btn-search" style="width:100%;">🛒 Add to Cart</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</section>
+
+  <!-- Image Gallery Group -->
+  {% with images=book.images.all %}
+  <div class="book-group">
+    <h3 class="book-group-title">
+      <i class="fa-solid fa-images" style="color:#1a3a8f;"></i> Book Images
+      <span>{{ images|length }} Photo{{ images|length|pluralize }}</span>
+    </h3>
+
+    {% if images %}
+      <div class="gallery-grid">
+        {% for img in images %}
+          {% if img.image %}
+          <div class="gallery-item" onclick="openLightbox({{ forloop.index0 }})">
+            <img src="{{ img.image.url }}" alt="{{ book.title }} image {{ forloop.counter }}" loading="lazy">
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="gallery-empty">📷 No additional images available for this book.</div>
+    {% endif %}
+  </div>
+  {% endwith %}
+
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOutside(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav prev" onclick="prevImage(event)"><i class="fa-solid fa-chevron-left"></i></button>
+  <img id="lightboxImg" src="" alt="Book image">
+  <button class="lightbox-nav next" onclick="nextImage(event)"><i class="fa-solid fa-chevron-right"></i></button>
+  <div class="lightbox-counter" id="lightboxCounter"></div>
+</div>
+
+<script>
+const bookImages = [
+  {% for img in book_images %}{% if img.image %}"{{ img.image.url }}",{% endif %}{% endfor %}
+];
+let currentIdx = 0;
+
+function openLightbox(idx) {
+  if (!bookImages.length) return;
+  currentIdx = idx;
+  document.getElementById('lightboxImg').src = bookImages[currentIdx];
+  document.getElementById('lightboxCounter').textContent = (currentIdx + 1) + ' / ' + bookImages.length;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function closeLightboxOutside(e) {
+  if (e.target.id === 'lightbox') closeLightbox();
+}
+function prevImage(e) {
+  e.stopPropagation();
+  currentIdx = (currentIdx - 1 + bookImages.length) % bookImages.length;
+  document.getElementById('lightboxImg').src = bookImages[currentIdx];
+  document.getElementById('lightboxCounter').textContent = (currentIdx + 1) + ' / ' + bookImages.length;
+}
+function nextImage(e) {
+  e.stopPropagation();
+  currentIdx = (currentIdx + 1) % bookImages.length;
+  document.getElementById('lightboxImg').src = bookImages[currentIdx];
+  document.getElementById('lightboxCounter').textContent = (currentIdx + 1) + ' / ' + bookImages.length;
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('active')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') prevImage(e);
+  if (e.key === 'ArrowRight') nextImage(e);
+});
+</script>
 {% endblock content %}
