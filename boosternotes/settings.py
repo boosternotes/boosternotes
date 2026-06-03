@@ -54,11 +54,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'boosternotes.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(
+        'postgresql://neondb_owner:npg_cWijTrL7sbl6@ep-tiny-cake-aphi41ej.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
+    )
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -95,8 +95,8 @@ CACHES = {
 }
 
 # ── Razorpay (Test Mode) ──────────────────────────────────────────────────────
-RAZORPAY_KEY_ID     = 'rzp_test_REPLACE_WITH_YOUR_KEY_ID'
-RAZORPAY_KEY_SECRET = 'REPLACE_WITH_YOUR_KEY_SECRET'
+RAZORPAY_KEY_ID = 'rzp_test_RaygzMDa8nwFFP'
+RAZORPAY_KEY_SECRET = 'F1mtVXEvOvbyc6atPUAEwdZd'
 
 # ── Dropbox ───────────────────────────────────────────────────────────────────
 DROPBOX_APP_KEY       = "wgg2fsw5pf16x8q"
