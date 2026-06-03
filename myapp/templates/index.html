@@ -188,6 +188,49 @@
       border-radius:12px; display:block;
     }
     .cat-img-wrap .cat-emoji { font-size:1.6rem; line-height:1; }
+
+    /* ── Mobile Search Bar Fix (Samsung Galaxy A34 & narrow screens) ── */
+    .mobile-search-center {
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+    }
+    .mobile-search-center form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 8px 10px;
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .mobile-search-center svg { flex-shrink: 0; }
+    .mobile-search-center input {
+      flex: 1;
+      min-width: 0; /* critical: prevents flex child from overflowing on narrow screens */
+      background: transparent;
+      border: none;
+      outline: none;
+      font: inherit;
+      color: #333;
+      font-size: 14px;
+    }
+    .mobile-search-center button[type="submit"] {
+      flex-shrink: 0;
+      white-space: nowrap;
+      background: #1a3a8f;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
   </style>
 </head>
 <body>
@@ -372,15 +415,14 @@
   <div class="banner-dots" id="bannerDots"></div>
 </div>
 
-<!-- Mobile-only centered search bar -->
-<div class="mobile-search-center" style="display:none; padding:12px 16px; max-width:640px; margin:0 auto;">
-  <form method="get" action="{% url 'search' %}" style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:8px;padding:8px 12px;">
+<!-- Mobile-only search bar — fixed for narrow screens (Samsung Galaxy A34 etc.) -->
+<div class="mobile-search-center">
+  <form method="get" action="{% url 'search' %}">
     <svg width="14" height="14" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     <input type="text" name="q"
       placeholder="{{ navbar.search_placeholder|default:'Search pdf courses, exams...' }}"
-      value="{{ search_query|default:'' }}"
-      style="flex:1;background:transparent;border:none;outline:none;font:inherit;color:#333;">
-    <button type="submit" style="background:#1a3a8f;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-weight:600;cursor:pointer;">Search</button>
+      value="{{ search_query|default:'' }}">
+    <button type="submit">Search</button>
   </form>
 </div>
 
