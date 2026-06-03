@@ -82,12 +82,15 @@ urlpatterns = [
     path('elibrary/<uuid:pk>/upload-pdf/', views.elibrary_upload_pdf, name='elibrary_upload_pdf'),
     path('elibrary/pdf/delete/<uuid:pk>/', views.elibrary_pdf_delete, name='elibrary_pdf_delete'),
 
-    # Hard Books
+    # Hard Books - admin
     path('hard-books/', views.hard_books_list, name='hard_books_list'),
     path('hard-books/add/', views.hard_book_add, name='hard_book_add'),
     path('hard-books/edit/<uuid:pk>/', views.hard_book_edit, name='hard_book_edit'),
     path('hard-books/delete/<uuid:pk>/', views.hard_book_delete, name='hard_book_delete'),
     path('hard-books/image-delete/<uuid:pk>/', views.hard_book_image_delete, name='hard_book_image_delete'),
+
+    # Hard Books - public
+    path('books/', views.hard_books_public, name='hard_books_public'),
 
     path('search/', views.search, name='search'),
     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
@@ -95,7 +98,7 @@ urlpatterns = [
     path('elibrary/<uuid:pk>/', views.elibrary_detail, name='elibrary_detail'),
     path('hard-books/<uuid:pk>/', views.hard_book_detail, name='hard_book_detail'),
 
-    # DB Backup & Restore Panel — NOTE: must NOT start with 'admin/' (conflicts with Django admin)
+    # DB Backup & Restore Panel
     path('db-backup/', backup_panel, name='backup_panel'),
 ]
 

@@ -291,11 +291,24 @@ def search(request):
     return render(request, 'search_results.html', {'navbar': _get_navbar(), 'footer': _get_footer(), 'search_query': query, 'category_results': category_results, 'elibrary_results': elibrary_results, 'hardbook_results': hardbook_results, 'total_results': total_results, 'active_coupons': active_coupons})
 
 
-# ── Hard Books ───────────────────────────────────────────────────────────────────
+# ── Hard Books (admin) ───────────────────────────────────────────────────────────────────
 @login_required
 def hard_books_list(request):
     books = HardBook.objects.prefetch_related('images').all()
     return render(request, 'hard_books_list.html', {'books': books})
+
+
+# ── Hard Books Public Dashboard ──────────────────────────────────────────────────────
+def hard_books_public(request):
+    books = HardBook.objects.filter(is_active=True).prefetch_related(
+        Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))
+    ).order_by('-created_at')
+    return render(request, 'hard_books_public.html', {
+        'books': books,
+        'navbar': _get_navbar(),
+        'footer': _get_footer(),
+        'cart_count': len(request.session.get('cart', {})),
+    })
 
 
 @login_required
@@ -780,7 +793,7 @@ def home(request):
         coupon_qs = coupon_qs.exclude(id__in=used_ids)
     active_coupons = coupon_qs.order_by('-created_at')[:6]
 
-    # ✅ ALL active categories shown — no limit, no cache, always fresh from DB
+    # ALL active categories shown — no limit, no cache, always fresh from DB
     categories = list(
         Category.objects.filter(is_active=True)
         .annotate(pdf_count=Count('elibrary_courses'))
@@ -803,8 +816,20 @@ def home(request):
 
 # ── Detail pages ───────────────────────────────────────────────────────────────────
 def hard_book_detail(request, pk):
-    book = get_object_or_404(HardBook.objects.prefetch_related(Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))), pk=pk, is_active=True)
-    return render(request, 'hard_book_detail.html', {'book': book, 'book_images': book.images.all()})
+    book = get_object_or_404(
+        HardBook.objects.prefetch_related(
+            Prefetch('images', queryset=HardBookImage.objects.order_by('uploaded_at'))
+        ),
+        pk=pk, is_active=True
+    )
+    book_images = list(book.images.all())
+    return render(request, 'hard_book_detail.html', {
+        'book': book,
+        'book_images': book_images,
+        'navbar': _get_navbar(),
+        'footer': _get_footer(),
+        'cart_count': len(request.session.get('cart', {})),
+    })
 
 
 def elibrary_detail(request, pk):
