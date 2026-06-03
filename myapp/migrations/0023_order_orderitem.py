@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('myapp', '0022_couponusage'),
+        ('auth', '0012_alter_user_first_name_max_length'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
