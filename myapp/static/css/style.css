@@ -274,20 +274,6 @@
       font-weight:700;border:2px solid #fff;
     }
 
-    .notif-panel{
-      display:none;
-      position:absolute;
-      top:calc(100% + 12px);right:0;
-      width:min(320px, calc(100vw - 24px));
-      background:#fff;
-      border:1px solid #e0e4ee;
-      border-radius:14px;
-      box-shadow:0 14px 40px rgba(0,0,0,0.13);
-      z-index:999;overflow:hidden;
-    }
-
-    .notif-panel.open{display:block}
-
     .notif-header{
       display:flex;align-items:center;justify-content:space-between;
       padding:12px 15px;border-bottom:1px solid #eee;gap:8px;
@@ -1139,7 +1125,3 @@
       .stat-box{gap:8px;padding:.75rem .85rem}
     }
 
-    @media (hover:none){
-      .has-drop:hover .drop-menu,
-      .profile-pill:hover .drop-menu{display:none}
-    }
