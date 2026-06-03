@@ -254,7 +254,7 @@
       gap: 10px;
     }
 
-    /* Arrow buttons — shared by both category & elibrary sliders */
+    /* Arrow buttons — shared by all sliders */
     .cat-arrow {
       flex-shrink: 0;
       width: 38px;
@@ -417,7 +417,6 @@
 
     /* ════════════════════════════════════════════
        📄 E-LIBRARY / PDF SECTION — horizontal scroll
-       Same pattern as category section
        ════════════════════════════════════════════ */
 
     .elib-section {
@@ -447,7 +446,7 @@
     }
     .elib-track::-webkit-scrollbar { display: none; }
 
-    /* PDF card — fixed width so it snaps */
+    /* PDF card */
     .elib-card {
       scroll-snap-align: start;
       flex-shrink: 0;
@@ -586,6 +585,185 @@
     }
     @media (max-width: 360px) {
       .elib-card { width: 158px; }
+    }
+
+    /* ════════════════════════════════════════════
+       📦 PHYSICAL BOOKS — Same slider style as E-Library
+       ════════════════════════════════════════════ */
+
+    .books-section {
+      padding: 32px 0 28px;
+      background: #fff;
+    }
+
+    .books-section-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Book card track — identical layout to elib-track */
+    .book-track {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 8px 2px 14px;
+      flex: 1;
+      min-width: 0;
+      scroll-snap-type: x mandatory;
+    }
+    .book-track::-webkit-scrollbar { display: none; }
+
+    /* Book card — same structure & dimensions as elib-card */
+    .book-card {
+      scroll-snap-align: start;
+      flex-shrink: 0;
+      width: 200px;
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #eaecf4;
+      transition: transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(26,58,143,0.06);
+      position: relative;
+    }
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px rgba(26,58,143,0.14);
+      border-color: #b8c4f0;
+    }
+
+    /* Spine accent — subtle left edge like a real book */
+    .book-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #1a3a8f 0%, #4f72e3 100%);
+      z-index: 1;
+    }
+
+    /* Thumbnail — portrait 2:3 ratio to look like a book cover */
+    .book-thumb {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      max-height: 160px;
+      background: linear-gradient(135deg, #c8d6ff 0%, #e8edff 60%, #d4e0ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .book-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    /* Badge — same as elib-badge */
+    .book-badge {
+      position: absolute;
+      top: 8px; right: 8px;
+      font-size: .6rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      z-index: 2;
+    }
+    .book-badge.bestseller { background: #c77700; color: #fff; }
+    .book-badge.new-arrival { background: #1a8a4a; color: #fff; }
+    .book-badge.popular { background: #1a3a8f; color: #fff; }
+    .book-badge.limited { background: #c0392b; color: #fff; }
+
+    /* Body */
+    .book-body {
+      padding: 12px 12px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .book-body h3 {
+      font-size: .75rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1.4;
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .book-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 6px;
+    }
+    .book-price-now {
+      font-size: .9rem;
+      font-weight: 800;
+      color: #1a3a8f;
+    }
+    .book-price-old {
+      font-size: .68rem;
+      color: #bbb;
+      text-decoration: line-through;
+      margin-left: 4px;
+      font-weight: 400;
+    }
+    .book-tag {
+      font-size: .6rem;
+      background: #eef1ff;
+      color: #1a3a8f;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+    .book-buy-btn {
+      margin-top: 8px;
+      background: #1a3a8f;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: .72rem;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: background .15s;
+      min-height: 34px;
+    }
+    .book-buy-btn:hover { background: #0d2060; }
+
+    @media (max-width: 480px) {
+      .book-card { width: 172px; }
+      .book-thumb { max-height: 140px; }
+    }
+    @media (max-width: 360px) {
+      .book-card { width: 158px; }
     }
   </style>
 </head>
@@ -814,12 +992,10 @@
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
-     🎯 CATEGORIES SECTION — Rebuilt with box cards + arrows
+     🎯 CATEGORIES SECTION
      ═══════════════════════════════════════════════════════ -->
 <section class="cat-section" id="categories">
   <div class="cat-section-inner">
-
-    <!-- Header -->
     <div class="cat-section-header">
       <div class="cat-section-title">
         <h2>🎯 Browse by <span>Exam Category</span></h2>
@@ -827,16 +1003,8 @@
       </div>
       <a href="{% url 'all_categories' %}" class="cat-view-all">View All →</a>
     </div>
-
-    <!-- Slider -->
     <div class="cat-slider-wrap">
-
-      <!-- Left Arrow -->
-      <button class="cat-arrow" id="catPrevBtn" onclick="catMove(-1)" type="button" aria-label="Previous categories">
-        &#8592;
-      </button>
-
-      <!-- Card Track -->
+      <button class="cat-arrow" id="catPrevBtn" onclick="catMove(-1)" type="button" aria-label="Previous categories">&#8592;</button>
       <div class="cat-track" id="catTrack">
         {% for category in categories %}
           <a href="{% url 'category_courses_view' category.id %}"
@@ -844,9 +1012,7 @@
              onclick="activateCat(this)">
             <div class="cat-box-img">
               {% if category.image %}
-                <img src="{{ category.image.url }}"
-                     alt="{{ category.name }}"
-                     width="52" height="52"
+                <img src="{{ category.image.url }}" alt="{{ category.name }}" width="52" height="52"
                      loading="lazy" decoding="async"
                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                 <span class="cat-fallback" style="display:none;">📚</span>
@@ -865,23 +1031,16 @@
           </div>
         {% endfor %}
       </div>
-
-      <!-- Right Arrow -->
-      <button class="cat-arrow" id="catNextBtn" onclick="catMove(1)" type="button" aria-label="Next categories">
-        &#8594;
-      </button>
-
-    </div><!-- /cat-slider-wrap -->
-  </div><!-- /cat-section-inner -->
+      <button class="cat-arrow" id="catNextBtn" onclick="catMove(1)" type="button" aria-label="Next categories">&#8594;</button>
+    </div>
+  </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
-     📄 E-LIBRARY / POPULAR PDF COURSES — Horizontal scroll
+     📄 E-LIBRARY / POPULAR PDF COURSES
      ═══════════════════════════════════════════════════════ -->
 <section class="elib-section" id="pdfs">
   <div class="elib-section-inner">
-
-    <!-- Header -->
     <div class="cat-section-header">
       <div class="cat-section-title">
         <h2>📄 Popular <span>PDF Courses</span></h2>
@@ -889,16 +1048,8 @@
       </div>
       <a href="{% url 'elibrary_dashboard' %}" class="cat-view-all">View All →</a>
     </div>
-
-    <!-- Slider -->
     <div class="cat-slider-wrap">
-
-      <!-- Left Arrow -->
-      <button class="cat-arrow" id="elibPrevBtn" onclick="elibMove(-1)" type="button" aria-label="Previous PDF courses">
-        &#8592;
-      </button>
-
-      <!-- Card Track -->
+      <button class="cat-arrow" id="elibPrevBtn" onclick="elibMove(-1)" type="button" aria-label="Previous PDF courses">&#8592;</button>
       <div class="elib-track" id="elibTrack">
         {% for pdf in popular_pdfs %}
           <a href="{% url 'elibrary_detail' pdf.id %}" class="elib-card">
@@ -906,8 +1057,7 @@
               {% if pdf.thumbnail %}
                 <img data-src="{{ pdf.thumbnail.url }}"
                      src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                     alt="{{ pdf.name }}" class="lazy" loading="lazy" decoding="async"
-                     width="200" height="120">
+                     alt="{{ pdf.name }}" class="lazy" loading="lazy" decoding="async" width="200" height="120">
               {% else %}
                 📘
               {% endif %}
@@ -915,12 +1065,8 @@
             </div>
             <div class="elib-body">
               <h3>{{ pdf.name }}</h3>
-              {% if pdf.category %}
-                <div class="elib-cat-tag">{{ pdf.category.name }}</div>
-              {% endif %}
-              {% if pdf.description %}
-                <div class="elib-desc">{{ pdf.description|truncatechars:60 }}</div>
-              {% endif %}
+              {% if pdf.category %}<div class="elib-cat-tag">{{ pdf.category.name }}</div>{% endif %}
+              {% if pdf.description %}<div class="elib-desc">{{ pdf.description|truncatechars:60 }}</div>{% endif %}
               <div class="elib-foot">
                 <div>
                   <span class="elib-price-now">₹{{ pdf.current_price|floatformat:0 }}</span>
@@ -944,245 +1090,74 @@
           </div>
         {% endfor %}
       </div>
-
-      <!-- Right Arrow -->
-      <button class="cat-arrow" id="elibNextBtn" onclick="elibMove(1)" type="button" aria-label="Next PDF courses">
-        &#8594;
-      </button>
-
-    </div><!-- /cat-slider-wrap -->
-  </div><!-- /elib-section-inner -->
+      <button class="cat-arrow" id="elibNextBtn" onclick="elibMove(1)" type="button" aria-label="Next PDF courses">&#8594;</button>
+    </div>
+  </div>
 </section>
 
-<style>
-  /* ══════════════════════════════════════════════
-     📚 PHYSICAL BOOKS — Portrait Book-Cover Style
-     ══════════════════════════════════════════════ */
-  .books-section { background: linear-gradient(180deg, #f0f4ff 0%, #fafbff 100%); border-radius:20px; padding:28px 20px; margin-bottom:24px; }
-
-  .book-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 160px));
-    gap: 20px;
-    justify-content: flex-start;
-  }
-
-  .book-card-link { text-decoration: none; color: inherit; display: block; }
-
-  .book-card-wrap {
-    perspective: 600px;
-  }
-
-  .book-card {
-    position: relative;
-    width: 100%;
-    max-width: 160px;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border-radius: 4px 10px 10px 4px;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow:
-      -5px 5px 0 0 #8a96c8,
-      -8px 8px 0 0 rgba(138,150,200,0.35),
-      4px 8px 24px rgba(26,58,143,0.13);
-    transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s cubic-bezier(.22,1,.36,1);
-  }
-
-  .book-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 8px;
-    height: 100%;
-    background: linear-gradient(180deg, #1a3a8f 0%, #2e57d4 50%, #1a3a8f 100%);
-    z-index: 2;
-    border-radius: 4px 0 0 4px;
-  }
-
-  .book-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 8px; right: 0;
-    height: 45%;
-    background: linear-gradient(160deg, rgba(255,255,255,0.18) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 3;
-  }
-
-  .book-card:hover {
-    transform: translateY(-8px) rotateY(-6deg) rotateX(2deg);
-    box-shadow:
-      -8px 10px 0 0 #6977b2,
-      -12px 16px 0 0 rgba(105,119,178,0.25),
-      8px 24px 40px rgba(26,58,143,0.22);
-  }
-
-  .book-thumb {
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    overflow: hidden;
-    background: linear-gradient(145deg, #c8d6ff 0%, #e8edff 60%, #d4e0ff 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3.2rem;
-    flex-shrink: 0;
-    position: relative;
-  }
-
-  .book-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    position: absolute;
-    top: 0; left: 0;
-  }
-
-  .book-body {
-    padding: 10px 10px 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    flex: 1;
-    background: #fff;
-    position: relative;
-    z-index: 1;
-  }
-
-  .book-body h3 {
-    font-size: .75rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    line-height: 1.38;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .b-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: .6rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 20px;
-    width: fit-content;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-  }
-  .b-tag.bestseller { background: #fff4e0; color: #c77700; }
-  .b-tag.new        { background: #e8f8ef; color: #1a8a4a; }
-  .b-tag.popular    { background: #eef0ff; color: #1a3a8f; }
-  .b-tag.limited    { background: #fef0f0; color: #c0392b; }
-
-  .b-price {
-    font-size: .88rem;
-    font-weight: 800;
-    color: #1a3a8f;
-    margin: 0;
-    line-height: 1.2;
-  }
-  .b-price .b-orig {
-    font-size: .65rem;
-    color: #bbb;
-    text-decoration: line-through;
-    margin-left: 4px;
-    font-weight: 400;
-  }
-
-  .cart-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #1a3a8f;
-    border: none;
-    color: #fff;
-    padding: 7px 8px;
-    border-radius: 6px;
-    font-size: .68rem;
-    font-weight: 600;
-    transition: background .15s;
-    font-family: 'Poppins', sans-serif;
-    cursor: pointer;
-    width: 100%;
-    min-height: 32px;
-    margin-top: auto;
-  }
-  .cart-btn:hover { background: #0d2060; }
-
-  @media (max-width: 600px) {
-    .book-grid {
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 14px;
-    }
-  }
-  @media (max-width: 400px) {
-    .book-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-  }
-</style>
-
-<section class="section books-section" id="books">
-  <div class="sec-head">
-    <div>
-      <h2>📦 Physical <span>Books</span></h2>
-      <div class="sec-sub">Printed books for deep study</div>
+<!-- ═══════════════════════════════════════════════════════
+     📦 PHYSICAL BOOKS — Matching E-Library slider style
+     ═══════════════════════════════════════════════════════ -->
+<section class="books-section" id="books">
+  <div class="books-section-inner">
+    <div class="cat-section-header">
+      <div class="cat-section-title">
+        <h2>📦 Physical <span>Books</span></h2>
+        <p>Printed books delivered to your doorstep</p>
+      </div>
+      <a href="{% url 'hard_books_public' %}" class="cat-view-all">View All →</a>
     </div>
-    <a href="{% url 'hard_books_list' %}" class="view-all">View All</a>
-  </div>
-  <div class="book-grid">
-    {% for book in hard_books %}
-      <a href="{% url 'hard_book_detail' book.id %}" class="book-card-link">
-        <div class="book-card-wrap">
-          <div class="book-card">
+    <div class="cat-slider-wrap">
+      <button class="cat-arrow" id="bookPrevBtn" onclick="bookMove(-1)" type="button" aria-label="Previous books">&#8592;</button>
+      <div class="book-track" id="bookTrack">
+        {% for book in hard_books %}
+          <a href="{% url 'hard_book_detail' book.id %}" class="book-card">
             <div class="book-thumb">
               {% with first_image=book.images.first %}
                 {% if first_image and first_image.image %}
                   <img data-src="{{ first_image.image.url }}"
                        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                        alt="{{ book.title }}" class="lazy" loading="lazy" decoding="async"
-                       width="160" height="240">
+                       width="200" height="160">
                 {% else %}📚{% endif %}
               {% endwith %}
+              {% if forloop.first %}
+                <span class="book-badge bestseller">⭐ Bestseller</span>
+              {% elif forloop.counter == 2 %}
+                <span class="book-badge new-arrival">✨ New</span>
+              {% elif forloop.counter == 3 %}
+                <span class="book-badge popular">🔥 Popular</span>
+              {% else %}
+                <span class="book-badge limited">⏳ Limited</span>
+              {% endif %}
             </div>
             <div class="book-body">
-              {% if forloop.first %}
-                <span class="b-tag bestseller">⭐ Bestseller</span>
-              {% elif forloop.counter == 2 %}
-                <span class="b-tag new">✨ New Arrival</span>
-              {% elif forloop.counter == 3 %}
-                <span class="b-tag popular">🔥 Popular</span>
-              {% else %}
-                <span class="b-tag limited">⏳ Limited</span>
-              {% endif %}
               <h3>{{ book.title }}</h3>
-              <div class="b-price">₹{{ book.price|floatformat:0 }} <span class="b-orig">₹{{ book.original_price|floatformat:0 }}</span></div>
-              <button class="cart-btn" type="button">View Details</button>
+              <div class="book-foot">
+                <div>
+                  <span class="book-price-now">₹{{ book.price|floatformat:0 }}</span>
+                  {% if book.original_price and book.original_price > book.price %}
+                    <span class="book-price-old">₹{{ book.original_price|floatformat:0 }}</span>
+                  {% endif %}
+                </div>
+                <span class="book-tag">BOOK</span>
+              </div>
+              <button class="book-buy-btn" type="button">View Details</button>
+            </div>
+          </a>
+        {% empty %}
+          <div class="book-card" style="pointer-events:none;opacity:.6;">
+            <div class="book-thumb">📚</div>
+            <div class="book-body">
+              <h3>No books available yet</h3>
+              <div class="book-foot"><span class="book-price-now">₹0</span><span class="book-tag">BOOK</span></div>
+              <button class="book-buy-btn" type="button" disabled>Coming Soon</button>
             </div>
           </div>
-        </div>
-      </a>
-    {% empty %}
-      <div class="book-card-wrap">
-        <div class="book-card">
-          <div class="book-thumb">📚</div>
-          <div class="book-body">
-            <span class="b-tag popular">📚 Books</span>
-            <h3>No physical books available</h3>
-            <div class="b-price">₹0 <span class="b-orig">₹0</span></div>
-            <button class="cart-btn" type="button" disabled>Coming Soon</button>
-          </div>
-        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
+      <button class="cat-arrow" id="bookNextBtn" onclick="bookMove(1)" type="button" aria-label="Next books">&#8594;</button>
+    </div>
   </div>
 </section>
 
@@ -1273,13 +1248,6 @@
     document.getElementById('logoFallback').style.display = 'flex';
   }
 
-  function addCart(btn){
-    var original = btn.innerHTML;
-    btn.innerHTML = '✅ Done!';
-    btn.style.background='#1d9e75'; btn.style.color='#fff'; btn.style.borderColor='#1d9e75';
-    setTimeout(function(){ btn.innerHTML=original; btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; }, 1600);
-  }
-
   /* ── Activate category card ── */
   function activateCat(el) {
     document.querySelectorAll('.cat-box').forEach(function(c){ c.classList.remove('active'); });
@@ -1287,29 +1255,24 @@
   }
 
   /* ══════════════════════════════════════════════════
-     🎯 CATEGORY SLIDER — Arrow Navigation
+     🎯 CATEGORY SLIDER
      ══════════════════════════════════════════════════ */
   (function () {
     var SCROLL_AMT = 280;
-
     function syncArrows() {
       var track = document.getElementById('catTrack');
       var prev  = document.getElementById('catPrevBtn');
       var next  = document.getElementById('catNextBtn');
       if (!track || !prev || !next) return;
-      var atStart = track.scrollLeft <= 4;
-      var atEnd   = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-      prev.classList.toggle('disabled', atStart);
-      next.classList.toggle('disabled', atEnd);
+      prev.classList.toggle('disabled', track.scrollLeft <= 4);
+      next.classList.toggle('disabled', track.scrollLeft + track.clientWidth >= track.scrollWidth - 4);
     }
-
     window.catMove = function (dir) {
       var track = document.getElementById('catTrack');
       if (!track) return;
       track.scrollBy({ left: dir * SCROLL_AMT, behavior: 'smooth' });
       setTimeout(syncArrows, 350);
     };
-
     document.addEventListener('DOMContentLoaded', function () {
       var track = document.getElementById('catTrack');
       if (!track) return;
@@ -1319,34 +1282,56 @@
   })();
 
   /* ══════════════════════════════════════════════════
-     📄 E-LIBRARY SLIDER — Arrow Navigation
+     📄 E-LIBRARY SLIDER
      ══════════════════════════════════════════════════ */
   (function () {
     var SCROLL_AMT = 440;
-
     function syncElibArrows() {
       var track = document.getElementById('elibTrack');
       var prev  = document.getElementById('elibPrevBtn');
       var next  = document.getElementById('elibNextBtn');
       if (!track || !prev || !next) return;
-      var atStart = track.scrollLeft <= 4;
-      var atEnd   = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-      prev.classList.toggle('disabled', atStart);
-      next.classList.toggle('disabled', atEnd);
+      prev.classList.toggle('disabled', track.scrollLeft <= 4);
+      next.classList.toggle('disabled', track.scrollLeft + track.clientWidth >= track.scrollWidth - 4);
     }
-
     window.elibMove = function (dir) {
       var track = document.getElementById('elibTrack');
       if (!track) return;
       track.scrollBy({ left: dir * SCROLL_AMT, behavior: 'smooth' });
       setTimeout(syncElibArrows, 350);
     };
-
     document.addEventListener('DOMContentLoaded', function () {
       var track = document.getElementById('elibTrack');
       if (!track) return;
       track.addEventListener('scroll', syncElibArrows, { passive: true });
       syncElibArrows();
+    });
+  })();
+
+  /* ══════════════════════════════════════════════════
+     📦 PHYSICAL BOOKS SLIDER
+     ══════════════════════════════════════════════════ */
+  (function () {
+    var SCROLL_AMT = 440;
+    function syncBookArrows() {
+      var track = document.getElementById('bookTrack');
+      var prev  = document.getElementById('bookPrevBtn');
+      var next  = document.getElementById('bookNextBtn');
+      if (!track || !prev || !next) return;
+      prev.classList.toggle('disabled', track.scrollLeft <= 4);
+      next.classList.toggle('disabled', track.scrollLeft + track.clientWidth >= track.scrollWidth - 4);
+    }
+    window.bookMove = function (dir) {
+      var track = document.getElementById('bookTrack');
+      if (!track) return;
+      track.scrollBy({ left: dir * SCROLL_AMT, behavior: 'smooth' });
+      setTimeout(syncBookArrows, 350);
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+      var track = document.getElementById('bookTrack');
+      if (!track) return;
+      track.addEventListener('scroll', syncBookArrows, { passive: true });
+      syncBookArrows();
     });
   })();
 
@@ -1413,10 +1398,7 @@
   function fetchNotifications() {
     fetch('/notifications/api/')
       .then(function(r){ return r.json(); })
-      .then(function(data){
-        notifLoaded = true;
-        renderNotifications(data);
-      })
+      .then(function(data){ notifLoaded = true; renderNotifications(data); })
       .catch(function(){
         document.getElementById('notifList').innerHTML =
           '<div class="notif-empty" style="color:#e74c3c;">⚠️ Could not load notifications.</div>';
@@ -1471,10 +1453,7 @@
       .then(function(data){
         if (data.count && data.count > 0) {
           var badge = document.getElementById('notifBadge');
-          if (badge) {
-            badge.textContent   = data.count > 9 ? '9+' : data.count;
-            badge.style.display = 'flex';
-          }
+          if (badge) { badge.textContent = data.count > 9 ? '9+' : data.count; badge.style.display = 'flex'; }
           renderNotifications(data);
           notifLoaded = true;
         }
