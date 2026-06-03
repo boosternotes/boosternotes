@@ -149,6 +149,18 @@
   .cat-card-search .cat-icon {
     font-size: 2rem;
     margin-bottom: 0.4rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cat-card-search .cat-icon img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
   }
 
   .cat-card-search .cat-label {
@@ -469,7 +481,13 @@
       <div class="cat-grid-search">
         {% for cat in category_results %}
         <a href="{% url 'category_courses' cat.id %}" class="cat-card-search">
-          <div class="cat-icon">{% if cat.image %}📚{% else %}🎯{% endif %}</div>
+          <div class="cat-icon">
+            {% if cat.image %}
+              <img src="{{ cat.image.url }}" alt="{{ cat.name }}">
+            {% else %}
+              🎯
+            {% endif %}
+          </div>
           <div class="cat-label">{{ cat.name }}</div>
           <div class="cat-count">
             {% with course_count=cat.elibrary_courses.count %}
