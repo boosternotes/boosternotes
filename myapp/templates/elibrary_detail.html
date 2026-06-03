@@ -3,154 +3,399 @@
 
 {% block content %}
 <style>
-  .elib-detail-wrap { max-width:900px; margin:32px auto; padding:0 16px 60px; }
-  .elib-card { background:#fff; border-radius:20px; border:1px solid #eaecf4; overflow:hidden; box-shadow:0 4px 24px rgba(26,58,143,.07); }
-  .elib-thumb { height:300px; overflow:hidden; position:relative; background:#eef2ff; }
-  .elib-thumb img { width:100%; height:100%; object-fit:cover; }
-  .elib-thumb .no-thumb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:4rem; }
-  .elib-badge { position:absolute; top:14px; left:14px; background:#1a3a8f; color:#fff; font-size:.68rem; font-weight:700; padding:4px 10px; border-radius:999px; }
-  .elib-body { padding:24px; }
-  .elib-title { font-size:1.3rem; font-weight:800; color:#1a1a2e; margin-bottom:6px; }
-  .elib-cat { font-size:.78rem; color:#1a3a8f; font-weight:600; margin-bottom:12px; }
-  .elib-desc { font-size:.9rem; color:#555; line-height:1.7; margin-bottom:18px; }
-  .elib-price { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
-  .price-now { font-size:1.6rem; font-weight:900; color:#1a3a8f; }
-  .price-old { font-size:1rem; color:#aaa; text-decoration:line-through; }
-  .elib-actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
-  .btn-buy { flex:1; padding:13px 20px; background:linear-gradient(135deg,#1a3a8f,#0d6efd); color:#fff; border:none; border-radius:12px; font-size:.95rem; font-weight:800; cursor:pointer; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-family:inherit; transition:opacity .15s; }
-  .btn-buy:hover { opacity:.88; }
-  .btn-cart { flex:1; padding:13px 20px; background:#fff; color:#1a3a8f; border:2px solid #1a3a8f; border-radius:12px; font-size:.9rem; font-weight:700; cursor:pointer; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; font-family:inherit; transition:all .15s; }
-  .btn-cart:hover { background:#eef2ff; }
-  .btn-back { flex:1; padding:13px 20px; background:#f5f7fb; color:#555; border:1.5px solid #e0e4f0; border-radius:12px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; }
-  /* PDF section */
-  .pdf-section-title { font-size:1rem; font-weight:800; color:#1a1a2e; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-  .pdf-item { border:1px solid #e6e8f0; border-radius:12px; padding:14px 16px; background:#fafbff; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .pdf-item-name { font-weight:700; color:#1a1a2e; font-size:.9rem; }
-  .pdf-item-date { font-size:.72rem; color:#999; margin-top:3px; }
-  .pdf-btn { padding:8px 16px; background:#1a3a8f; color:#fff; border-radius:8px; font-size:.78rem; font-weight:700; text-decoration:none; display:inline-block; margin-left:6px; }
-  .pdf-btn.dl { background:#17a34a; }
-  /* Locked state */
-  .locked-overlay { border:2px dashed #e0e4f0; border-radius:14px; padding:28px; text-align:center; background:#fafbff; }
-  .lock-icon { font-size:2.5rem; margin-bottom:8px; }
-  .lock-text { font-size:.92rem; color:#555; margin-bottom:16px; }
-  .empty-pdfs { border:1px dashed #cfd6e6; border-radius:12px; padding:16px; background:#fafbff; color:#888; text-align:center; }
+  /* ── Base layout (matches search_results) ── */
+  .elib-section {
+    padding: 2rem 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 50vh;
+  }
+
+  /* Back button */
+  .back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f5f7fa;
+    color: #333;
+    border: 1.5px solid #dde2ee;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+  }
+  .back-to-home:hover { background: #e9edf5; transform: translateY(-2px); text-decoration: none; color: #333; }
+
+  /* Page header (matches search_results) */
+  .elib-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e7ebf5;
+  }
+  .elib-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .elib-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .elib-name-badge {
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .elib-cat-badge {
+    background: #f0f4ff;
+    color: #1a3a8f;
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .elib-cat-badge:hover { background: #dfe9ff; text-decoration: none; color: #1a3a8f; }
+
+  /* Group box (identical to search_results .search-result-group) */
+  .elib-group {
+    margin-bottom: 2rem;
+    background: #fff;
+    border: 1px solid #e7ebf5;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(26,58,143,0.04);
+  }
+  .elib-group-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid #f0f2f8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .elib-group-title span {
+    background: #1a3a8f;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  /* ── Course overview card ── */
+  .elib-overview {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .elib-thumb-box {
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f7fa, #e9edf5);
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    flex-shrink: 0;
+  }
+  .elib-thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+  .elib-info-col { display: flex; flex-direction: column; gap: 0.8rem; }
+  .elib-course-title { font-size: 1.4rem; font-weight: 800; color: #1a1a2e; line-height: 1.3; }
+  .elib-desc { font-size: 0.9rem; color: #555; line-height: 1.7; }
+
+  /* Price row */
+  .elib-price-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .price-now { font-size: 1.7rem; font-weight: 900; color: #1a3a8f; }
+  .price-old { font-size: 1rem; color: #aaa; text-decoration: line-through; }
+  .save-badge {
+    background: #fff3cd;
+    color: #856404;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
   /* Purchased badge */
-  .purchased-badge { display:inline-flex; align-items:center; gap:6px; background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; font-size:.78rem; font-weight:700; padding:5px 12px; border-radius:999px; margin-bottom:16px; }
+  .purchased-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+
+  /* Action buttons (same style as search_results buy/cart buttons) */
+  .elib-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .buy-btn-search {
+    flex: 1;
+    min-width: 140px;
+    padding: 11px 20px;
+    background: linear-gradient(135deg, #1a3a8f, #0d2060);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    text-align: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+  }
+  .buy-btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26,58,143,0.3);
+    color: #fff;
+    text-decoration: none;
+  }
+  .cart-btn-search {
+    flex: 1;
+    min-width: 140px;
+    padding: 11px 20px;
+    background: #fff;
+    color: #1a3a8f;
+    border: 2px solid #1a3a8f;
+    border-radius: 8px;
+    font-weight: 700;
+    text-align: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+  }
+  .cart-btn-search:hover {
+    background: #1a3a8f;
+    color: #fff;
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  /* ── PDF list ── */
+  .pdf-item {
+    border: 1px solid #e7ebf5;
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #fafbff;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .pdf-item-name { font-weight: 700; color: #1a1a2e; font-size: 0.9rem; }
+  .pdf-item-date { font-size: 0.72rem; color: #999; margin-top: 3px; }
+  .pdf-btn {
+    padding: 8px 16px;
+    background: #1a3a8f;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 6px;
+    transition: opacity 0.15s;
+  }
+  .pdf-btn:hover { opacity: 0.85; color: #fff; text-decoration: none; }
+  .pdf-btn.dl { background: #17a34a; }
+
+  /* Locked overlay */
+  .locked-overlay {
+    border: 2px dashed #e0e4f0;
+    border-radius: 14px;
+    padding: 28px;
+    text-align: center;
+    background: #fafbff;
+  }
+  .lock-text { font-size: 0.92rem; color: #555; margin-bottom: 16px; }
+  .empty-pdfs {
+    border: 1px dashed #cfd6e6;
+    border-radius: 12px;
+    padding: 16px;
+    background: #fafbff;
+    color: #888;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .elib-section { padding: 1rem; }
+    .elib-overview { grid-template-columns: 1fr; }
+    .elib-thumb-box { aspect-ratio: 16/9; max-height: 220px; }
+    .elib-header { flex-direction: column; align-items: flex-start; }
+    .elib-actions { flex-direction: column; }
+    .buy-btn-search, .cart-btn-search { min-width: unset; }
+  }
 </style>
 
-<div class="elib-detail-wrap">
-  <div class="elib-card">
-    <!-- Thumbnail -->
-    <div class="elib-thumb">
-      {% if pdf.thumbnail %}
-        <img src="{{ pdf.thumbnail.url }}" alt="{{ pdf.name }}" loading="lazy">
-      {% else %}
-        <div class="no-thumb">📘</div>
-      {% endif %}
-      <span class="elib-badge">PDF Course</span>
-    </div>
+<div class="elib-section">
 
-    <div class="elib-body">
-      <div class="elib-title">{{ pdf.name }}</div>
+  <!-- Back Button -->
+  <a href="{% url 'home' %}" class="back-to-home">
+    <i class="fa-solid fa-arrow-left"></i> Back to Home
+  </a>
 
+  <!-- Page Header -->
+  <div class="elib-header">
+    <div class="elib-header-left">
+      <h2><i class="fa-solid fa-file-pdf" style="color:#e53e3e;"></i> E-Library Course</h2>
+      <span class="elib-name-badge">{{ pdf.name }}</span>
       {% if pdf.category %}
-        <div class="elib-cat">📂 Category: <a href="{% url 'category_courses' pdf.category.id %}" style="color:#1a3a8f;">{{ pdf.category.name }}</a></div>
+        <a href="{% url 'category_courses_view' pdf.category.id %}" class="elib-cat-badge">
+          <i class="fa-solid fa-folder-open"></i> {{ pdf.category.name }}
+        </a>
       {% endif %}
+    </div>
+  </div>
 
-      <div class="elib-price">
-        <span class="price-now">₹{{ pdf.current_price|floatformat:0 }}</span>
-        {% if pdf.original_price %}
-          <span class="price-old">₹{{ pdf.original_price|floatformat:0 }}</span>
-          {% if pdf.original_price > pdf.current_price %}
-            <span style="background:#fff3cd;color:#856404;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:999px;">
-              {{ pdf.original_price|add:"-0"|floatformat:0 }} → Save ₹{% widthratio pdf.current_price pdf.original_price 100 %}%
-            </span>
-          {% endif %}
+  <!-- Overview Group -->
+  <div class="elib-group">
+    <h3 class="elib-group-title">
+      <i class="fa-solid fa-circle-info"></i> Course Details
+      <span>PDF Course</span>
+    </h3>
+    <div class="elib-overview">
+      <!-- Thumbnail -->
+      <div class="elib-thumb-box">
+        {% if pdf.thumbnail %}
+          <img src="{{ pdf.thumbnail.url }}" alt="{{ pdf.name }}" loading="lazy">
+        {% else %}
+          📘
         {% endif %}
       </div>
+      <!-- Info -->
+      <div class="elib-info-col">
+        <div class="elib-course-title">{{ pdf.name }}</div>
 
-      {% if pdf.description %}
-        <div class="elib-desc">{{ pdf.description }}</div>
-      {% endif %}
+        {% if pdf.description %}
+          <div class="elib-desc">{{ pdf.description }}</div>
+        {% endif %}
 
-      <!-- Action buttons -->
-      {% if is_purchased %}
-        <div class="purchased-badge">✅ You own this course</div>
-      {% else %}
-        <div class="elib-actions">
-          <!-- Direct Buy Now: add to cart then go to checkout -->
-          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;display:flex;">
-            {% csrf_token %}
-            <input type="hidden" name="item_id" value="{{ pdf.id }}">
-            <input type="hidden" name="item_type" value="pdf">
-            <input type="hidden" name="redirect_to" value="checkout">
-            <button type="submit" class="btn-buy" style="width:100%;">⚡ Buy Now — ₹{{ pdf.current_price|floatformat:0 }}</button>
-          </form>
-          <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;display:flex;">
-            {% csrf_token %}
-            <input type="hidden" name="item_id" value="{{ pdf.id }}">
-            <input type="hidden" name="item_type" value="pdf">
-            <button type="submit" class="btn-cart" style="width:100%;">🛒 Add to Cart</button>
-          </form>
-        </div>
-      {% endif %}
-
-      <a href="{% url 'home' %}" class="btn-back" style="display:inline-flex;max-width:160px;">← Back to Library</a>
-
-      <!-- PDF Files Section -->
-      <div style="margin-top:28px;">
-        <div class="pdf-section-title">📄 Course PDFs</div>
-
-        {% if is_purchased %}
-          <!-- User has purchased — show all PDFs -->
-          {% if uploaded_pdfs %}
-            {% for file in uploaded_pdfs %}
-              <div class="pdf-item">
-                <div>
-                  <div class="pdf-item-name">{{ file.pdf_name }}</div>
-                  <div class="pdf-item-date">Uploaded: {{ file.uploaded_at|date:"d M Y, h:i A" }}</div>
-                </div>
-                {% if file.pdf_file %}
-                  <div>
-                    <a href="{{ file.pdf_file.url }}" target="_blank" class="pdf-btn">👁 View</a>
-                    <a href="{{ file.pdf_file.url }}" download class="pdf-btn dl">⬇ Download</a>
-                  </div>
-                {% else %}
-                  <span style="font-size:.8rem;color:#c00;">File unavailable</span>
-                {% endif %}
-              </div>
-            {% endfor %}
-          {% else %}
-            <div class="empty-pdfs">📭 No PDFs uploaded yet for this course. Check back soon!</div>
+        <!-- Price -->
+        <div class="elib-price-row">
+          <span class="price-now">₹{{ pdf.current_price|floatformat:0 }}</span>
+          {% if pdf.original_price %}
+            <span class="price-old">₹{{ pdf.original_price|floatformat:0 }}</span>
           {% endif %}
+        </div>
 
-        {% elif request.user.is_authenticated %}
-          <!-- Logged in but not purchased -->
-          <div class="locked-overlay">
-            <div class="lock-icon">🔒</div>
-            <div style="font-size:1rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Content Locked</div>
-            <div class="lock-text">Purchase this course to unlock {{ uploaded_pdfs|length }} PDF{% if uploaded_pdfs|length != 1 %}s{% endif %}.</div>
-            <form method="post" action="{% url 'add_to_cart' %}" style="display:inline;">
+        <!-- Actions -->
+        {% if is_purchased %}
+          <div class="purchased-badge">✅ You own this course</div>
+        {% else %}
+          <div class="elib-actions">
+            <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;display:flex;">
               {% csrf_token %}
               <input type="hidden" name="item_id" value="{{ pdf.id }}">
               <input type="hidden" name="item_type" value="pdf">
               <input type="hidden" name="redirect_to" value="checkout">
-              <button type="submit" class="btn-buy" style="max-width:220px;margin:0 auto;">🔓 Buy to Unlock — ₹{{ pdf.current_price|floatformat:0 }}</button>
+              <button type="submit" class="buy-btn-search" style="width:100%;">⚡ Buy Now — ₹{{ pdf.current_price|floatformat:0 }}</button>
             </form>
-          </div>
-
-        {% else %}
-          <!-- Not logged in -->
-          <div class="locked-overlay">
-            <div class="lock-icon">🔒</div>
-            <div style="font-size:1rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Login Required</div>
-            <div class="lock-text">Please login and purchase this course to access the PDFs.</div>
-            <a href="{% url 'login' %}?next={{ request.path }}" class="btn-buy" style="max-width:180px;margin:0 auto;">🔑 Login to Buy</a>
+            <form method="post" action="{% url 'add_to_cart' %}" style="flex:1;display:flex;">
+              {% csrf_token %}
+              <input type="hidden" name="item_id" value="{{ pdf.id }}">
+              <input type="hidden" name="item_type" value="pdf">
+              <button type="submit" class="cart-btn-search" style="width:100%;">🛒 Add to Cart</button>
+            </form>
           </div>
         {% endif %}
       </div>
-
     </div>
   </div>
+
+  <!-- PDF Files Group -->
+  <div class="elib-group">
+    <h3 class="elib-group-title">
+      <i class="fa-solid fa-file-pdf" style="color:#e53e3e;"></i> Course PDFs
+      <span>{{ uploaded_pdfs|length }} File{{ uploaded_pdfs|length|pluralize }}</span>
+    </h3>
+
+    {% if is_purchased %}
+      {% if uploaded_pdfs %}
+        {% for file in uploaded_pdfs %}
+          <div class="pdf-item">
+            <div>
+              <div class="pdf-item-name">{{ file.pdf_name }}</div>
+              <div class="pdf-item-date">Uploaded: {{ file.uploaded_at|date:"d M Y, h:i A" }}</div>
+            </div>
+            {% if file.pdf_file %}
+              <div>
+                <a href="{{ file.pdf_file.url }}" target="_blank" class="pdf-btn">👁 View</a>
+                <a href="{{ file.pdf_file.url }}" download class="pdf-btn dl">⬇ Download</a>
+              </div>
+            {% else %}
+              <span style="font-size:.8rem;color:#c00;">File unavailable</span>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-pdfs">📭 No PDFs uploaded yet for this course. Check back soon!</div>
+      {% endif %}
+
+    {% elif request.user.is_authenticated %}
+      <div class="locked-overlay">
+        <div style="font-size:2.5rem;margin-bottom:8px;">🔒</div>
+        <div style="font-size:1rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Content Locked</div>
+        <div class="lock-text">Purchase this course to unlock {{ uploaded_pdfs|length }} PDF{% if uploaded_pdfs|length != 1 %}s{% endif %}.</div>
+        <form method="post" action="{% url 'add_to_cart' %}" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="item_id" value="{{ pdf.id }}">
+          <input type="hidden" name="item_type" value="pdf">
+          <input type="hidden" name="redirect_to" value="checkout">
+          <button type="submit" class="buy-btn-search" style="max-width:260px;margin:0 auto;">🔓 Buy to Unlock — ₹{{ pdf.current_price|floatformat:0 }}</button>
+        </form>
+      </div>
+    {% else %}
+      <div class="locked-overlay">
+        <div style="font-size:2.5rem;margin-bottom:8px;">🔒</div>
+        <div style="font-size:1rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Login Required</div>
+        <div class="lock-text">Please login and purchase this course to access the PDFs.</div>
+        <a href="{% url 'login' %}?next={{ request.path }}" class="buy-btn-search" style="max-width:200px;margin:0 auto;">🔑 Login to Buy</a>
+      </div>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock content %}
